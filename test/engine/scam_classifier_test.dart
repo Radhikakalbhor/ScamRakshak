@@ -68,5 +68,17 @@ void main() {
       final res4 = classifier.classify('Account BLOCKED');
       expect(res4.label, equals('scam'));
     });
+
+    test('Empty and whitespace-only text is handled safely as genuine', () {
+      final resEmpty = classifier.classify('');
+      expect(resEmpty.label, equals('genuine'));
+      expect(resEmpty.score, lessThan(0.5));
+      expect(resEmpty.reasons, isEmpty);
+
+      final resSpaces = classifier.classify('   \t\n  ');
+      expect(resSpaces.label, equals('genuine'));
+      expect(resSpaces.score, lessThan(0.5));
+      expect(resSpaces.reasons, isEmpty);
+    });
   });
 }

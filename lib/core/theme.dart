@@ -29,7 +29,7 @@ class AppTheme {
   static const String fontFamily = 'Noto Sans Devanagari';
 
   static ThemeData get lightTheme {
-    final colorScheme = ColorScheme.light(
+    const colorScheme = ColorScheme.light(
       primary: primaryTeal,
       onPrimary: Colors.white,
       primaryContainer: primaryLightTeal,

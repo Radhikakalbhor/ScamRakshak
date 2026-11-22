@@ -41,5 +41,16 @@ void main() {
           analyzer.analyze('Please complete your KyC details immediately.');
       expect(res2.risk, equals('high'));
     });
+
+    test('Empty and whitespace-only transcript is handled safely as low risk',
+        () {
+      final resEmpty = analyzer.analyze('');
+      expect(resEmpty.risk, equals('low'));
+      expect(resEmpty.matches, isEmpty);
+
+      final resSpaces = analyzer.analyze('   \t\n  ');
+      expect(resSpaces.risk, equals('low'));
+      expect(resSpaces.matches, isEmpty);
+    });
   });
 }

@@ -15,53 +15,53 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = S.of(context);
 
-    final navigationTiles = [
+    const navigationTiles = [
       _HomeTileData(
         titleKey: 'check_message',
         subtitleKey: 'check_message_sub',
         icon: Icons.mark_chat_unread_rounded,
-        iconColor: const Color(0xFF00796B),
-        iconBgColor: const Color(0xFFE0F2F1),
+        iconColor: Color(0xFF00796B),
+        iconBgColor: Color(0xFFE0F2F1),
         route: '/message',
       ),
       _HomeTileData(
         titleKey: 'check_call',
         subtitleKey: 'check_call_sub',
         icon: Icons.phone_in_talk_rounded,
-        iconColor: const Color(0xFF0D47A1),
-        iconBgColor: const Color(0xFFE3F2FD),
+        iconColor: Color(0xFF0D47A1),
+        iconBgColor: Color(0xFFE3F2FD),
         route: '/call',
       ),
       _HomeTileData(
         titleKey: 'report_fraud',
         subtitleKey: 'report_fraud_sub',
         icon: Icons.report_problem_rounded,
-        iconColor: const Color(0xFFD32F2F),
-        iconBgColor: const Color(0xFFFFEBEE),
+        iconColor: Color(0xFFD32F2F),
+        iconBgColor: Color(0xFFFFEBEE),
         route: '/report',
       ),
       _HomeTileData(
         titleKey: 'learn',
         subtitleKey: 'learn_sub',
         icon: Icons.school_rounded,
-        iconColor: const Color(0xFF2E7D32),
-        iconBgColor: const Color(0xFFE8F5E9),
+        iconColor: Color(0xFF2E7D32),
+        iconBgColor: Color(0xFFE8F5E9),
         route: '/lessons',
       ),
       _HomeTileData(
         titleKey: 'quiz',
         subtitleKey: 'quiz_sub',
         icon: Icons.psychology_rounded,
-        iconColor: const Color(0xFF6A1B9A),
-        iconBgColor: const Color(0xFFF3E5F5),
+        iconColor: Color(0xFF6A1B9A),
+        iconBgColor: Color(0xFFF3E5F5),
         route: '/quiz',
       ),
       _HomeTileData(
         titleKey: 'scam_trends',
         subtitleKey: 'scam_trends_sub',
         icon: Icons.insights_rounded,
-        iconColor: const Color(0xFFE65100),
-        iconBgColor: const Color(0xFFFFF3E0),
+        iconColor: Color(0xFFE65100),
+        iconBgColor: Color(0xFFFFF3E0),
         route: '/dashboard',
       ),
     ];

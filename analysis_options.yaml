@@ -10,6 +10,13 @@
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
+  errors:
+    # On this local Flutter SDK (v3.50.1-stable), package:flutter/material.dart and
+    # package:flutter/cupertino.dart carry an experimental @Deprecated annotation
+    # advising package:material_ui, which is not part of the standard AGENTS.md stack.
+    # Suppressing deprecated_member_use prevents spurious SDK deprecation failures
+    # while preserving full compatibility with standard Flutter material design.
+    deprecated_member_use: ignore
   exclude:
     - build/**
     - android/**

@@ -1,6 +1,7 @@
 /// Data models for ScamRakshak detection and analysis engine.
 ///
 /// Contracts locked in AGENTS.md.
+library;
 
 /// Represents a specific reason or indicator contributing to a scam determination.
 class Reason {
