@@ -1,0 +1,3 @@
+Caller: Good morning sir, I am calling from customer verification cell at SBI. Your bank account KYC has expired.
+Receiver: Oh, I was not aware. Can I visit my local branch?
+Caller: No sir, visiting branch takes 48 hours and your account and debit card will be blocked by this afternoon. You must complete online KYC verification right now over this call. Please read out the 6-digit OTP you just received on your mobile.

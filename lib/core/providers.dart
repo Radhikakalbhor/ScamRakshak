@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../engine/call_analyzer.dart';
+import '../engine/scam_classifier.dart';
 import 'api_client.dart';
 import 'strings.dart';
 
@@ -14,8 +16,7 @@ final apiClientProvider = Provider<ApiClient>((ref) {
 class LocaleNotifier extends StateNotifier<String> {
   static const String prefKeyLocale = 'scamrakshak_selected_locale';
 
-  LocaleNotifier([String initialLocale = S.defaultLocale])
-      : super(initialLocale) {
+  LocaleNotifier([super.initialLocale = S.defaultLocale]) {
     _loadPersistedLocale();
   }
 
@@ -65,14 +66,10 @@ final localeProvider = StateNotifierProvider<LocaleNotifier, String>((ref) {
 // CONTRACTS LOCKED IN AGENTS.md. DO NOT CHANGE SIGNATURES.
 // ============================================================================
 
-/// TODO: Replace Object? with ScamClassifier when lib/engine/scam_classifier.dart is ready.
-final scamClassifierProvider = FutureProvider<Object?>((ref) async {
-  // Placeholder implementation allowing app scaffolding and analysis to pass
-  return null;
+final scamClassifierProvider = FutureProvider<ScamClassifier>((ref) async {
+  return ScamClassifier.load();
 });
 
-/// TODO: Replace Object? with CallAnalyzer when lib/engine/call_analyzer.dart is ready.
-final callAnalyzerProvider = FutureProvider<Object?>((ref) async {
-  // Placeholder implementation allowing app scaffolding and analysis to pass
-  return null;
+final callAnalyzerProvider = FutureProvider<CallAnalyzer>((ref) async {
+  return CallAnalyzer.load();
 });

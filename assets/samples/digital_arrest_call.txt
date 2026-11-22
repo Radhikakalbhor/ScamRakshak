@@ -1,0 +1,3 @@
+Caller: Hello, I am Inspector Vijay Rathore from Central Bureau of Investigation Cyber Crime Cell, New Delhi.
+Receiver: Yes officer, how can I help you?
+Caller: A non-bailable arrest warrant has been issued against you under the Prevention of Money Laundering Act. A bank account opened with your Aadhaar was used to launder 2 crore rupees. You are placed under digital arrest right now. Turn on your video camera immediately and do not disconnect, or local police will reach your residence to arrest you.
