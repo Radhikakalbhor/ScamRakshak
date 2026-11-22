@@ -73,3 +73,5 @@ final scamClassifierProvider = FutureProvider<ScamClassifier>((ref) async {
 final callAnalyzerProvider = FutureProvider<CallAnalyzer>((ref) async {
   return CallAnalyzer.load();
 });
+
+

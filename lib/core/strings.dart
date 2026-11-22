@@ -179,3 +179,5 @@ class AppLocalizationsDelegate extends LocalizationsDelegate<S> {
   bool shouldReload(covariant AppLocalizationsDelegate oldWidget) =>
       oldWidget.activeLocale != activeLocale;
 }
+
+

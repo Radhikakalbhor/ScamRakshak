@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:scamrakshak_mobile/engine/call_analyzer.dart';
-import 'package:scamrakshak_mobile/engine/models.dart';
+import 'package:scamrakshak/engine/call_analyzer.dart';
+import 'package:scamrakshak/engine/models.dart';
 
 void main() {
   group('CallAnalyzer', () {
@@ -54,3 +54,5 @@ void main() {
     });
   });
 }
+
+

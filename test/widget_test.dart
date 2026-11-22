@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:scamrakshak_mobile/main.dart';
+import 'package:scamrakshak/main.dart';
 
 void main() {
   testWidgets('ScamRakshak home screen renders all required elements',
@@ -106,3 +106,5 @@ void main() {
     expect(find.text('Offline Protected'), findsOneWidget);
   });
 }
+
+

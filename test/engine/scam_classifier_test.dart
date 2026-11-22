@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:scamrakshak_mobile/engine/models.dart';
-import 'package:scamrakshak_mobile/engine/scam_classifier.dart';
+import 'package:scamrakshak/engine/models.dart';
+import 'package:scamrakshak/engine/scam_classifier.dart';
 
 void main() {
   group('ScamClassifier', () {
@@ -82,3 +82,5 @@ void main() {
     });
   });
 }
+
+
