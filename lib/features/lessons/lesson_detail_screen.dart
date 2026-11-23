@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../core/strings.dart';
-import '../../core/theme.dart';
+import '../../core/design/components.dart';
+import '../../core/design/tokens.dart';
 import '../quiz/quiz_screen.dart';
 import 'lesson_models.dart';
 import 'lesson_viewer_screen.dart';
@@ -59,26 +60,24 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           return Scaffold(
             appBar: AppBar(title: Text(s.t('lessons_title'))),
             body: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(s.t('lessons_load_error'), style: const TextStyle(fontSize: 18)),
-                  const SizedBox(height: 12),
-                  FilledButton(
-                    onPressed: () {
-                      final next = LessonRepository.load(widget.lessonId);
-                      setState(() {
-                        _lesson = next;
-                      });
-                    },
-                    child: Text(s.t('lessons_retry')),
-                  ),
-                ],
+              child: EmptyState(
+                icon: Icons.error_outline_rounded,
+                color: DsColors.alertSoft,
+                title: s.t('lessons_load_error'),
+                action: PrimaryButton(
+                  label: s.t('lessons_retry'),
+                  onPressed: () {
+                    final next = LessonRepository.load(widget.lessonId);
+                    setState(() {
+                      _lesson = next;
+                    });
+                  },
+                ),
               ),
             ),
           );
         }
-        if (!snap.hasData) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        if (!snap.hasData) return const Scaffold(body: LoadingState());
         final l = snap.data!;
         final lang = s.locale;
         final color = lessonTopicColor(l.id);
@@ -86,79 +85,72 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
           appBar: AppBar(title: Text(pickLang(l.title, lang))),
           body: SafeArea(
             child: ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(DsSpace.xl, DsSpace.s, DsSpace.xl, DsSpace.section),
               children: [
                 _header(s, l, color),
                 if (l.summary.isNotEmpty)
                   _section(
                     title: s.t('lesson_what'),
-                    icon: Icons.info_rounded,
-                    color: color,
-                    child: Text(pickLang(l.summary, lang), style: const TextStyle(fontSize: 17, height: 1.45)),
+                    icon: Icons.info_outline_rounded,
+                    child: Text(pickLang(l.summary, lang), style: DsType.reading),
                   ),
                 if (l.example.isNotEmpty)
                   _section(
                     key: const Key('lesson_example'),
                     title: s.t('lesson_example'),
                     icon: Icons.format_quote_rounded,
-                    color: AppTheme.warningOrange,
-                    background: const Color(0xFFFFF8E1),
-                    child: Text(
-                      pickLang(l.example, lang),
-                      style: const TextStyle(fontSize: 16, height: 1.45, fontStyle: FontStyle.italic),
-                    ),
+                    background: DsColors.peach,
+                    child: Text(pickLang(l.example, lang), style: DsType.reading.copyWith(fontStyle: FontStyle.italic)),
                   ),
                 if (l.signs.isNotEmpty)
                   _section(
                     key: const Key('lesson_signs'),
                     title: s.t('lesson_signs'),
                     icon: Icons.warning_amber_rounded,
-                    color: AppTheme.errorRed,
-                    child: _bullets(l.signs, lang, Icons.error_outline_rounded, AppTheme.errorRed),
+                    iconColor: DsColors.alert,
+                    child: _bullets(l.signs, lang, Icons.error_outline_rounded, DsColors.alert),
                   ),
                 if (l.steps.isNotEmpty)
                   _section(
                     key: const Key('lesson_steps'),
                     title: s.t('lesson_steps'),
-                    icon: Icons.shield_rounded,
-                    color: AppTheme.successGreen,
-                    child: _bullets(l.steps, lang, Icons.check_circle_rounded, AppTheme.successGreen),
+                    icon: Icons.shield_outlined,
+                    iconColor: DsColors.safe,
+                    child: _bullets(l.steps, lang, Icons.check_circle_outline_rounded, DsColors.safe),
                   ),
-                const SizedBox(height: 8),
-                FilledButton.icon(
+                const SizedBox(height: DsSpace.s),
+                PrimaryButton(
                   key: const Key('lesson_open_cards'),
-                  style: FilledButton.styleFrom(backgroundColor: color),
+                  label: '${s.t('lesson_open_cards')} (${l.cards.length})',
+                  icon: Icons.style_outlined,
                   onPressed: _openCards,
-                  icon: const Icon(Icons.style_rounded),
-                  label: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: Text(
-                      '${s.t('lesson_open_cards')} (${l.cards.length})',
-                      style: const TextStyle(fontSize: 17),
-                    ),
-                  ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: DsSpace.s),
                 if (_done)
-                  OutlinedButton.icon(
+                  PrimaryButton(
                     key: const Key('lesson_marked'),
-                    onPressed: null,
-                    icon: const Icon(Icons.check_circle_rounded, color: AppTheme.successGreen),
-                    label: Text(s.t('lesson_marked'), style: const TextStyle(color: AppTheme.successGreen)),
+                    label: s.t('lesson_marked'),
+                    icon: Icons.check_circle_outline_rounded,
+                    filled: false,
+                    color: DsColors.safe,
                   )
                 else
-                  OutlinedButton.icon(
+                  PrimaryButton(
                     key: const Key('lesson_mark_done'),
+                    label: s.t('lesson_mark_done'),
+                    icon: Icons.task_alt_rounded,
+                    filled: false,
                     onPressed: _markDone,
-                    icon: const Icon(Icons.task_alt_rounded),
-                    label: Text(s.t('lesson_mark_done')),
                   ),
-                const SizedBox(height: 10),
-                TextButton.icon(
-                  key: const Key('lesson_take_quiz'),
-                  onPressed: _openQuiz,
-                  icon: const Icon(Icons.psychology_rounded),
-                  label: Text(s.t('lesson_take_quiz'), style: const TextStyle(fontSize: 16)),
+                const SizedBox(height: DsSpace.s),
+                Align(
+                  alignment: Alignment.center,
+                  child: PillChip(
+                    key: const Key('lesson_take_quiz'),
+                    label: s.t('lesson_take_quiz'),
+                    icon: Icons.quiz_outlined,
+                    onTap: _openQuiz,
+                  ),
                 ),
               ],
             ),
@@ -168,47 +160,36 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     );
   }
 
-  Widget _header(S s, Lesson l, Color color) => Container(
-    padding: const EdgeInsets.all(18),
-    margin: const EdgeInsets.only(bottom: 12),
-    decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(20)),
-    child: Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), shape: BoxShape.circle),
-          child: Icon(lessonTopicIcon(l.id), color: Colors.white, size: 40),
-        ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                pickLang(l.title, s.locale),
-                style: const TextStyle(color: Colors.white, fontSize: 21, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              Text(s.t('lessons_cat_${l.category}'), style: const TextStyle(color: Colors.white70, fontSize: 15)),
-              if (_done) ...[
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        s.t('lessons_done'),
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
+  Widget _header(S s, Lesson l, Color color) => Padding(
+    padding: const EdgeInsets.only(bottom: DsSpace.m),
+    child: PastelCard(
+      color: color,
+      child: Row(
+        children: [
+          IconBadge(lessonTopicIcon(l.id), size: 64),
+          const SizedBox(width: DsSpace.l),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(pickLang(l.title, s.locale), style: DsType.cardTitle),
+                const SizedBox(height: DsSpace.xs),
+                Text(s.t('lessons_cat_${l.category}'), style: DsType.small),
+                if (_done) ...[
+                  const SizedBox(height: DsSpace.s),
+                  Row(
+                    children: [
+                      const Icon(Icons.check_circle_rounded, color: DsColors.safe, size: 18),
+                      const SizedBox(width: DsSpace.xs),
+                      Flexible(child: Text(s.t('lessons_done'), style: DsType.label.copyWith(color: DsColors.safe))),
+                    ],
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     ),
   );
 
@@ -216,31 +197,26 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     Key? key,
     required String title,
     required IconData icon,
-    required Color color,
     required Widget child,
-    Color? background,
-  }) => Card(
-    key: key,
-    margin: const EdgeInsets.only(bottom: 12),
-    color: background,
-    child: Padding(
-      padding: const EdgeInsets.all(16),
+    Color iconColor = DsColors.ink,
+    Color background = DsColors.surface,
+  }) => Padding(
+    padding: const EdgeInsets.only(bottom: DsSpace.m),
+    child: SurfacePanel(
+      key: key,
+      color: background,
+      padding: const EdgeInsets.all(DsSpace.l),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: color),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color),
-                ),
-              ),
+              Icon(icon, color: iconColor),
+              const SizedBox(width: DsSpace.s),
+              Expanded(child: Text(title, style: DsType.section)),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: DsSpace.m),
           child,
         ],
       ),
@@ -251,16 +227,16 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
     children: [
       for (final item in items)
         Padding(
-          padding: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.only(bottom: DsSpace.m),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: 2),
+                padding: const EdgeInsets.only(top: DsSpace.xxs),
                 child: Icon(icon, color: color, size: 22),
               ),
-              const SizedBox(width: 10),
-              Expanded(child: Text(pickLang(item, lang), style: const TextStyle(fontSize: 16, height: 1.4))),
+              const SizedBox(width: DsSpace.m),
+              Expanded(child: Text(pickLang(item, lang), style: DsType.body.copyWith(fontSize: 16))),
             ],
           ),
         ),

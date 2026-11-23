@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../core/strings.dart';
-import '../../core/theme.dart';
+import '../../core/design/components.dart';
+import '../../core/design/tokens.dart';
 import 'lesson_detail_screen.dart';
 import 'lesson_models.dart';
 import 'lessons_strings.dart';
@@ -76,38 +77,38 @@ class _LessonListScreenState extends State<LessonListScreen> {
         future: _lessons,
         builder: (context, snap) {
           if (snap.hasError) return _error(s);
-          if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+          if (!snap.hasData) return const LoadingState();
           final all = snap.data!;
           final visible = _visible(all, s.locale);
           return ListView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(DsSpace.xl, DsSpace.s, DsSpace.xl, DsSpace.section),
             children: [
               _progressCard(s, all.length),
-              const SizedBox(height: 14),
+              const SizedBox(height: DsSpace.l),
               TextField(
                 key: const Key('lessons_search'),
                 controller: _search,
                 onChanged: (v) => setState(() => _query = v),
+                style: DsType.body,
                 decoration: InputDecoration(
                   hintText: s.t('lessons_search_hint'),
-                  prefixIcon: const Icon(Icons.search_rounded),
+                  hintStyle: DsType.body.copyWith(color: DsColors.muted),
+                  prefixIcon: const Icon(Icons.search_rounded, color: DsColors.ink),
                   suffixIcon: _query.isEmpty
                       ? null
                       : IconButton(
+                          tooltip: s.t('lessons_clear_filters'),
                           icon: const Icon(Icons.clear_rounded),
                           onPressed: () => setState(() {
                             _query = '';
                             _search.clear();
                           }),
                         ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: DsSpace.m),
               _filters(s),
-              const SizedBox(height: 12),
+              const SizedBox(height: DsSpace.l),
               if (visible.isEmpty) _noMatch(s) else _grid(visible, s),
             ],
           );
@@ -117,75 +118,48 @@ class _LessonListScreenState extends State<LessonListScreen> {
   }
 
   Widget _error(S s) => Center(
-    child: Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.error_outline_rounded, size: 56, color: AppTheme.errorRed),
-          const SizedBox(height: 12),
-          Text(s.t('lessons_load_error'), style: const TextStyle(fontSize: 18), textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          FilledButton(onPressed: _retry, child: Text(s.t('lessons_retry'))),
-        ],
-      ),
+    child: EmptyState(
+      icon: Icons.error_outline_rounded,
+      color: DsColors.alertSoft,
+      title: s.t('lessons_load_error'),
+      action: PrimaryButton(label: s.t('lessons_retry'), onPressed: _retry),
     ),
   );
 
   Widget _progressCard(S s, int total) {
     final done = _done.length;
     final allDone = total > 0 && done >= total;
-    return Container(
+    return PastelCard(
       key: const Key('lessons_progress'),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [AppTheme.primaryTeal, AppTheme.primaryDarkTeal]),
-        borderRadius: BorderRadius.circular(18),
-      ),
+      color: DsColors.powder,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(s.t('lessons_intro'), style: const TextStyle(color: Colors.white, fontSize: 16)),
-          const SizedBox(height: 12),
+          Text(s.t('lessons_intro'), style: DsType.body),
+          const SizedBox(height: DsSpace.l),
           Row(
             children: [
-              Expanded(
-                child: Text(
-                  s.t('lessons_your_progress'),
-                  style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w600),
-                ),
-              ),
-              const SizedBox(width: 8),
+              Expanded(child: Text(s.t('lessons_your_progress'), style: DsType.greeting)),
+              const SizedBox(width: DsSpace.s),
               Flexible(
                 child: Text(
                   '$done / $total ${s.t('lessons_progress')}',
                   key: const Key('lessons_progress_text'),
                   textAlign: TextAlign.end,
-                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  style: DsType.title,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          LinearProgressIndicator(
-            value: total == 0 ? 0 : done / total,
-            minHeight: 10,
-            borderRadius: BorderRadius.circular(5),
-            backgroundColor: Colors.white24,
-            color: Colors.white,
-          ),
+          const SizedBox(height: DsSpace.s),
+          ProgressBar(value: total == 0 ? 0 : done / total, color: DsColors.brand),
           if (allDone) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: DsSpace.m),
             Row(
               children: [
-                const Icon(Icons.emoji_events_rounded, color: Colors.amberAccent),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    s.t('lessons_all_done'),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                ),
+                const Icon(Icons.emoji_events_outlined, color: DsColors.ink),
+                const SizedBox(width: DsSpace.s),
+                Expanded(child: Text(s.t('lessons_all_done'), style: DsType.title)),
               ],
             ),
           ],
@@ -207,13 +181,13 @@ class _LessonListScreenState extends State<LessonListScreen> {
         children: [
           for (final id in options)
             Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: ChoiceChip(
+              padding: const EdgeInsets.only(right: DsSpace.s),
+              child: PillChip(
                 key: Key('lessons_filter_$id'),
-                label: Text(label(id)),
-                avatar: kLessonCategories.contains(id) ? Icon(lessonCategoryIcon(id), size: 18) : null,
+                label: label(id),
+                icon: kLessonCategories.contains(id) ? lessonCategoryIcon(id) : null,
                 selected: _filter == id,
-                onSelected: (_) => setState(() => _filter = id),
+                onTap: () => setState(() => _filter = id),
               ),
             ),
         ],
@@ -221,24 +195,17 @@ class _LessonListScreenState extends State<LessonListScreen> {
     );
   }
 
-  Widget _noMatch(S s) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 32),
-    child: Column(
-      children: [
-        const Icon(Icons.search_off_rounded, size: 56, color: AppTheme.textSecondary),
-        const SizedBox(height: 8),
-        Text(s.t('lessons_no_match'), style: const TextStyle(fontSize: 17), textAlign: TextAlign.center),
-        const SizedBox(height: 8),
-        TextButton(onPressed: _clearFilters, child: Text(s.t('lessons_clear_filters'))),
-      ],
-    ),
+  Widget _noMatch(S s) => EmptyState(
+    icon: Icons.search_off_rounded,
+    title: s.t('lessons_no_match'),
+    action: PillChip(label: s.t('lessons_clear_filters'), onTap: _clearFilters),
   );
 
   /// One column on phones, two on wide screens.
   Widget _grid(List<Lesson> lessons, S s) => LayoutBuilder(
     builder: (context, c) {
       final cols = c.maxWidth >= 640 ? 2 : 1;
-      const gap = 12.0;
+      const gap = DsSpace.m;
       final w = (c.maxWidth - gap * (cols - 1)) / cols;
       return Wrap(
         spacing: gap,
@@ -251,88 +218,53 @@ class _LessonListScreenState extends State<LessonListScreen> {
   Widget _tile(Lesson l, S s) {
     final lang = s.locale;
     final done = _done.contains(l.id);
-    final color = lessonTopicColor(l.id);
     final summary = pickLang(l.summary, lang);
-    return Card(
+    return PastelCard(
       key: Key('lesson_tile_${l.id}'),
-      margin: EdgeInsets.zero,
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => _open(l),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Container(width: 6, color: color),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Icon(lessonTopicIcon(l.id), color: color, size: 32),
+      color: lessonTopicColor(l.id),
+      onTap: () => _open(l),
+      padding: const EdgeInsets.all(DsSpace.l),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          IconBadge(lessonTopicIcon(l.id)),
+          const SizedBox(width: DsSpace.m),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(pickLang(l.title, lang), style: DsType.title.copyWith(fontSize: 18)),
+                if (summary.isNotEmpty) ...[
+                  const SizedBox(height: DsSpace.xs),
+                  Text(summary, maxLines: 2, overflow: TextOverflow.ellipsis, style: DsType.small),
+                ],
+                const SizedBox(height: DsSpace.s),
+                Row(
+                  children: [
+                    Icon(lessonCategoryIcon(l.category), size: 16, color: DsColors.ink),
+                    const SizedBox(width: DsSpace.xs),
+                    Flexible(
+                      child: Text(
+                        '${s.t('lessons_cat_${l.category}')} · ${l.cards.length} ${s.t('lessons_cards')}',
+                        style: DsType.caption.copyWith(color: DsColors.ink),
                       ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              pickLang(l.title, lang),
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, height: 1.25),
-                            ),
-                            if (summary.isNotEmpty) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                summary,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 14, color: AppTheme.textSecondary),
-                              ),
-                            ],
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Icon(lessonCategoryIcon(l.category), size: 16, color: color),
-                                const SizedBox(width: 4),
-                                Flexible(
-                                  child: Text(
-                                    '${s.t('lessons_cat_${l.category}')} · ${l.cards.length} ${s.t('lessons_cards')}',
-                                    style: TextStyle(fontSize: 13, color: color, fontWeight: FontWeight.w600),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      done
-                          ? Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.check_circle_rounded, color: AppTheme.successGreen, size: 30),
-                                Text(
-                                  s.t('lessons_done'),
-                                  style: const TextStyle(color: AppTheme.successGreen, fontSize: 12),
-                                ),
-                              ],
-                            )
-                          : const Icon(Icons.radio_button_unchecked_rounded, color: Colors.grey, size: 30),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+          const SizedBox(width: DsSpace.s),
+          done
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.check_circle_rounded, color: DsColors.safe, size: 30),
+                    Text(s.t('lessons_done'), style: DsType.caption.copyWith(color: DsColors.safe)),
+                  ],
+                )
+              : const Icon(Icons.radio_button_unchecked_rounded, color: DsColors.muted, size: 30),
+        ],
       ),
     );
   }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/design/components.dart';
+import '../../core/design/tokens.dart';
 import '../../core/strings.dart';
 import 'lesson_models.dart';
 import 'lessons_strings.dart';
@@ -41,7 +43,7 @@ class _LessonViewerScreenState extends State<LessonViewerScreen> {
   }
 
   void _go(int delta) => _pc.animateToPage(_page + delta,
-      duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+      duration: DsMotion.normal, curve: DsMotion.curve);
 
   @override
   Widget build(BuildContext context) {
@@ -51,10 +53,15 @@ class _LessonViewerScreenState extends State<LessonViewerScreen> {
       future: _lesson,
       builder: (context, snap) {
         if (snap.hasError) {
-          return Scaffold(appBar: AppBar(), body: Center(child: Text(s.t('lessons_load_error'))));
+          return Scaffold(
+            appBar: AppBar(),
+            body: Center(
+              child: EmptyState(icon: Icons.error_outline_rounded, color: DsColors.alertSoft, title: s.t('lessons_load_error')),
+            ),
+          );
         }
         if (!snap.hasData) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          return const Scaffold(body: LoadingState());
         }
         final l = snap.data!;
         final n = l.cards.length;
@@ -81,41 +88,41 @@ class _LessonViewerScreenState extends State<LessonViewerScreen> {
                   children: List.generate(
                     n,
                     (i) => AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      margin: const EdgeInsets.all(4),
+                      duration: DsMotion.normal,
+                      curve: DsMotion.curve,
+                      margin: const EdgeInsets.all(DsSpace.xs),
                       width: i == _page ? 22 : 10,
                       height: 10,
                       decoration: BoxDecoration(
-                        color: i == _page ? kCardColors[i % kCardColors.length] : Colors.grey.shade400,
-                        borderRadius: BorderRadius.circular(5),
+                        color: i == _page ? DsColors.ink : DsColors.track,
+                        borderRadius: BorderRadius.circular(DsRadius.pill),
                       ),
                     ),
                   ),
                 ),
                 if (last)
                   Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(s.t('lesson_completed'),
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2E7D32))),
+                    padding: const EdgeInsets.only(top: DsSpace.s),
+                    child: Text(s.t('lesson_completed'), style: DsType.title.copyWith(color: DsColors.safe)),
                   ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(DsSpace.xl, DsSpace.s, DsSpace.xl, DsSpace.l),
                   child: Row(
                     children: [
                       Expanded(
-                        child: OutlinedButton.icon(
+                        child: PrimaryButton(
+                          label: s.t('lesson_prev'),
+                          icon: Icons.arrow_back_rounded,
+                          filled: false,
                           onPressed: _page > 0 ? () => _go(-1) : null,
-                          icon: const Icon(Icons.arrow_back_rounded),
-                          label: Text(s.t('lesson_prev')),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: DsSpace.m),
                       Expanded(
-                        child: FilledButton.icon(
+                        child: PrimaryButton(
+                          label: last ? s.t('lesson_finish') : s.t('lesson_next'),
+                          icon: last ? Icons.check_rounded : Icons.arrow_forward_rounded,
                           onPressed: last ? () => Navigator.of(context).pop() : () => _go(1),
-                          icon: Icon(last ? Icons.check_rounded : Icons.arrow_forward_rounded),
-                          label: Text(last ? s.t('lesson_finish') : s.t('lesson_next')),
                         ),
                       ),
                     ],
@@ -132,37 +139,25 @@ class _LessonViewerScreenState extends State<LessonViewerScreen> {
   Widget _card(LessonCard c, int i, int n, String lang) {
     final color = kCardColors[i % kCardColors.length];
     return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Container(
-        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(28)),
-        padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(DsSpace.l),
+      child: PastelCard(
+        color: color,
+        padding: const EdgeInsets.all(DsSpace.xxl),
         child: Column(
           children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: Text('${i + 1} / $n',
-                  style: const TextStyle(color: Colors.white70, fontSize: 18, fontWeight: FontWeight.bold)),
-            ),
+            Align(alignment: Alignment.topRight, child: Text('${i + 1} / $n', style: DsType.label)),
             Expanded(
               child: Center(
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(28),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.18),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(lessonCardIcon(c.icon), size: 120, color: Colors.white),
-                      ),
-                      const SizedBox(height: 32),
+                      IconBadge(lessonCardIcon(c.icon), size: 140),
+                      const SizedBox(height: DsSpace.section),
                       Text(
                         pickLang(c.text, lang),
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            color: Colors.white, fontSize: 26, height: 1.4, fontWeight: FontWeight.w600),
+                        style: DsType.headline.copyWith(fontSize: 26, height: 1.3),
                       ),
                     ],
                   ),

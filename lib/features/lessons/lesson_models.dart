@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../core/design/tokens.dart';
+
 /// Lesson ids, in display order. Each has `assets/lessons/{id}.json` and `assets/quiz/{id}.json`.
 const List<String> kLessonIds = [
   'otp',
@@ -169,21 +171,11 @@ const Map<String, IconData> _topicIcons = {
 
 IconData lessonTopicIcon(String id) => _topicIcons[id] ?? Icons.school_rounded;
 
-const Map<String, Color> _topicColors = {
-  'otp': Color(0xFF00796B),
-  'atm_pin': Color(0xFF0D47A1),
-  'upi_pin': Color(0xFF6A1B9A),
-  'qr': Color(0xFFE65100),
-  'fake_kyc': Color(0xFF1565C0),
-  'digital_arrest': Color(0xFFC62828),
-  'courier_customs': Color(0xFF5D4037),
-  'remote_access': Color(0xFF283593),
-  'phishing': Color(0xFFAD1457),
-  'lottery_prize': Color(0xFF2E7D32),
-  'loan_app': Color(0xFF4E342E),
-};
-
-Color lessonTopicColor(String id) => _topicColors[id] ?? const Color(0xFF00796B);
+/// Topic background: the design-system pastels in lesson order (backgrounds only; text and icons on it are ink).
+Color lessonTopicColor(String id) {
+  final i = kLessonIds.indexOf(id);
+  return DsColors.pastels[(i < 0 ? 0 : i) % DsColors.pastels.length];
+}
 
 const Map<String, IconData> _categoryIcons = {
   'payments': Icons.payments_rounded,
@@ -193,11 +185,5 @@ const Map<String, IconData> _categoryIcons = {
 
 IconData lessonCategoryIcon(String id) => _categoryIcons[id] ?? Icons.category_rounded;
 
-/// Card colour blocks, chosen by card position (schema has no colour field).
-const List<Color> kCardColors = [
-  Color(0xFF00796B),
-  Color(0xFF0D47A1),
-  Color(0xFFC62828),
-  Color(0xFF6A1B9A),
-  Color(0xFF2E7D32),
-];
+/// Card colour blocks, chosen by card position (schema has no colour field): the pastels, ink text.
+const List<Color> kCardColors = DsColors.pastels;
