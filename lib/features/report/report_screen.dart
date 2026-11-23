@@ -6,7 +6,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/providers.dart';
 import '../../core/strings.dart';
-import '../../core/theme.dart';
+import '../../core/design/components.dart';
+import '../../core/design/tokens.dart';
 import 'report_data.dart';
 import 'report_strings.dart';
 
@@ -95,40 +96,43 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
       appBar: AppBar(title: Text(s.t('report_title'))),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(DsSpace.xl, DsSpace.s, DsSpace.xl, DsSpace.section),
           children: [
-            Text(s.t('report_intro'), style: const TextStyle(fontSize: 17)),
-            const SizedBox(height: 12),
-            Text(s.t('report_situation_q'), style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 8),
-            _situationChoice(s, 'lost', Icons.money_off_rounded, AppTheme.errorRed),
-            _situationChoice(s, 'suspicious', Icons.report_gmailerrorred_rounded, AppTheme.warningOrange),
+            Text(s.t('report_intro'), style: DsType.body),
+            const SizedBox(height: DsSpace.xl),
+            Text(s.t('report_situation_q'), style: DsType.section),
+            const SizedBox(height: DsSpace.m),
+            _situationChoice(s, 'lost', Icons.money_off_rounded, DsColors.alert, DsColors.alertSoft),
+            _situationChoice(s, 'suspicious', Icons.report_gmailerrorred_rounded, DsColors.caution, DsColors.cautionSoft),
             if (_situation != null) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: DsSpace.m),
               DropdownButtonFormField<String>(
                 key: const Key('report_type'),
                 initialValue: _type,
                 isExpanded: true,
-                decoration: InputDecoration(labelText: s.t('report_type_label'), border: const OutlineInputBorder()),
+                style: DsType.body,
+                borderRadius: BorderRadius.circular(DsRadius.tile),
+                decoration: InputDecoration(labelText: s.t('report_type_label')),
                 items: [
                   for (final t in kReportTypes) DropdownMenuItem(value: t, child: Text(s.t('report_type_$t'))),
                 ],
                 onChanged: (v) => setState(() => _type = v ?? _type),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: DsSpace.m),
               DropdownButtonFormField<String>(
                 key: const Key('report_district'),
                 initialValue: _district,
                 isExpanded: true,
-                hint: Text(s.t('report_district_hint')),
-                decoration:
-                    InputDecoration(labelText: s.t('report_district_label'), border: const OutlineInputBorder()),
+                style: DsType.body,
+                borderRadius: BorderRadius.circular(DsRadius.tile),
+                hint: Text(s.t('report_district_hint'), style: DsType.body.copyWith(color: DsColors.muted)),
+                decoration: InputDecoration(labelText: s.t('report_district_label')),
                 items: [for (final d in kChhattisgarhDistricts) DropdownMenuItem(value: d, child: Text(d))],
                 onChanged: (v) => setState(() => _district = v),
               ),
-              const SizedBox(height: 20),
-              Text(s.t('report_actions'), style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 8),
+              const SizedBox(height: DsSpace.xxl),
+              Text(s.t('report_actions'), style: DsType.section),
+              const SizedBox(height: DsSpace.m),
               if (_situation == 'lost') ..._lostSteps(s) else ..._suspiciousSteps(s),
               _anonNote(s),
             ],
@@ -138,29 +142,33 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
     );
   }
 
-  Widget _situationChoice(S s, String id, IconData icon, Color color) {
+  Widget _situationChoice(S s, String id, IconData icon, Color color, Color tint) {
     final selected = _situation == id;
-    return Card(
-      key: Key('report_situation_$id'),
-      margin: const EdgeInsets.only(bottom: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: selected ? color : Colors.transparent, width: 2),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: DsSpace.s),
+      child: Pressable(
+        key: Key('report_situation_$id'),
         onTap: () => setState(() => _situation = id),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
+        child: AnimatedContainer(
+          duration: DsMotion.normal,
+          curve: DsMotion.curve,
+          padding: const EdgeInsets.all(DsSpace.l),
+          decoration: BoxDecoration(
+            color: selected ? tint : DsColors.surface,
+            borderRadius: BorderRadius.circular(DsRadius.card),
+            border: Border.all(color: selected ? color : DsColors.line, width: selected ? 2 : 1),
+          ),
           child: Row(children: [
-            Icon(icon, color: color, size: 34),
-            const SizedBox(width: 12),
+            IconBadge(icon, background: color),
+            const SizedBox(width: DsSpace.m),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(s.t('report_situation_$id'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Text(s.t('report_situation_${id}_sub')),
+                Text(s.t('report_situation_$id'), style: DsType.title),
+                const SizedBox(height: DsSpace.xxs),
+                Text(s.t('report_situation_${id}_sub'), style: DsType.small),
               ]),
             ),
+            const SizedBox(width: DsSpace.s),
             Icon(selected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded, color: color),
           ]),
         ),
@@ -173,7 +181,7 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
           key: const Key('report_action_1930'),
           step: 1,
           icon: Icons.call_rounded,
-          color: AppTheme.errorRed,
+          color: DsColors.alert,
           title: s.t('report_call_1930'),
           sub: s.t('report_call_1930_sub'),
           uri: kHelpline1930,
@@ -181,37 +189,41 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
         _info(
           key: const Key('report_step_bank'),
           step: 2,
-          icon: Icons.account_balance_rounded,
+          icon: Icons.account_balance_outlined,
           title: s.t('report_bank'),
           sub: s.t('report_bank_sub'),
         ),
         _action(
           key: const Key('report_action_cybercrime'),
           step: 3,
-          icon: Icons.local_police_rounded,
-          color: AppTheme.secondaryNavy,
+          icon: Icons.local_police_outlined,
+          color: DsColors.ink,
           title: s.t('report_cybercrime'),
           sub: s.t('report_cybercrime_sub'),
           uri: kCybercrimePortal,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: DsSpace.m),
         Row(children: [
-          Expanded(child: Text(s.t('report_evidence_title'), style: Theme.of(context).textTheme.titleLarge)),
-          Text('${_evidence.length}/${kEvidenceItems.length} ${s.t('report_evidence_progress')}',
-              style: const TextStyle(fontWeight: FontWeight.bold)),
+          Expanded(child: Text(s.t('report_evidence_title'), style: DsType.section)),
+          Text('${_evidence.length}/${kEvidenceItems.length} ${s.t('report_evidence_progress')}', style: DsType.label),
         ]),
-        const SizedBox(height: 4),
-        Card(
-          child: Column(children: [
-            for (final id in kEvidenceItems)
-              CheckboxListTile(
-                key: Key('evidence_$id'),
-                value: _evidence.contains(id),
-                onChanged: (v) => _toggle(id, v ?? false),
-                title: Text(s.t('evidence_$id'), style: const TextStyle(fontSize: 16)),
-                controlAffinity: ListTileControlAffinity.leading,
-              ),
-          ]),
+        const SizedBox(height: DsSpace.s),
+        SurfacePanel(
+          padding: const EdgeInsets.symmetric(vertical: DsSpace.s, horizontal: DsSpace.xs),
+          child: Material(
+            type: MaterialType.transparency,
+            child: Column(children: [
+              for (final id in kEvidenceItems)
+                CheckboxListTile(
+                  key: Key('evidence_$id'),
+                  value: _evidence.contains(id),
+                  onChanged: (v) => _toggle(id, v ?? false),
+                  title: Text(s.t('evidence_$id'), style: DsType.body),
+                  controlAffinity: ListTileControlAffinity.leading,
+                  activeColor: DsColors.brand,
+                ),
+            ]),
+          ),
         ),
       ];
 
@@ -219,8 +231,8 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
         _action(
           key: const Key('report_action_chakshu'),
           step: 1,
-          icon: Icons.visibility_rounded,
-          color: AppTheme.primaryTeal,
+          icon: Icons.visibility_outlined,
+          color: DsColors.brand,
           title: s.t('report_chakshu'),
           sub: s.t('report_chakshu_sub'),
           uri: kChakshuPortal,
@@ -232,49 +244,55 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
           title: s.t('report_block'),
           sub: s.t('report_block_sub'),
         ),
-        Card(
-          color: const Color(0xFFFFEBEE),
-          child: ListTile(
-            key: const Key('report_switch_lost'),
-            leading: const Icon(Icons.money_off_rounded, color: AppTheme.errorRed),
-            title: Text(s.t('report_if_lost_later')),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () => setState(() => _situation = 'lost'),
+        SurfacePanel(
+          color: DsColors.alertSoft,
+          padding: const EdgeInsets.symmetric(vertical: DsSpace.xs, horizontal: DsSpace.xs),
+          child: Material(
+            type: MaterialType.transparency,
+            child: ListTile(
+              key: const Key('report_switch_lost'),
+              leading: const Icon(Icons.money_off_rounded, color: DsColors.alert),
+              title: Text(s.t('report_if_lost_later'), style: DsType.title),
+              trailing: const Icon(Icons.chevron_right_rounded, color: DsColors.ink),
+              onTap: () => setState(() => _situation = 'lost'),
+            ),
           ),
         ),
       ];
 
   Widget _anonNote(S s) => Padding(
-        padding: const EdgeInsets.only(top: 12),
+        padding: const EdgeInsets.only(top: DsSpace.m),
         child: Text(
           _waiting > 0 ? '${s.t('report_anon_note')} ${s.t('report_waiting').replaceAll('{n}', '$_waiting')}' : s.t('report_anon_note'),
           key: const Key('report_anon_note'),
-          style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+          style: DsType.small,
         ),
       );
 
-  Widget _stepBadge(int step, Color color) => CircleAvatar(
-        radius: 13,
-        backgroundColor: color,
-        child: Text('$step', style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+  Widget _stepBadge(int step) => Container(
+        width: 26,
+        height: 26,
+        alignment: Alignment.center,
+        decoration: const BoxDecoration(color: DsColors.track, shape: BoxShape.circle),
+        child: Text('$step', style: DsType.caption.copyWith(color: DsColors.ink)),
       );
 
   Widget _info({required Key key, required int step, required IconData icon, required String title, required String sub}) =>
-      Card(
-        key: key,
-        margin: const EdgeInsets.only(bottom: 12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+      Padding(
+        padding: const EdgeInsets.only(bottom: DsSpace.m),
+        child: SurfacePanel(
+          key: key,
+          padding: const EdgeInsets.all(DsSpace.l),
           child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            _stepBadge(step, AppTheme.textSecondary),
-            const SizedBox(width: 12),
-            Icon(icon, color: AppTheme.secondaryNavy, size: 30),
-            const SizedBox(width: 12),
+            _stepBadge(step),
+            const SizedBox(width: DsSpace.m),
+            IconBadge(icon, background: DsColors.powder, foreground: DsColors.ink),
+            const SizedBox(width: DsSpace.m),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(title, style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 4),
-                Text(sub, style: Theme.of(context).textTheme.bodyMedium),
+                Text(title, style: DsType.title),
+                const SizedBox(height: DsSpace.xs),
+                Text(sub, style: DsType.small),
               ]),
             ),
           ]),
@@ -289,36 +307,29 @@ class _ReportScreenState extends ConsumerState<ReportScreen> {
     required String title,
     required String sub,
     required Uri uri,
-  }) {
-    return Card(
-      key: key,
-      margin: const EdgeInsets.only(bottom: 12),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => _act(uri),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
+  }) =>
+      Padding(
+        padding: const EdgeInsets.only(bottom: DsSpace.m),
+        child: SurfacePanel(
+          key: key,
+          onTap: () => _act(uri),
+          semanticLabel: '$title. $sub',
+          padding: const EdgeInsets.all(DsSpace.l),
           child: Row(children: [
-            _stepBadge(step, color),
-            const SizedBox(width: 12),
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(16)),
-              child: Icon(icon, color: Colors.white, size: 28),
-            ),
-            const SizedBox(width: 12),
+            _stepBadge(step),
+            const SizedBox(width: DsSpace.m),
+            IconBadge(icon, background: color),
+            const SizedBox(width: DsSpace.m),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(title, style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 4),
-                Text(sub, style: Theme.of(context).textTheme.bodyMedium),
+                Text(title, style: DsType.title),
+                const SizedBox(height: DsSpace.xs),
+                Text(sub, style: DsType.small),
               ]),
             ),
-            const Icon(Icons.open_in_new_rounded, color: Color(0xFF90A4AE)),
+            const SizedBox(width: DsSpace.s),
+            const ArrowButton(),
           ]),
         ),
-      ),
-    );
-  }
+      );
 }
