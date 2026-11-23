@@ -70,7 +70,13 @@ python main.py
 Upon startup:
 1. SQLite database `backend/data.db` is initialized.
 2. If empty, exactly 300 realistic fraud reports across Chhattisgarh districts are seeded.
-3. The `faster-whisper` `base` model is loaded once into memory on CPU with `int8` quantization.
+3. The `faster-whisper` model is loaded once into memory on CPU with `int8` quantization.
+   The size comes from the `WHISPER_MODEL` environment variable (default `small`, about 460 MB,
+   downloaded on first start). `base` is faster but turns Hindi speech into text the scam rules
+   cannot read, so Live Call Guard needs `small`. Compare speeds with `python bench.py some_call.mp3`.
+
+Live Call Guard sends 6-second chunks to `POST /transcribe?lang=hi|en|auto`. Run
+`python -m unittest test_live_transcribe -v` to check transcription on the bundled demo clips.
 
 ---
 
@@ -112,7 +118,8 @@ hostname -I
     http://<LAPTOP_IP>:8000
     ```
     *(Example: `http://192.168.1.45:8000`)*
-  - Open the ScamRakshak app settings and set this URL as the backend base URL.
+  - In the app open **Live Call Guard**, turn Demo mode off, tap **Change address**, enter this URL
+    and tap **Save and test**. The address is saved and also used by Check Call, Report and Scam Trends.
 
 > **Windows Firewall Tip**: If the phone cannot reach the backend, allow port 8000 through Windows Defender Firewall:
 > ```powershell

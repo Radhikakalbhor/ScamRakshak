@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -97,6 +98,47 @@ void main() {
 
       expect(find.text('Please paste or type a message first.'), findsOneWidget);
       expect(find.byKey(const Key('msg_verdict')), findsNothing);
+    });
+
+    testWidgets('Check button is fully on screen on a small phone with large text', (tester) async {
+      tester.view.physicalSize = const Size(720, 1520); // 360x760 dp, like a budget Vivo/Samsung
+      tester.view.devicePixelRatio = 2.0;
+      tester.platformDispatcher.textScaleFactorTestValue = 1.3;
+      addTearDown(tester.view.reset);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await tester.pumpWidget(app(const MessageDetectorScreen()));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull); // no RenderFlex overflow
+      final check = tester.getRect(find.byKey(const Key('msg_check')));
+      expect(check.right, lessThanOrEqualTo(360));
+      expect(check.left, greaterThanOrEqualTo(0));
+      expect(check.bottom, lessThanOrEqualTo(760));
+
+      await tester.enterText(find.byKey(const Key('msg_input')),
+          'Your KYC is pending. Share the OTP now or your account will be blocked today.');
+      await tester.tap(find.byKey(const Key('msg_check')));
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(find.byKey(const Key('msg_verdict')), 200,
+          scrollable: find.byType(Scrollable).first);
+      expect(find.byKey(const Key('msg_verdict')), findsOneWidget);
+    });
+
+    testWidgets('Paste button checks the pasted message straight away', (tester) async {
+      _tallView(tester);
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, (call) async {
+        if (call.method == 'Clipboard.getData') {
+          return {'text': 'Your KYC is pending. Share the OTP now or your account will be blocked today.'};
+        }
+        return null;
+      });
+      addTearDown(() => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, null));
+      await tester.pumpWidget(app(const MessageDetectorScreen()));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('msg_paste')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('msg_verdict')), findsOneWidget);
     });
   });
 

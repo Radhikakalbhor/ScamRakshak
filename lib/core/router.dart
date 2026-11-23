@@ -1,8 +1,12 @@
 import 'package:go_router/go_router.dart';
 
+import '../features/call_detector/auto_analyze_screen.dart';
 import '../features/call_detector/call_detector_screen.dart';
+import '../features/call_detector/recording_result_screen.dart';
 import '../features/dashboard/trends_screen.dart';
 import '../features/lessons/lesson_list_screen.dart';
+import '../features/live_call/live_call_screen.dart';
+import '../features/live_call/recording_inbox.dart';
 import '../features/message_detector/message_detector_screen.dart';
 import '../features/quiz/quiz_screen.dart';
 import '../features/report/report_screen.dart';
@@ -15,7 +19,8 @@ final GoRouter appRouter = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => const HomeScreen(),
+      // AutoAnalyzeHost opens results from "auto-analyzed call recording" notifications.
+      builder: (context, state) => const AutoAnalyzeHost(child: HomeScreen()),
     ),
     GoRoute(
       path: '/message',
@@ -24,6 +29,23 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/call',
       builder: (context, state) => const CallDetectorScreen(),
+    ),
+    GoRoute(
+      path: '/call/auto',
+      builder: (context, state) => const AutoAnalyzeScreen(),
+    ),
+    GoRoute(
+      path: '/call/recording',
+      // extra: notification payload ({"result": id} or {"pending": path}).
+      builder: (context, state) => RecordingResultScreen(payload: state.extra as String?),
+    ),
+    GoRoute(
+      path: '/live',
+      builder: (context, state) => const LiveCallScreen(),
+    ),
+    GoRoute(
+      path: '/live/inbox',
+      builder: (context, state) => const RecordingInboxScreen(),
     ),
     GoRoute(
       path: '/report',

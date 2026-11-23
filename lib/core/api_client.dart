@@ -65,9 +65,19 @@ class ApiClient {
 
   /// Uploads audio for transcription using multipart/form-data.
   /// Contract: POST /transcribe (multipart 'file') -> {"text": "...", "lang": "hi"}
-  Future<Map> transcribe(File audio) async {
+  Future<Map> transcribe(File audio) => transcribeChunk(audio);
+
+  /// Same as [transcribe], with optional language hint `?lang=hi|en|auto` (live call chunks).
+  Future<Map> transcribeChunk(File audio, {String? lang}) => _transcribe(audio, lang, requestTimeout);
+
+  /// Same as [transcribe] for a whole call recording, which can take minutes to transcribe.
+  /// Streams the file as is (no copy is made).
+  Future<Map> transcribeRecording(File audio, {Duration timeout = const Duration(minutes: 5)}) =>
+      _transcribe(audio, null, timeout);
+
+  Future<Map> _transcribe(File audio, String? lang, Duration requestTimeout) async {
     final base = await getBaseUrl();
-    final uri = Uri.parse('$base/transcribe');
+    final uri = Uri.parse('$base/transcribe').replace(queryParameters: lang == null ? null : {'lang': lang});
 
     try {
       final request = http.MultipartRequest('POST', uri);
@@ -110,6 +120,17 @@ class ApiClient {
       rethrow;
     } catch (e) {
       throw ApiOfflineException('Unexpected communication failure: $e', e);
+    }
+  }
+
+  /// True when GET /health answers 2xx within [timeout].
+  Future<bool> isReachable({Duration timeout = const Duration(seconds: 4)}) async {
+    try {
+      final base = await getBaseUrl();
+      final r = await _httpClient.get(Uri.parse('$base/health')).timeout(timeout);
+      return r.statusCode >= 200 && r.statusCode < 300;
+    } catch (_) {
+      return false;
     }
   }
 

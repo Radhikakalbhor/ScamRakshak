@@ -51,6 +51,8 @@ class _MessageDetectorScreenState extends ConsumerState<MessageDetectorScreen> {
       _controller.text = text;
       _result = null;
     });
+    // Pasting is the whole job for most users: show the verdict straight away.
+    if (ref.read(scamClassifierProvider).hasValue) _check();
   }
 
   void _check() {
@@ -104,15 +106,17 @@ class _MessageDetectorScreenState extends ConsumerState<MessageDetectorScreen> {
               ),
             ),
             const SizedBox(height: 10),
-            Row(children: [
+            // Wrap + full-width Check: on a 360dp phone (or large system font) a single Row pushed
+            // the Check button off-screen, leaving only Paste visible.
+            Wrap(spacing: 8, runSpacing: 4, children: [
               OutlinedButton.icon(
                 key: const Key('msg_paste'),
                 onPressed: _paste,
                 icon: const Icon(Icons.content_paste_rounded),
                 label: Text(s.t('msg_paste')),
               ),
-              const SizedBox(width: 8),
               TextButton.icon(
+                key: const Key('msg_clear'),
                 onPressed: () => setState(() {
                   _controller.clear();
                   _result = null;
@@ -120,21 +124,24 @@ class _MessageDetectorScreenState extends ConsumerState<MessageDetectorScreen> {
                 icon: const Icon(Icons.clear_rounded),
                 label: Text(s.t('msg_clear')),
               ),
-              const Spacer(),
-              FilledButton.icon(
-                key: const Key('msg_check'),
-                onPressed: ready ? _check : null,
-                icon: const Icon(Icons.shield_rounded),
-                label: Text(s.t('msg_check'), style: const TextStyle(fontSize: 18)),
-              ),
             ]),
+            const SizedBox(height: 8),
+            FilledButton.icon(
+              key: const Key('msg_check'),
+              onPressed: ready ? _check : null,
+              icon: const Icon(Icons.shield_rounded),
+              label: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Text(s.t('msg_check'), style: const TextStyle(fontSize: 18)),
+              ),
+            ),
             if (model.isLoading)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Row(children: [
                   const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
                   const SizedBox(width: 8),
-                  Text(s.t('msg_loading_model')),
+                  Expanded(child: Text(s.t('msg_loading_model'))),
                 ]),
               ),
             if (model.hasError)

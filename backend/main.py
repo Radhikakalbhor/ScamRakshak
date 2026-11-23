@@ -39,7 +39,7 @@ def _safe_av_open(*args: Any, **kwargs: Any) -> Any:
 
 av.open = _safe_av_open  # type: ignore[assignment]
 
-from fastapi import FastAPI, File, HTTPException, UploadFile, status
+from fastapi import FastAPI, File, HTTPException, Query, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from faster_whisper import WhisperModel
 import uvicorn
@@ -70,6 +70,17 @@ logger = logging.getLogger("scamrakshak.backend")
 # Global WhisperModel reference loaded once at startup
 whisper_model: Optional[WhisperModel] = None
 
+# Model size from env (tiny|base|small|...); see bench.py for per-chunk speed.
+# 'base' is faster but writes Hindi speech as garbled text the scam rules cannot read (see
+# test_live_transcribe.py); 'small' (~2 s per 6 s chunk on a laptop CPU) is the default for Live Call Guard.
+WHISPER_MODEL_NAME = os.environ.get("WHISPER_MODEL", "small").strip() or "small"
+
+# Steers Whisper to write Hindi in Devanagari (the script used by assets/rules/call_rules.json).
+HINDI_PROMPT = "यह एक फ़ोन कॉल है। बातचीत हिंदी में है, देवनागरी लिपि में लिखें।"
+
+# Optional ?lang= values accepted by /transcribe ("auto" = detect).
+TRANSCRIBE_LANGS = {"hi", "en", "auto"}
+
 # Supported audio extensions strictly per task instructions
 SUPPORTED_AUDIO_EXTENSIONS = {
     ".wav",
@@ -89,10 +100,10 @@ async def lifespan(app: FastAPI):
         "Database ready. Total pre-seeded reports: %d", get_reports_count()
     )
 
-    logger.info("Loading faster-whisper 'base' model on CPU (int8)...")
+    logger.info("Loading faster-whisper '%s' model on CPU (int8)...", WHISPER_MODEL_NAME)
     try:
-        whisper_model = WhisperModel("base", device="cpu", compute_type="int8")
-        logger.info("faster-whisper 'base' model loaded successfully.")
+        whisper_model = WhisperModel(WHISPER_MODEL_NAME, device="cpu", compute_type="int8")
+        logger.info("faster-whisper '%s' model loaded successfully.", WHISPER_MODEL_NAME)
     except Exception as exc:
         logger.error("Failed to load faster-whisper model: %s", exc, exc_info=True)
         raise exc
@@ -147,13 +158,23 @@ async def transcribe_audio(
         ...,
         description="Audio file to transcribe (supported formats: wav, mp3, m4a, ogg)",
     ),
+    lang: str = Query("auto", description="Language hint: hi, en or auto (detect)"),
 ) -> TranscribeResponse:
-    """Uploads an audio recording and transcribes it using faster-whisper 'base' (CPU int8).
+    """Transcribes an audio recording with faster-whisper (CPU int8), tuned for 5-6 s live chunks.
 
-    Auto-detects spoken language (such as Hindi 'hi' or English 'en').
+    beam_size=1, VAD filter on, no conditioning on previous text. A silent chunk returns
+    {"text": "", "lang": ...} instead of an error.
     Returns:
         {"text": "...", "lang": "hi"}
     """
+    lang = (lang or "auto").strip().lower()
+    if lang not in TRANSCRIBE_LANGS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported lang '{lang}'. Use one of: hi, en, auto",
+        )
+    hint = None if lang == "auto" else lang
+
     if whisper_model is None:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -186,16 +207,25 @@ async def transcribe_audio(
             "Transcribing audio file '%s' (temp: %s)...", filename, temp_path
         )
 
-        # Transcribe using loaded WhisperModel (auto-detects language hi/en)
-        segments, info = whisper_model.transcribe(
-            temp_path,
-            beam_size=5,
-        )
+        if os.path.getsize(temp_path) == 0:
+            return TranscribeResponse(text="", lang=hint or "en")
 
-        # Collect segment texts
-        segment_list = list(segments)
-        transcript_text = " ".join(seg.text.strip() for seg in segment_list).strip()
-        detected_language = info.language if (info and info.language) else "en"
+        try:
+            segment_list, info = _run_whisper(temp_path, hint)
+            detected_language = hint or (info.language if (info and info.language) else "en")
+            # Whisper often labels Hindi speech as Urdu and then writes Urdu script, which the
+            # app's Devanagari/English rules cannot read: redo such chunks as Hindi.
+            if hint is None and detected_language in ("hi", "ur") and segment_list:
+                segment_list, info = _run_whisper(temp_path, "hi")
+                detected_language = "hi"
+        except Exception as exc:
+            # VAD can leave nothing to decode (silence); that is an empty chunk, not an error.
+            if _is_silence_error(exc):
+                logger.info("Silent chunk '%s' (%s)", filename, exc)
+                return TranscribeResponse(text="", lang=hint or "en")
+            raise
+
+        transcript_text = " ".join(_clean_segments(segment_list)).strip()
 
         logger.info(
             "Transcription completed: lang=%s, segments=%d, text_len=%d",
@@ -224,6 +254,36 @@ async def transcribe_audio(
                 os.remove(temp_path)
             except OSError:
                 pass
+
+
+def _run_whisper(path: str, language: Optional[str]):
+    """Live-chunk settings. Hindi gets a Devanagari prompt, otherwise small models write Urdu/Latin script."""
+    kwargs: Dict[str, Any] = dict(beam_size=1, vad_filter=True, condition_on_previous_text=False)
+    if language == "hi":
+        kwargs["initial_prompt"] = HINDI_PROMPT
+    segments, info = whisper_model.transcribe(path, language=language, **kwargs)
+    return list(segments), info
+
+
+def _clean_segments(segments) -> List[str]:
+    """Drops likely non-speech segments and echoes of the prompt."""
+    out = []
+    for seg in segments:
+        text = seg.text.strip()
+        if not text or text in HINDI_PROMPT:
+            continue
+        if getattr(seg, "no_speech_prob", 0.0) > 0.6 and getattr(seg, "avg_logprob", 0.0) < -1.0:
+            continue
+        out.append(text)
+    return out
+
+
+def _is_silence_error(exc: Exception) -> bool:
+    """True for the errors faster-whisper raises when a chunk has no speech left after VAD."""
+    msg = str(exc).lower()
+    return isinstance(exc, (ValueError, IndexError, RuntimeError)) and any(
+        k in msg for k in ("empty", "zero", "out of range", "no speech", "size 0", "0 elements")
+    )
 
 
 @app.post(

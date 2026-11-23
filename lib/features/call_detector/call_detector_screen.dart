@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/api_client.dart';
 import '../../core/providers.dart';
@@ -12,8 +13,9 @@ import '../../core/theme.dart';
 import '../../engine/models.dart';
 import '../dashboard/detection_history.dart';
 import '../report/report_nav.dart';
+import 'auto_analyze_screen.dart';
+import 'auto_analyze_strings.dart';
 import 'call_highlight.dart';
-import 'call_strings.dart';
 
 typedef AudioPicker = Future<File?> Function();
 
@@ -26,7 +28,10 @@ Future<File?> _defaultPicker() async {
 /// Lists bundled sample transcripts (assets/samples/*.txt), sorted by path.
 Future<List<String>> loadSamplePaths([AssetBundle? bundle]) async {
   final manifest = await AssetManifest.loadFromAssetBundle(bundle ?? rootBundle);
-  return manifest.listAssets().where((a) => a.startsWith('assets/samples/') && a.endsWith('.txt')).toList()
+  return manifest
+      .listAssets()
+      .where((a) => a.startsWith('assets/samples/') && !a.startsWith('assets/samples/live/') && a.endsWith('.txt'))
+      .toList()
     ..sort();
 }
 
@@ -52,7 +57,7 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
   @override
   void initState() {
     super.initState();
-    CallStrings.ensure();
+    AutoAnalyzeStrings.ensure();
     _samples = loadSamplePaths();
   }
 
@@ -116,7 +121,7 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    CallStrings.ensure();
+    AutoAnalyzeStrings.ensure();
     final s = S.of(context);
     final rules = ref.watch(callAnalyzerProvider);
 
@@ -153,6 +158,24 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
                 child: Text(s.t('call_rules_error'), style: const TextStyle(color: AppTheme.errorRed)),
               ),
             if (_errorKey != null) _errorBox(s.t(_errorKey!)),
+            const SizedBox(height: 12),
+            Card(
+              child: ListTile(
+                key: const Key('call_auto_entry'),
+                leading: const Icon(Icons.auto_mode_rounded, color: AppTheme.primaryTeal, size: 32),
+                title: Text(s.t('auto_entry'), style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(s.t('auto_entry_sub')),
+                trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 18),
+                onTap: () {
+                  final router = GoRouter.maybeOf(context);
+                  if (router != null) {
+                    router.push('/call/auto');
+                  } else {
+                    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AutoAnalyzeScreen()));
+                  }
+                },
+              ),
+            ),
             const SizedBox(height: 16),
             Text(s.t('call_samples'), style: const TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),

@@ -33,6 +33,14 @@ class HomeScreen extends StatelessWidget {
         route: '/call',
       ),
       _HomeTileData(
+        titleKey: 'live_call',
+        subtitleKey: 'live_call_sub',
+        icon: Icons.hearing_rounded,
+        iconColor: const Color(0xFFB71C1C),
+        iconBgColor: const Color(0xFFFFEBEE),
+        route: '/live',
+      ),
+      _HomeTileData(
         titleKey: 'report_fraud',
         subtitleKey: 'report_fraud_sub',
         icon: Icons.report_problem_rounded,

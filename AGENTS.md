@@ -51,3 +51,9 @@ Quiz JSON: {"topic","questions":[{"q":{en,hi,chh},"options":{en:[...],hi:[...],c
 - Small commits, branch per person, only Sayanthan merges to main.
 - Everything except /transcribe and /reports and /trends must work with no internet.
 - After finishing, summarize which files you created/changed. Do not refactor unrelated code.
+## Live Call Guard (contract)
+lib/engine/live_call_analyzer.dart (Radhika):
+  class LiveCallState { String risk; double score; List<CallMatch> matches; List<CallMatch> newMatches; String transcript; }
+  class LiveCallAnalyzer { static Future<LiveCallAnalyzer> load(); LiveCallState add(String chunkText); void reset(); }
+Backend: POST /transcribe accepts optional ?lang=hi|en|auto (default auto); silent chunk -> {"text": "", "lang": ...}.
+Screen: lib/features/live_call/ (LiveCallScreen), route /live. Demo scripts: assets/samples/live/*.txt (one chunk per line).
