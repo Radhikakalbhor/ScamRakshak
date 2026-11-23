@@ -217,7 +217,7 @@ void main() {
 
     testWidgets('offline sample chips are listed from assets/samples', (tester) async {
       _tallView(tester);
-      await tester.pumpWidget(app(const CallDetectorScreen()));
+      await tester.pumpWidget(app(const CallDetectorScreen(showSamples: true)));
       await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 300)));
       await tester.pumpAndSettle();
 

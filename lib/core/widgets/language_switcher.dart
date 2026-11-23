@@ -151,6 +151,19 @@ class _LanguageTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final badge = switch (code) {
+      'en' => 'EN',
+      'hi' => 'HI',
+      'chh' => 'CG',
+      _ => code.toUpperCase(),
+    };
+    final titleText = switch (code) {
+      'en' => 'English',
+      'hi' => 'हिन्दी',
+      'chh' => 'छत्तीसगढ़ी',
+      _ => name,
+    };
+
     return Pressable(
       onTap: onTap,
       semanticLabel: name,
@@ -169,24 +182,26 @@ class _LanguageTile extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 36,
-              height: 36,
+              width: 38,
+              height: 38,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: selected ? DsColors.brand : DsColors.track,
               ),
-              child: Center(
-                child: Text(
-                  label,
-                  style: DsType.caption.copyWith(
-                    color: selected ? DsColors.onDark : DsColors.ink,
-                  ),
+              child: Text(
+                badge,
+                maxLines: 1,
+                textAlign: TextAlign.center,
+                style: DsType.caption.copyWith(
+                  color: selected ? DsColors.onDark : DsColors.ink,
+                  height: 1.0,
                 ),
               ),
             ),
             const SizedBox(width: DsSpace.m),
             Expanded(
-              child: Text(name, style: DsType.title),
+              child: Text(titleText, style: DsType.title),
             ),
             Icon(
               selected ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,

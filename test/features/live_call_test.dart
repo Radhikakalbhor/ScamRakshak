@@ -161,7 +161,7 @@ void main() {
         child: MaterialApp(
           theme: AppTheme.lightTheme,
           localizationsDelegates: [AppLocalizationsDelegate(lang)],
-          home: const LiveCallScreen(chunk: Duration(seconds: 1)),
+          home: const LiveCallScreen(chunk: Duration(seconds: 1), showDemo: true),
         ),
       ),
     );

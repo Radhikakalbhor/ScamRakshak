@@ -51,7 +51,19 @@ class CallDetectorScreen extends ConsumerStatefulWidget {
   /// at once and deleted when this screen closes; the original recording is never touched.
   final File? initialAudio;
 
-  const CallDetectorScreen({super.key, this.pickAudio = _defaultPicker, this.initialAudio});
+  /// Whether to show the auto-analyze background card.
+  final bool showAutoEntry;
+
+  /// Whether to show the bundled sample call chips.
+  final bool showSamples;
+
+  const CallDetectorScreen({
+    super.key,
+    this.pickAudio = _defaultPicker,
+    this.initialAudio,
+    this.showAutoEntry = false,
+    this.showSamples = false,
+  });
 
   @override
   ConsumerState<CallDetectorScreen> createState() => _CallDetectorScreenState();
@@ -219,40 +231,44 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
                   ),
                 ),
               ),
-            const SizedBox(height: DsSpace.l),
-            FeatureCard(
-              key: const Key('call_auto_entry'),
-              color: DsColors.mint,
-              icon: Icons.auto_mode_rounded,
-              title: s.t('auto_entry'),
-              subtitle: s.t('auto_entry_sub'),
-              onTap: () {
-                final router = GoRouter.maybeOf(context);
-                if (router != null) {
-                  router.push('/call/auto');
-                } else {
-                  Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AutoAnalyzeScreen()));
-                }
-              },
-            ),
-            const SizedBox(height: DsSpace.xl),
-            Text(s.t('call_samples'), style: DsType.greeting),
-            const SizedBox(height: DsSpace.s),
-            FutureBuilder<List<String>>(
-              future: _samples,
-              builder: (context, snap) {
-                final paths = snap.data ?? const <String>[];
-                return Wrap(spacing: DsSpace.s, runSpacing: DsSpace.s, children: [
-                  for (var i = 0; i < paths.length; i++)
-                    PillChip(
-                      key: Key('call_sample_$i'),
-                      icon: Icons.record_voice_over_outlined,
-                      label: '${s.t('call_sample')} ${i + 1}',
-                      onTap: _busy || !rules.hasValue ? null : () => _useSample(paths[i]),
-                    ),
-                ]);
-              },
-            ),
+            if (widget.showAutoEntry) ...[
+              const SizedBox(height: DsSpace.l),
+              FeatureCard(
+                key: const Key('call_auto_entry'),
+                color: DsColors.mint,
+                icon: Icons.auto_mode_rounded,
+                title: s.t('auto_entry'),
+                subtitle: s.t('auto_entry_sub'),
+                onTap: () {
+                  final router = GoRouter.maybeOf(context);
+                  if (router != null) {
+                    router.push('/call/auto');
+                  } else {
+                    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AutoAnalyzeScreen()));
+                  }
+                },
+              ),
+            ],
+            if (widget.showSamples) ...[
+              const SizedBox(height: DsSpace.xl),
+              Text(s.t('call_samples'), style: DsType.greeting),
+              const SizedBox(height: DsSpace.s),
+              FutureBuilder<List<String>>(
+                future: _samples,
+                builder: (context, snap) {
+                  final paths = snap.data ?? const <String>[];
+                  return Wrap(spacing: DsSpace.s, runSpacing: DsSpace.s, children: [
+                    for (var i = 0; i < paths.length; i++)
+                      PillChip(
+                        key: Key('call_sample_$i'),
+                        icon: Icons.record_voice_over_outlined,
+                        label: '${s.t('call_sample')} ${i + 1}',
+                        onTap: _busy || !rules.hasValue ? null : () => _useSample(paths[i]),
+                      ),
+                  ]);
+                },
+              ),
+            ],
             if (_result != null && _transcript != null) ...[
               const SizedBox(height: DsSpace.xxl),
               _resultView(s, _result!, _transcript!),

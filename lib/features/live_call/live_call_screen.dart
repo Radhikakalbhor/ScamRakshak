@@ -50,7 +50,15 @@ enum LivePhase { idle, checking, recording, playing, finishing, done, error }
 class LiveCallScreen extends ConsumerStatefulWidget {
   /// Mic chunk length; also the text-only demo pace when a clip cannot be played.
   final Duration chunk;
-  const LiveCallScreen({super.key, this.chunk = const Duration(seconds: 6)});
+
+  /// Whether to show the offline sample call demo picker (used in offline tests).
+  final bool showDemo;
+
+  const LiveCallScreen({
+    super.key,
+    this.chunk = const Duration(seconds: 6),
+    this.showDemo = false,
+  });
 
   @override
   ConsumerState<LiveCallScreen> createState() => _LiveCallScreenState();
@@ -66,7 +74,7 @@ class _LiveCallScreenState extends ConsumerState<LiveCallScreen> {
   static const int maxUploadFailures = 3;
 
   bool? _consent;
-  bool _demo = true;
+  late bool _demo;
   String _script = kLiveDemoScripts.first;
 
   LivePhase _phase = LivePhase.idle;
@@ -109,6 +117,7 @@ class _LiveCallScreenState extends ConsumerState<LiveCallScreen> {
   @override
   void initState() {
     super.initState();
+    _demo = widget.showDemo;
     LiveCallStrings.ensure();
     CallStrings.ensure();
     _audio = ref.read(demoAudioProvider);
@@ -609,8 +618,10 @@ class _LiveCallScreenState extends ConsumerState<LiveCallScreen> {
   List<Widget> _main(S s) => [
     const RecordingInboxSection(),
     const SizedBox(height: DsSpace.m),
-    _modeCard(s),
-    const SizedBox(height: DsSpace.m),
+    if (widget.showDemo) ...[
+      _modeCard(s),
+      const SizedBox(height: DsSpace.m),
+    ],
     if (!_demo) ...[_serverCard(s), const SizedBox(height: DsSpace.m)],
     _controls(s),
     const SizedBox(height: DsSpace.m),

@@ -487,7 +487,7 @@ void main() {
           recordingFolderCandidatesProvider.overrideWith((ref) async => const <String>[]),
           callAnalyzerProvider.overrideWith((ref) async => CallAnalyzer.fromJson(_json('assets/rules/call_rules.json'))),
         ],
-        child: const MaterialApp(home: CallDetectorScreen()),
+        child: const MaterialApp(home: CallDetectorScreen(showAutoEntry: true)),
       ));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('call_auto_entry')));
