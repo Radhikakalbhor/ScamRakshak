@@ -30,6 +30,26 @@
      "answer": 1,
      "explain": {"en": "Before borrowing, check that the lender is a bank or an RBI-registered company.",
                  "hi": "लोन लेने से पहले देखें कि वह बैंक या RBI में रजिस्टर्ड कंपनी है।",
-                 "chh": "लोन लेय के पहिली देख के ओ बैंक या RBI म रजिस्टर कंपनी आय।"}}
+                 "chh": "लोन लेय के पहिली देख के ओ बैंक या RBI म रजिस्टर कंपनी आय।"}},
+    {"q": {"en": "A loan app wants access to your contacts and photos before giving the loan. What should you do?",
+           "hi": "लोन ऐप लोन देने से पहले आपके कॉन्टैक्ट और फ़ोटो की अनुमति माँगता है। क्या करें?",
+           "chh": "लोन ऐप लोन दे के पहिली तोर कॉन्टैक्ट अउ फोटो के अनुमति माँगथे। का करँव?"},
+     "options": {"en": ["Allow, it is normal", "Do not use it; it may harass your contacts", "Allow only photos"],
+                 "hi": ["अनुमति दें, यह सामान्य है", "इस्तेमाल न करें; यह आपके जानने वालों को परेशान कर सकता है", "सिर्फ़ फ़ोटो की अनुमति दें"],
+                 "chh": ["अनुमति दे, ए आम बात आय", "उपयोग झन कर; ए तोर चिन्हारी मन ल हलाकान कर सकथे", "सिरिफ फोटो के अनुमति दे"]},
+     "answer": 1,
+     "explain": {"en": "Illegal loan apps use contacts and photos to threaten and shame you. Borrow only from RBI-registered lenders.",
+                 "hi": "गैरकानूनी लोन ऐप कॉन्टैक्ट और फ़ोटो से धमकाते और बदनाम करते हैं। सिर्फ़ RBI से पंजीकृत संस्था से लोन लें।",
+                 "chh": "गैरकानूनी लोन ऐप कॉन्टैक्ट अउ फोटो ले धमकाथें अउ बदनाम करथें। सिरिफ RBI ले पंजीकृत संस्था ले लोन ले।"}},
+    {"q": {"en": "A loan app agent threatens to send morphed photos unless you pay more. What is right?",
+           "hi": "लोन ऐप का एजेंट और पैसे न देने पर बदली हुई फ़ोटो भेजने की धमकी देता है। सही क्या है?",
+           "chh": "लोन ऐप के एजेंट अउ पइसा नइ दे म बदले फोटो भेजे के धमकी देथे। सही का आय?"},
+     "options": {"en": ["Pay quickly to stop it", "Do not pay; keep proof and report on 1930 / cybercrime.gov.in", "Delete your phone number"],
+                 "hi": ["रोकने के लिए जल्दी पैसे दें", "पैसे न दें; सबूत रखें और 1930 / cybercrime.gov.in पर शिकायत करें", "अपना नंबर हटा दें"],
+                 "chh": ["रोके बर जल्दी पइसा दे", "पइसा झन दे; सबूत रख अउ 1930 / cybercrime.gov.in म सिकायत कर", "अपन नंबर हटा दे"]},
+     "answer": 1,
+     "explain": {"en": "Paying never stops the blackmail. Save screenshots and report it; tell family first.",
+                 "hi": "पैसे देने से ब्लैकमेल नहीं रुकता। स्क्रीनशॉट रखें और शिकायत करें; पहले परिवार को बताएं।",
+                 "chh": "पइसा दे ले ब्लैकमेल नइ रुकय। स्क्रीनसॉट रख अउ सिकायत कर; पहिली परिवार ल बता।"}}
   ]
 }

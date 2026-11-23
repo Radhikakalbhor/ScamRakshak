@@ -57,3 +57,21 @@ lib/engine/live_call_analyzer.dart (Radhika):
   class LiveCallAnalyzer { static Future<LiveCallAnalyzer> load(); LiveCallState add(String chunkText); void reset(); }
 Backend: POST /transcribe accepts optional ?lang=hi|en|auto (default auto); silent chunk -> {"text": "", "lang": ...}.
 Screen: lib/features/live_call/ (LiveCallScreen), route /live. Demo scripts: assets/samples/live/*.txt (one chunk per line).
+## Additions 2026-11-23 (additive only; existing contracts unchanged)
+ApiClient (lib/core/api_client.dart, Sayanthan), new methods:
+  Future<Map> transcribeChunk(File, {String? lang}); Future<Map> transcribeRecording(File, {Duration timeout});
+  Future<bool> isReachable(); Future<void> postReportAt(String type, String district, String ts);
+  Future<Map> getTrendSummary(); Future<List<Map>> getAlerts(); Future<void> postFingerprint(String fp, String category);
+Backend (Aagam):
+  POST /transcribe also accepts amr, aac, 3gp, opus, flac (400 names the formats; format is checked before 503).
+  POST /reports: district must be one of the 33 Chhattisgarh districts or "unknown" (else 422). reports.source = seed|user.
+  GET /trends/summary -> {"min_count": 5, "synthetic": S, "live": S}; S = {total, by_district_type, by_district,
+    by_type, weekly: [{"week_start": "YYYY-MM-DD", "count": n|null}] (12 weeks), suppressed_cells}. Counts < 5 hidden.
+  GET /alerts?include_synthetic=false -> {"window_days": 7, "alerts": [{"kind": "spike", district, type, recent,
+    baseline_weekly, ratio} | {"kind": "cluster", category, size, first_seen, last_seen}]}
+  POST /fingerprints {"fp": "<16 hex SimHash>", "category": "<message category>"} (opt-in, never message text).
+App:
+  Report queue: lib/features/report/report_data.dart ReportQueue (shared_preferences 'report_queue_v1').
+  Digital Financial Literacy Score: lib/features/quiz/literacy_score.dart (Aagam), shown on home.
+  Fake-QR checker: lib/features/qr_check/ (Sayanthan), route /qr. Routes /call/auto, /call/recording, /live/inbox.
+  Held-out message test set: ml/data/heldout_2026.csv (never train on it); scored by test/engine/heldout_eval_test.dart.

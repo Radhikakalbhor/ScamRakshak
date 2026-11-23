@@ -64,6 +64,13 @@ class TranscribeResponse(BaseModel):
     lang: str = Field(..., description="Detected language code (e.g., 'hi' or 'en')")
 
 
+class FingerprintCreate(BaseModel):
+    """Opt-in, anonymous 64-bit SimHash of a message the app judged a scam (never the text)."""
+
+    fp: str = Field(..., pattern=r"^[0-9a-fA-F]{16}$", description="64-bit SimHash as 16 hex digits")
+    category: str = Field(..., description="App message category, e.g. otp_request, phishing_link")
+
+
 class HealthResponse(BaseModel):
     """Response schema for server health check."""
 

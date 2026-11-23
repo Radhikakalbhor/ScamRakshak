@@ -148,7 +148,16 @@ def main():
     if len(wrong):
         out.append("### Hand-written errors\n\n| label | pred | text |\n|---|---|---|\n")
         out += [f"| {r.label} | {r.pred} | {r.text.replace('|', '/')} |\n" for r in wrong.itertuples()]
-    with open(os.path.join(HERE, "results.md"), "w", encoding="utf-8") as f:
+    # Keep the clean held-out section (scored by test/engine/heldout_eval_test.dart on the shipped Dart model).
+    # After retraining, that test fails until the section is updated with the new, honest numbers.
+    results_path = os.path.join(HERE, "results.md")
+    if os.path.exists(results_path):
+        with open(results_path, encoding="utf-8") as f:
+            old = f.read()
+        i = old.find("## Held-out 2026")
+        if i >= 0:
+            out.append("\n" + old[i:])
+    with open(results_path, "w", encoding="utf-8") as f:
         f.write("".join(out))
 
     os.makedirs(ART, exist_ok=True)

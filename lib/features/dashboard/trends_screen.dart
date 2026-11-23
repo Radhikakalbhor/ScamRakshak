@@ -54,6 +54,10 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
   _ServerState _server = _ServerState.idle;
   ServerTrends? _serverData;
 
+  /// From GET /trends/summary (null on older servers, then [_serverData] is shown as "mixed").
+  ServerSummary? _summary;
+  List<EmergingAlert> _alerts = const [];
+
   @override
   void initState() {
     super.initState();
@@ -110,11 +114,25 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
 
   Future<void> _loadServer() async {
     setState(() => _server = _ServerState.loading);
+    final api = ref.read(apiClientProvider);
     try {
-      final rows = await ref.read(apiClientProvider).getTrends();
+      ServerSummary? summary;
+      ServerTrends? rowsData;
+      try {
+        summary = ServerSummary.fromJson(await api.getTrendSummary());
+      } on ApiException catch (e) {
+        if (e.statusCode != 404) rethrow;
+        rowsData = ServerTrends.fromRows(await api.getTrends()); // older server: one mixed total
+      }
+      var alerts = const <EmergingAlert>[];
+      try {
+        alerts = (await api.getAlerts()).map(EmergingAlert.tryFrom).whereType<EmergingAlert>().toList();
+      } catch (_) {} // alerts are optional
       if (!mounted) return;
       setState(() {
-        _serverData = ServerTrends.fromRows(rows);
+        _summary = summary;
+        _serverData = rowsData;
+        _alerts = alerts;
         _server = _ServerState.data;
       });
     } on ApiOfflineException {
@@ -627,9 +645,22 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
       case _ServerState.error:
         return [message('error', Icons.error_outline_rounded, AppTheme.errorRed), loadButton()];
       case _ServerState.data:
+        final sum = _summary;
+        if (sum != null) {
+          return [
+            _alertsCard(s),
+            _sourceBlock(s, 'live', sum.live, sum.minCount, AppTheme.primaryTeal),
+            const SizedBox(height: 12),
+            _sourceBlock(s, 'synthetic', sum.synthetic, sum.minCount, AppTheme.textSecondary),
+            const SizedBox(height: 8),
+            loadButton(),
+          ];
+        }
         final d = _serverData!;
         if (d.total == 0) return [message('empty', Icons.inbox_rounded, AppTheme.textSecondary)];
         return [
+          _sourceChip(s, 'mixed', AppTheme.warningOrange),
+          const SizedBox(height: 6),
           Text(
             '${d.total} ${s.t('trends_server_total')}',
             key: const Key('trends_server_total'),
@@ -646,6 +677,133 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
         ];
     }
   }
+
+  Widget _sourceChip(S s, String source, Color color) => Align(
+        alignment: Alignment.centerLeft,
+        child: Container(
+          key: Key('trends_src_$source'),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(12)),
+          child: Text(s.t('trends_src_$source'),
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        ),
+      );
+
+  /// One labelled data source: total, districts, scam types, weekly trend, privacy note.
+  Widget _sourceBlock(S s, String source, SourceTrends d, int minCount, Color color) => Container(
+        key: Key('trends_block_$source'),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          border: Border.all(color: color.withValues(alpha: 0.5)),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          _sourceChip(s, source, color),
+          const SizedBox(height: 4),
+          Text(s.t('trends_src_${source}_note'), style: Theme.of(context).textTheme.bodyMedium),
+          const SizedBox(height: 8),
+          Text('${d.total} ${s.t('trends_server_total')}',
+              key: Key('trends_total_$source'), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          if (d.total == 0)
+            Text(s.t('trends_src_none'))
+          else ...[
+            if (d.byDistrict.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Text(s.t('trends_server_districts'), style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 6),
+              ..._bars(d.byDistrict.take(5).toList(), (k) => k, AppTheme.secondaryNavy),
+            ],
+            if (d.byType.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Text(s.t('trends_server_types'), style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 6),
+              ..._bars(d.byType, (k) => s.t('report_type_$k'), AppTheme.warningOrange),
+            ],
+            if (d.weekly.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Text(s.t('trends_weekly'), style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 6),
+              _weekly(s, d.weekly, minCount, color, source),
+            ],
+          ],
+          if (d.suppressed > 0) ...[
+            const SizedBox(height: 8),
+            Text(
+              s.t('trends_suppressed').replaceAll('{n}', '$minCount').replaceAll('{k}', '${d.suppressed}'),
+              key: Key('trends_suppressed_$source'),
+              style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+            ),
+          ],
+        ]),
+      );
+
+  /// Weekly bars; a suppressed week shows "<5" and no bar.
+  Widget _weekly(S s, List<WeekCount> weeks, int minCount, Color color, String source) {
+    final maxV = weeks.fold<int>(1, (m, w) => math.max(m, w.count ?? 0));
+    return SizedBox(
+      height: 96,
+      child: Row(
+        key: Key('trends_weekly_$source'),
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          for (final w in weeks)
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 1.5),
+                child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+                  Text(w.count == null ? '<$minCount' : '${w.count}',
+                      style: const TextStyle(fontSize: 9), maxLines: 1, overflow: TextOverflow.clip),
+                  Container(
+                    height: w.count == null ? 2 : 56.0 * (w.count! / maxV),
+                    color: w.count == null ? AppTheme.textSecondary.withValues(alpha: 0.3) : color,
+                  ),
+                  Text('${w.weekStart.day}/${w.weekStart.month}', style: const TextStyle(fontSize: 8), maxLines: 1),
+                ]),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _alertsCard(S s) => Card(
+        key: const Key('trends_alerts'),
+        color: _alerts.isEmpty ? null : const Color(0xFFFFEBEE),
+        margin: const EdgeInsets.only(bottom: 12),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Row(children: [
+              Icon(_alerts.isEmpty ? Icons.notifications_none_rounded : Icons.campaign_rounded,
+                  color: _alerts.isEmpty ? AppTheme.textSecondary : AppTheme.errorRed),
+              const SizedBox(width: 8),
+              Expanded(child: Text(s.t('trends_alerts_title'), style: const TextStyle(fontWeight: FontWeight.bold))),
+            ]),
+            const SizedBox(height: 6),
+            if (_alerts.isEmpty)
+              Text(s.t('trends_alerts_none'))
+            else
+              for (final a in _alerts)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Text(
+                    a.kind == 'spike'
+                        ? s
+                            .t('trends_alert_spike')
+                            .replaceAll('{type}', s.t('report_type_${a.type}'))
+                            .replaceAll('{district}', a.district)
+                            .replaceAll('{recent}', '${a.count}')
+                            .replaceAll('{base}', a.baseline.toStringAsFixed(1))
+                        : s
+                            .t('trends_alert_cluster')
+                            .replaceAll('{cat}', categoryLabel(s, a.category))
+                            .replaceAll('{size}', '${a.count}'),
+                    key: Key('trends_alert_${a.kind}_${a.district}${a.type}${a.category}'),
+                  ),
+                ),
+          ]),
+        ),
+      );
 
   List<Widget> _bars(List<MapEntry<String, int>> rows, String Function(String) label, Color color) {
     final maxV = rows.isEmpty ? 1 : rows.first.value;

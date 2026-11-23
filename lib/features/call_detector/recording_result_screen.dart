@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -12,7 +14,9 @@ import 'auto_analyze_core.dart';
 import 'auto_analyze_service.dart';
 import 'auto_analyze_strings.dart';
 import 'call_highlight.dart';
+import 'call_triggers.dart';
 import 'call_timeline.dart';
+import 'recording_warning_screen.dart';
 
 final callTimelineProvider = FutureProvider<CallTimeline>((ref) => CallTimeline.load());
 
@@ -172,7 +176,6 @@ class _RecordingResultScreenState extends ConsumerState<RecordingResultScreen> {
     final type = r.scriptType;
     final pct = (r.score * 100).round();
     final first = r.firstAlertAt;
-    final pieces = splitHighlights(r.transcript, r.result.matches.map((m) => m.phrase));
     return ListView(padding: const EdgeInsets.all(16), children: [
       Container(
         key: const Key('rec_verdict'),
@@ -203,13 +206,14 @@ class _RecordingResultScreenState extends ConsumerState<RecordingResultScreen> {
       Text('${s.t('auto_result_file')}: ${saved.fileName}', style: const TextStyle(color: AppTheme.textSecondary)),
       if (first != null) Text(s.t('auto_result_first_alert').replaceAll('{n}', '${first + 1}')),
       const SizedBox(height: 12),
-      Text(r.risk == 'low' ? s.t('call_low_note') : s.t('call_advice_high'), style: const TextStyle(fontSize: 16)),
+      Text(s.t(callNoteKey(r.result)), key: const Key('rec_note'), style: const TextStyle(fontSize: 16)),
+      if (r.result.matches.isNotEmpty) ...[const SizedBox(height: 10), CallTriggerList(result: r.result)],
       if (r.risk != 'low') ...[
         const SizedBox(height: 12),
         FilledButton.icon(
           key: const Key('rec_report'),
           style: FilledButton.styleFrom(backgroundColor: AppTheme.errorRed),
-          onPressed: () => openReport(context, type: 'call'),
+          onPressed: () => openRecordingReport(context, saved.id),
           icon: const Icon(Icons.report_rounded),
           label: Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
@@ -249,16 +253,7 @@ class _RecordingResultScreenState extends ConsumerState<RecordingResultScreen> {
           padding: const EdgeInsets.all(14),
           child: Text.rich(
             key: const Key('rec_transcript'),
-            TextSpan(children: [
-              for (final p in pieces)
-                TextSpan(
-                  text: p.text,
-                  style: p.highlighted
-                      ? const TextStyle(
-                          backgroundColor: Color(0xFFFFCDD2), color: AppTheme.errorRed, fontWeight: FontWeight.bold)
-                      : null,
-                ),
-            ]),
+            callTranscriptSpan(r.transcript, r.result.matches),
             style: const TextStyle(fontSize: 17, height: 1.5, color: AppTheme.textPrimary),
           ),
         ),
@@ -267,8 +262,13 @@ class _RecordingResultScreenState extends ConsumerState<RecordingResultScreen> {
   }
 }
 
-/// Wraps the home screen: routes notification taps (verdict -> result screen, "Report" -> /report)
-/// and restarts the watcher if the toggle is on but the service was stopped (e.g. app update).
+/// Wraps the home screen:
+/// - shows queued full-screen warnings (HIGH/MEDIUM recordings), one at a time, each only once:
+///   at start, when the service reports a new one while the app is open, and on resume;
+/// - routes notification taps (warning not shown yet -> warning; otherwise -> result screen;
+///   "Report" -> reporting options with that recording);
+/// - restarts the watcher if the toggle is on but the service was stopped (e.g. app update);
+/// - removes demo files the old Simulate button left in the watched folder.
 class AutoAnalyzeHost extends ConsumerStatefulWidget {
   final Widget child;
   const AutoAnalyzeHost({super.key, required this.child});
@@ -277,31 +277,105 @@ class AutoAnalyzeHost extends ConsumerStatefulWidget {
   ConsumerState<AutoAnalyzeHost> createState() => _AutoAnalyzeHostState();
 }
 
-class _AutoAnalyzeHostState extends ConsumerState<AutoAnalyzeHost> {
+class _AutoAnalyzeHostState extends ConsumerState<AutoAnalyzeHost> with WidgetsBindingObserver {
+  bool _showing = false;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) => _start());
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    FlutterForegroundTask.removeTaskDataCallback(_onServiceData);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) unawaited(_showQueuedWarnings());
   }
 
   Future<void> _start() async {
     final platform = ref.read(autoAnalyzePlatformProvider);
     try {
+      FlutterForegroundTask.initCommunicationPort();
+      FlutterForegroundTask.addTaskDataCallback(_onServiceData);
+    } catch (_) {}
+    try {
       await platform.listenForTaps(_onTap);
     } catch (_) {}
     try {
       final store = await ref.read(autoAnalyzeStoreProvider.future);
+      await cleanUpDemoRecordings(store);
       if (store.enabled && !await platform.isServiceRunning()) await platform.startService(store.locale);
     } catch (_) {}
+    await _showQueuedWarnings();
   }
 
-  void _onTap(String? actionId, String? payload) {
+  void _onServiceData(Object data) {
+    if (data is Map && data.containsKey(kWarnMessageKey)) {
+      aaLog('app got warning ${data[kWarnMessageKey]} from the service');
+      unawaited(_showQueuedWarnings());
+    }
+  }
+
+  /// Shows every queued warning (oldest first; [first] before the others), each exactly once.
+  Future<void> _showQueuedWarnings({String? first}) async {
+    if (_showing || !mounted) return;
+    _showing = true;
+    try {
+      final store = await ref.read(autoAnalyzeStoreProvider.future);
+      var preferred = first;
+      while (mounted) {
+        await store.reload();
+        final id = (preferred != null && store.needsWarning(preferred)) ? preferred : store.nextWarning();
+        preferred = null;
+        if (id == null) break;
+        await store.markWarned(id); // shown once, even if the app is killed while it is open
+        if (!mounted) break;
+        aaLog('opening full-screen warning for result $id');
+        await openRecordingWarning(context, id);
+      }
+    } catch (_) {
+    } finally {
+      _showing = false;
+    }
+  }
+
+  Future<void> _onTap(String? actionId, String? payload) async {
     if (!mounted) return;
+    String? id;
+    try {
+      id = (jsonDecode(payload ?? '') as Map)['result'] as String?;
+    } catch (_) {}
     if (actionId == kReportAction) {
-      openReport(context, type: 'call');
+      if (id != null) {
+        await openRecordingReport(context, id);
+      } else {
+        openReport(context, type: 'call');
+      }
       return;
     }
     if (payload == null || payload.isEmpty) return;
+    if (id != null) {
+      final store = await ref.read(autoAnalyzeStoreProvider.future);
+      await store.reload();
+      if (!mounted) return;
+      if (store.needsWarning(id)) {
+        await _showQueuedWarnings(first: id);
+        return;
+      }
+    }
+    // Already warned (or LOW / pending): the normal result screen, never the warning again,
+    // and not over the lock screen.
+    try {
+      await ref.read(autoAnalyzePlatformProvider).setShowWhenLocked(false);
+    } catch (_) {}
+    if (!mounted) return;
     final router = GoRouter.maybeOf(context);
     if (router != null) {
       router.push('/call/recording', extra: payload);

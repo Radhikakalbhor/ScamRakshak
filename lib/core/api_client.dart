@@ -136,14 +136,19 @@ class ApiClient {
 
   /// Submits a fraud incident report.
   /// Contract: POST /reports {"type": "otp|fake_qr|loan_app|call|other", "district": "...", "ts": "..."}
-  Future<void> postReport(String type, String district) async {
+  Future<void> postReport(String type, String district) =>
+      postReportAt(type, district, DateTime.now().toUtc().toIso8601String());
+
+  /// Same as [postReport] with the time the report was made (used by the offline report queue,
+  /// which may send it later).
+  Future<void> postReportAt(String type, String district, String ts) async {
     final base = await getBaseUrl();
     final uri = Uri.parse('$base/reports');
 
     final payload = {
       'type': type,
       'district': district,
-      'ts': DateTime.now().toUtc().toIso8601String(),
+      'ts': ts,
     };
 
     try {
@@ -171,6 +176,63 @@ class ApiClient {
       rethrow;
     } catch (e) {
       throw ApiOfflineException('Unexpected network error: $e', e);
+    }
+  }
+
+  /// GET [path] -> decoded JSON. Same error mapping as the other calls.
+  Future<Object?> _getJson(String path) async {
+    final base = await getBaseUrl();
+    try {
+      final r = await _httpClient.get(Uri.parse('$base$path')).timeout(requestTimeout);
+      if (r.statusCode < 200 || r.statusCode >= 300) {
+        throw ApiException(r.statusCode, 'GET $path failed with status ${r.statusCode}');
+      }
+      return json.decode(utf8.decode(r.bodyBytes));
+    } on SocketException catch (e) {
+      throw ApiOfflineException('Backend is unreachable.', e);
+    } on TimeoutException catch (e) {
+      throw ApiOfflineException('Request timed out.', e);
+    } on http.ClientException catch (e) {
+      throw ApiOfflineException('Network failure.', e);
+    } on ApiException {
+      rethrow;
+    } on FormatException catch (e) {
+      throw ApiException(500, 'Bad JSON from $path: $e');
+    } catch (e) {
+      throw ApiOfflineException('Unexpected network error: $e', e);
+    }
+  }
+
+  /// GET /trends/summary: synthetic (seeded demo) vs live report aggregates, weekly trend,
+  /// counts below `min_count` suppressed. Throws [ApiException] 404 on older servers.
+  Future<Map> getTrendSummary() async {
+    final j = await _getJson('/trends/summary');
+    if (j is Map) return j;
+    throw const ApiException(500, 'Bad /trends/summary response');
+  }
+
+  /// GET /alerts -> list of emerging-scam alerts ({"kind": "spike"|"cluster", ...}).
+  Future<List<Map>> getAlerts() async {
+    final j = await _getJson('/alerts');
+    final list = j is Map ? j['alerts'] : null;
+    return list is List ? list.whereType<Map>().toList() : <Map>[];
+  }
+
+  /// POST /fingerprints: opt-in anonymous 64-bit SimHash (16 hex digits) of a scam message.
+  Future<void> postFingerprint(String fp, String category) async {
+    final base = await getBaseUrl();
+    try {
+      final r = await _httpClient
+          .post(Uri.parse('$base/fingerprints'),
+              headers: {'Content-Type': 'application/json'}, body: json.encode({'fp': fp, 'category': category}))
+          .timeout(requestTimeout);
+      if (r.statusCode < 200 || r.statusCode >= 300) throw ApiException(r.statusCode, 'fingerprint rejected');
+    } on SocketException catch (e) {
+      throw ApiOfflineException('Backend is unreachable.', e);
+    } on TimeoutException catch (e) {
+      throw ApiOfflineException('Request timed out.', e);
+    } on http.ClientException catch (e) {
+      throw ApiOfflineException('Network failure.', e);
     }
   }
 

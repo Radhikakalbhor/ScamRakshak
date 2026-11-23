@@ -2,13 +2,16 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/providers.dart';
 import '../../core/strings.dart';
 import '../../core/theme.dart';
 import 'auto_analyze_core.dart';
 import 'auto_analyze_service.dart';
-import 'auto_analyze_strings.dart';
+import 'recording_result_screen.dart' show callTimelineProvider;
+import 'recording_warning_screen.dart';
+import 'recording_warning_strings.dart';
 
 /// Lists which [kRecordingFolderCandidates] exist on this phone. Overridable in tests.
 final recordingFolderCandidatesProvider = FutureProvider<List<String>>((ref) async {
@@ -38,6 +41,7 @@ class _AutoAnalyzeScreenState extends ConsumerState<AutoAnalyzeScreen> with Widg
   bool _files = false;
   bool _notif = false;
   bool _battery = false;
+  bool _fsi = false;
   bool _folderOk = false;
   bool _busy = false;
   String _server = '';
@@ -47,7 +51,7 @@ class _AutoAnalyzeScreenState extends ConsumerState<AutoAnalyzeScreen> with Widg
   @override
   void initState() {
     super.initState();
-    AutoAnalyzeStrings.ensure();
+    RecordingWarningStrings.ensure();
     WidgetsBinding.instance.addObserver(this);
     _refresh();
   }
@@ -78,6 +82,7 @@ class _AutoAnalyzeScreenState extends ConsumerState<AutoAnalyzeScreen> with Widg
     final files = await _safe(_platform.hasAllFilesAccess);
     final notif = await _safe(_platform.hasNotificationPermission);
     final battery = await _safe(_platform.isBatteryUnrestricted);
+    final fsi = await _safe(_platform.canUseFullScreenIntent);
     final folder = store.folder;
     final exists = ref.read(folderExistsProvider);
     final folderOk = folder != null && await _safe(() => exists(folder));
@@ -91,6 +96,7 @@ class _AutoAnalyzeScreenState extends ConsumerState<AutoAnalyzeScreen> with Widg
       _files = files;
       _notif = notif;
       _battery = battery;
+      _fsi = fsi;
       _folderOk = folderOk;
       _server = server;
     });
@@ -131,18 +137,25 @@ class _AutoAnalyzeScreenState extends ConsumerState<AutoAnalyzeScreen> with Widg
         }
       });
 
-  Future<void> _simulate() => _run(() async {
-        try {
-          await simulateRecording(_store!.folder!, DefaultAssetBundle.of(context));
-          if (mounted) _snack('auto_simulate_done');
-        } catch (_) {
-          if (mounted) _snack('auto_simulate_failed');
-        }
-      });
+  /// DEMO: the full-screen warning for a bundled sample call. Never touches the watched folder,
+  /// the processed list or Recording Alerts, and posts no notification.
+  Future<void> _demo() async {
+    final bundle = DefaultAssetBundle.of(context);
+    final router = GoRouter.maybeOf(context);
+    final nav = Navigator.of(context);
+    final result = await demoWarningResult(bundle, await ref.read(callTimelineProvider.future));
+    if (!mounted) return;
+    // Through go_router when present, so Report (also a go_router route) stacks on top of it.
+    if (router != null) {
+      await router.push<void>('/call/warning/demo', extra: result);
+    } else {
+      await nav.push(MaterialPageRoute<void>(builder: (_) => RecordingWarningScreen.demo(demo: result)));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    AutoAnalyzeStrings.ensure();
+    RecordingWarningStrings.ensure();
     final s = S.of(context);
     final store = _store;
     if (store == null) {
@@ -260,6 +273,23 @@ class _AutoAnalyzeScreenState extends ConsumerState<AutoAnalyzeScreen> with Widg
               ),
             ]),
           ),
+          _step(
+            n: 5,
+            done: _fsi,
+            enabled: consent,
+            title: s.t('auto_step_fsi'),
+            body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(s.t('auto_step_fsi_help'), style: const TextStyle(color: AppTheme.textSecondary)),
+              if (!_fsi) ...[
+                const SizedBox(height: 6),
+                FilledButton.tonal(
+                  key: const Key('auto_allow_fsi'),
+                  onPressed: _busy || !consent ? null : () => _run(_platform.openFullScreenIntentSettings),
+                  child: Text(s.t('auto_allow')),
+                ),
+              ],
+            ]),
+          ),
           const SizedBox(height: 8),
           Card(
             child: SwitchListTile(
@@ -274,17 +304,69 @@ class _AutoAnalyzeScreenState extends ConsumerState<AutoAnalyzeScreen> with Widg
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
             child: Text('${s.t('auto_server')}: $_server', style: const TextStyle(color: AppTheme.textSecondary)),
           ),
+          _diagnosticsCard(s, store),
           const Divider(height: 24),
           OutlinedButton.icon(
-            key: const Key('auto_simulate'),
-            onPressed: _busy || !on || folder == null ? null : _simulate,
-            icon: const Icon(Icons.bug_report_rounded),
-            label: Text(s.t('auto_simulate')),
+            key: const Key('auto_demo_warning'),
+            onPressed: _busy ? null : _demo,
+            icon: const Icon(Icons.science_rounded),
+            label: Text(s.t('auto_demo')),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 4),
-            child: Text(s.t('auto_simulate_help'), style: const TextStyle(color: AppTheme.textSecondary)),
+            child: Text(s.t('auto_demo_help'), style: const TextStyle(color: AppTheme.textSecondary)),
           ),
+        ]),
+      ),
+    );
+  }
+
+  /// Last 10 files the watcher saw (accepted/rejected + reason) and the last error.
+  Widget _diagnosticsCard(S s, AutoAnalyzeStore store) {
+    final diag = store.diagnostics;
+    final err = store.lastError;
+    String two(int v) => v.toString().padLeft(2, '0');
+    return Card(
+      key: const Key('auto_diag'),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Expanded(child: Text(s.t('auto_diag_title'), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold))),
+            IconButton(
+              key: const Key('auto_diag_refresh'),
+              tooltip: s.t('auto_diag_refresh'),
+              onPressed: _refresh,
+              icon: const Icon(Icons.refresh_rounded),
+            ),
+          ]),
+          if (err != null)
+            Container(
+              key: const Key('auto_diag_error'),
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(10),
+              color: const Color(0xFFFFEBEE),
+              child: Text('${s.t('auto_diag_last_error')}: $err', style: const TextStyle(color: AppTheme.errorRed)),
+            ),
+          if (diag.isEmpty) Text(s.t('auto_diag_empty'), style: const TextStyle(color: AppTheme.textSecondary)),
+          for (final d in diag)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 3),
+              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Icon(d.accepted ? Icons.check_circle_rounded : Icons.remove_circle_outline_rounded,
+                    size: 18, color: d.accepted ? AppTheme.successGreen : AppTheme.textSecondary),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text.rich(TextSpan(children: [
+                    TextSpan(text: d.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    TextSpan(
+                        text: '\n${two(d.at.hour)}:${two(d.at.minute)}:${two(d.at.second)} · '
+                            '${s.t(d.accepted ? 'auto_diag_accepted' : 'auto_diag_rejected')}: ${d.reason}'),
+                  ])),
+                ),
+              ]),
+            ),
         ]),
       ),
     );

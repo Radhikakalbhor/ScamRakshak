@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,11 +11,15 @@ import '../../engine/models.dart';
 import '../dashboard/detection_history.dart';
 import '../report/report_nav.dart';
 import 'message_examples.dart';
+import 'message_fingerprint.dart';
 import 'message_strings.dart';
 
 /// Offline SMS / WhatsApp scam checker using [scamClassifierProvider].
 class MessageDetectorScreen extends ConsumerStatefulWidget {
-  const MessageDetectorScreen({super.key});
+  /// Text shared from another app: prefilled and checked as soon as the model is ready.
+  final String? initialText;
+
+  const MessageDetectorScreen({super.key, this.initialText});
 
   @override
   ConsumerState<MessageDetectorScreen> createState() => _MessageDetectorScreenState();
@@ -23,11 +29,39 @@ class _MessageDetectorScreenState extends ConsumerState<MessageDetectorScreen> {
   final _controller = TextEditingController();
   ScamResult? _result;
   String _checkedText = '';
+  bool _fpOptIn = false;
 
   @override
   void initState() {
     super.initState();
     MessageStrings.ensure();
+    FingerprintOptIn.get().then((v) {
+      if (mounted) setState(() => _fpOptIn = v);
+    });
+    final shared = widget.initialText?.trim() ?? '';
+    if (shared.isNotEmpty) {
+      _controller.text = shared;
+      ref.read(scamClassifierProvider.future).then((_) {
+        if (mounted && _controller.text.trim() == shared) _check();
+      }, onError: (Object _) {});
+    }
+  }
+
+  /// Opt-in only: sends the anonymous fingerprint + category of a real (non-example) scam message.
+  void _shareFingerprint(String text, ScamResult r) {
+    if (!_fpOptIn || r.label != 'scam' || kMessageExamples.values.contains(text)) return;
+    final api = ref.read(apiClientProvider);
+    final analyzer = ref.read(callAnalyzerProvider).valueOrNull;
+    unawaited(api
+        .postFingerprint(messageFingerprint(text), messageCategory(text, r, analyzer))
+        .catchError((Object _) {}));
+  }
+
+  Future<void> _setOptIn(bool v) async {
+    setState(() => _fpOptIn = v);
+    await FingerprintOptIn.set(v);
+    final r = _result;
+    if (v && r != null) _shareFingerprint(_checkedText, r);
   }
 
   @override
@@ -71,6 +105,7 @@ class _MessageDetectorScreenState extends ConsumerState<MessageDetectorScreen> {
     });
     // Feeds Scam Trends (verdict + category only, never the text).
     recordMessageCheck(ref, text, result, sample: kMessageExamples.values.contains(text));
+    _shareFingerprint(text, result);
   }
 
   @override
@@ -237,6 +272,17 @@ class _MessageDetectorScreenState extends ConsumerState<MessageDetectorScreen> {
         )
       else
         Text(s.t('msg_genuine_note'), style: const TextStyle(fontSize: 16)),
+      if (scam)
+        Card(
+          margin: const EdgeInsets.only(top: 12),
+          child: SwitchListTile(
+            key: const Key('msg_fp_optin'),
+            value: _fpOptIn,
+            onChanged: _setOptIn,
+            title: Text(s.t('msg_fp_title'), style: const TextStyle(fontWeight: FontWeight.w600)),
+            subtitle: Text(s.t('msg_fp_sub')),
+          ),
+        ),
       if (scam) ...[
         const SizedBox(height: 12),
         FilledButton.icon(

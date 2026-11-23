@@ -108,6 +108,86 @@ class TrendStats {
   }
 }
 
+/// One week of the server trend; [count] is null when it was suppressed (fewer than min_count).
+class WeekCount {
+  final DateTime weekStart;
+  final int? count;
+  const WeekCount(this.weekStart, this.count);
+}
+
+/// Aggregates of one data source from GET /trends/summary.
+class SourceTrends {
+  final int total;
+  final List<MapEntry<String, int>> byDistrict;
+  final List<MapEntry<String, int>> byType;
+  final List<WeekCount> weekly;
+  final int suppressed;
+  const SourceTrends(this.total, this.byDistrict, this.byType, this.weekly, this.suppressed);
+
+  static List<MapEntry<String, int>> _pairs(Object? list, String key) => [
+        if (list is List)
+          for (final e in list.whereType<Map>())
+            if (e[key] != null && e['count'] is num) MapEntry(e[key].toString(), (e['count'] as num).toInt()),
+      ];
+
+  factory SourceTrends.fromJson(Object? j) {
+    final m = j is Map ? j : const {};
+    final weekly = <WeekCount>[];
+    final w = m['weekly'];
+    if (w is List) {
+      for (final e in w.whereType<Map>()) {
+        final d = DateTime.tryParse('${e['week_start']}');
+        if (d != null) weekly.add(WeekCount(d, (e['count'] as num?)?.toInt()));
+      }
+    }
+    return SourceTrends(
+      (m['total'] as num?)?.toInt() ?? 0,
+      _pairs(m['by_district'], 'district'),
+      _pairs(m['by_type'], 'type'),
+      weekly,
+      (m['suppressed_cells'] as num?)?.toInt() ?? 0,
+    );
+  }
+}
+
+/// GET /trends/summary: synthetic demo data and live reports, kept apart.
+class ServerSummary {
+  final int minCount;
+  final SourceTrends live;
+  final SourceTrends synthetic;
+  const ServerSummary(this.minCount, this.live, this.synthetic);
+
+  factory ServerSummary.fromJson(Map j) => ServerSummary(
+        (j['min_count'] as num?)?.toInt() ?? 5,
+        SourceTrends.fromJson(j['live']),
+        SourceTrends.fromJson(j['synthetic']),
+      );
+}
+
+/// One emerging-scam alert from GET /alerts.
+class EmergingAlert {
+  /// 'spike' (district/type rise against the trailing baseline) or 'cluster' (many near-identical messages).
+  final String kind;
+  final String district;
+  final String type;
+  final String category;
+  final int count;
+  final double baseline;
+  const EmergingAlert(this.kind, this.district, this.type, this.category, this.count, this.baseline);
+
+  static EmergingAlert? tryFrom(Map j) {
+    final kind = j['kind'];
+    if (kind == 'spike') {
+      return EmergingAlert('spike', '${j['district']}', '${j['type']}', '', (j['recent'] as num?)?.toInt() ?? 0,
+          (j['baseline_weekly'] as num?)?.toDouble() ?? 0);
+    }
+    if (kind == 'cluster') {
+      return EmergingAlert('cluster', '', '', '${j['category']}', (j['size'] as num?)?.toInt() ?? 0, 0);
+    }
+    return null;
+  }
+}
+
 /// Server report totals from GET /trends rows ({district, type, count}).
 class ServerTrends {
   final List<MapEntry<String, int>> byDistrict;

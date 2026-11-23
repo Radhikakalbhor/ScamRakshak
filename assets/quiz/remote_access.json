@@ -30,6 +30,26 @@
      "answer": 1,
      "explain": {"en": "Cut their access first. Then call your bank and 1930.",
                  "hi": "पहले उनकी पहुँच काटें। फिर बैंक और 1930 पर फ़ोन करें।",
-                 "chh": "पहिली ओमन के पहुँच काट। फेर बैंक अउ 1930 म फोन कर।"}}
+                 "chh": "पहिली ओमन के पहुँच काट। फेर बैंक अउ 1930 म फोन कर।"}},
+    {"q": {"en": "Which of these apps let another person see and control your phone?",
+           "hi": "इनमें से कौन से ऐप किसी दूसरे को आपका फ़ोन देखने और चलाने देते हैं?",
+           "chh": "एमा ले कोन ऐप दूसर ल तोर फोन देखे अउ चलाए देथें?"},
+     "options": {"en": ["AnyDesk, TeamViewer, QuickSupport", "Calculator and Clock", "Camera"],
+                 "hi": ["AnyDesk, TeamViewer, QuickSupport", "कैलकुलेटर और घड़ी", "कैमरा"],
+                 "chh": ["AnyDesk, TeamViewer, QuickSupport", "कैलकुलेटर अउ घड़ी", "कैमरा"]},
+     "answer": 0,
+     "explain": {"en": "Screen-sharing apps give full view of your OTPs and PIN. Uninstall them if a stranger asked you to install.",
+                 "hi": "स्क्रीन शेयर ऐप आपके OTP और PIN पूरे दिखा देते हैं। किसी अनजान के कहने पर डाला हो तो हटा दें।",
+                 "chh": "स्क्रीन सेयर ऐप तोर OTP अउ PIN पूरा देखा देथें। कोनो अनचिन्हार के कहे म डारे हस त हटा दे।"}},
+    {"q": {"en": "A 'refund agent' is connected on AnyDesk and asks you to open your bank app. What do you do?",
+           "hi": "'रिफंड एजेंट' AnyDesk से जुड़ा है और बैंक ऐप खोलने को कहता है। आप क्या करें?",
+           "chh": "'रिफंड एजेंट' AnyDesk ले जुड़े हे अउ बैंक ऐप खोले बर कहिथे। तैं का करबे?"},
+     "options": {"en": ["Open it so he can refund you", "Disconnect, uninstall the app, and call your bank", "Share the OTP only"],
+                 "hi": ["खोलें ताकि वह रिफंड कर सके", "कनेक्शन तोड़ें, ऐप हटाएं और बैंक को फ़ोन करें", "सिर्फ़ OTP बताएं"],
+                 "chh": ["खोल ताकि ओ रिफंड कर सकय", "कनेक्सन टोर, ऐप हटा अउ बैंक ल फोन कर", "सिरिफ OTP बता"]},
+     "answer": 1,
+     "explain": {"en": "Refunds never need screen sharing. Cut the connection at once and secure your account.",
+                 "hi": "रिफंड के लिए कभी स्क्रीन शेयर नहीं लगता। तुरंत कनेक्शन तोड़ें और खाता सुरक्षित करें।",
+                 "chh": "रिफंड बर कभू स्क्रीन सेयर नइ लागय। तुरते कनेक्सन टोर अउ खाता सुरक्षित कर।"}}
   ]
 }

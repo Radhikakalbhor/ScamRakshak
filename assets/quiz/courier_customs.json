@@ -30,6 +30,26 @@
      "answer": 2,
      "explain": {"en": "Use only the official app or website that you opened or downloaded yourself.",
                  "hi": "सिर्फ़ असली ऐप या वेबसाइट इस्तेमाल करें, जिसे आपने खुद खोला या डाउनलोड किया हो।",
-                 "chh": "सिरिफ असली ऐप या वेबसाइट चला, जेला तैं खुद खोले या डाउनलोड करे हस।"}}
+                 "chh": "सिरिफ असली ऐप या वेबसाइट चला, जेला तैं खुद खोले या डाउनलोड करे हस।"}},
+    {"q": {"en": "A caller says your parcel has drugs and transfers you to 'Mumbai police' on video. What do you do?",
+           "hi": "कॉल करने वाला कहता है आपके पार्सल में ड्रग्स हैं और आपको वीडियो पर 'मुंबई पुलिस' से जोड़ता है। आप क्या करें?",
+           "chh": "फोन करइया कहिथे तोर पार्सल म ड्रग्स हे अउ तोला वीडियो म 'मुंबई पुलिस' ले जोड़थे। तैं का करबे?"},
+     "options": {"en": ["Stay on the call and follow orders", "Hang up and call 1930 or your local police station", "Pay to clear your name"],
+                 "hi": ["कॉल पर रहें और आदेश मानें", "फोन काटें और 1930 या नज़दीकी थाने में बात करें", "नाम साफ़ करवाने के लिए पैसे दें"],
+                 "chh": ["कॉल म रह अउ हुकुम मान", "फोन काट अउ 1930 या लकठा के थाना म बात कर", "नाम साफ करवाए बर पइसा दे"]},
+     "answer": 1,
+     "explain": {"en": "Courier companies and police never move a 'case' to a video call or ask for money. It is a trap.",
+                 "hi": "कूरियर कंपनी और पुलिस कभी 'केस' वीडियो कॉल पर नहीं चलाते और पैसे नहीं माँगते। यह जाल है।",
+                 "chh": "कूरियर कंपनी अउ पुलिस कभू 'केस' ल वीडियो कॉल म नइ चलावय अउ पइसा नइ माँगय। ए फांदा आय।"}},
+    {"q": {"en": "An SMS asks ₹25 'redelivery fee' through a link for a parcel you did not order. This is:",
+           "hi": "बिना मंगाए पार्सल के लिए SMS लिंक से ₹25 'दोबारा डिलीवरी शुल्क' माँगता है। यह है:",
+           "chh": "बिन मंगाए पार्सल बर SMS लिंक ले ₹25 'फेर डिलीवरी फीस' माँगथे। ए आय:"},
+     "options": {"en": ["A small, safe payment", "A phishing link to steal card details", "A government tax"],
+                 "hi": ["छोटा और सुरक्षित भुगतान", "कार्ड की जानकारी चुराने वाला नकली लिंक", "सरकारी टैक्स"],
+                 "chh": ["नान्हे अउ सुरक्षित भुगतान", "कार्ड के जानकारी चोराए वाला नकली लिंक", "सरकारी टैक्स"]},
+     "answer": 1,
+     "explain": {"en": "The small amount is bait. The page steals your card number, OTP or UPI PIN.",
+                 "hi": "छोटी रकम सिर्फ़ चारा है। वह पेज आपका कार्ड नंबर, OTP या UPI PIN चुराता है।",
+                 "chh": "नान्हे रकम सिरिफ चारा आय। ओ पेज तोर कार्ड नंबर, OTP या UPI PIN चोराथे।"}}
   ]
 }

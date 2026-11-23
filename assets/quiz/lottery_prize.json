@@ -30,6 +30,26 @@
      "answer": 2,
      "explain": {"en": "Do not reply or pay. Blocking stops more messages.",
                  "hi": "न जवाब दें, न पैसे। ब्लॉक करने से और मैसेज नहीं आएँगे।",
-                 "chh": "न जवाब दे, न पइसा। ब्लॉक करे ले अउ मैसेज नइ आय।"}}
+                 "chh": "न जवाब दे, न पइसा। ब्लॉक करे ले अउ मैसेज नइ आय।"}},
+    {"q": {"en": "A 'Flipkart lucky spin' says you won a bike; pay ₹2,500 GST to get it. Real companies:",
+           "hi": "'फ्लिपकार्ट लकी स्पिन' कहता है आपने बाइक जीती; पाने के लिए ₹2,500 GST दें। असली कंपनियाँ:",
+           "chh": "'फ्लिपकार्ट लकी स्पिन' कहिथे तैं बाइक जीते; पाए बर ₹2,500 GST दे। असली कंपनी मन:"},
+     "options": {"en": ["Ask winners to pay tax first", "Never ask you to pay to receive a prize", "Ask for a UPI PIN"],
+                 "hi": ["जीतने वालों से पहले टैक्स माँगती हैं", "इनाम देने के लिए कभी पैसे नहीं माँगतीं", "UPI PIN माँगती हैं"],
+                 "chh": ["जीतइया मन ले पहिली टैक्स माँगथें", "इनाम दे बर कभू पइसा नइ माँगय", "UPI PIN माँगथें"]},
+     "answer": 1,
+     "explain": {"en": "Any 'fee', 'GST' or 'delivery charge' before a prize means it is a scam.",
+                 "hi": "इनाम से पहले कोई 'फ़ीस', 'GST' या 'डिलीवरी चार्ज' माँगा जाए तो वह ठगी है।",
+                 "chh": "इनाम के पहिली कोनो 'फीस', 'GST' या 'डिलीवरी चार्ज' माँगे जाय त ओ ठगी आय।"}},
+    {"q": {"en": "To 'receive' prize money someone sends a UPI request asking for your PIN. Entering the PIN will:",
+           "hi": "इनाम के पैसे 'पाने' के लिए कोई UPI रिक्वेस्ट भेजकर PIN माँगता है। PIN डालने से:",
+           "chh": "इनाम के पइसा 'पाए' बर कोनो UPI रिक्वेस्ट भेज के PIN माँगथे। PIN डारे ले:"},
+     "options": {"en": ["Bring money into your account", "Send money out of your account", "Do nothing"],
+                 "hi": ["आपके खाते में पैसे आएंगे", "आपके खाते से पैसे चले जाएंगे", "कुछ नहीं होगा"],
+                 "chh": ["तोर खाता म पइसा आही", "तोर खाता ले पइसा चल दिही", "कुछु नइ होही"]},
+     "answer": 1,
+     "explain": {"en": "A UPI PIN is only for paying. You never need a PIN to receive money.",
+                 "hi": "UPI PIN सिर्फ़ पैसे भेजने के लिए है। पैसे पाने के लिए PIN कभी नहीं लगता।",
+                 "chh": "UPI PIN सिरिफ पइसा भेजे बर आय। पइसा पाए बर PIN कभू नइ लागय।"}}
   ]
 }

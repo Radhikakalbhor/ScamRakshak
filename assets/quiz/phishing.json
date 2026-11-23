@@ -30,6 +30,26 @@
      "answer": 1,
      "explain": {"en": "Checking first is safe. Clicking or forwarding can spread the scam.",
                  "hi": "पहले जाँचना सुरक्षित है। लिंक दबाने या आगे भेजने से ठगी फैलती है।",
-                 "chh": "पहिली जाँचना सुरक्छित हे। लिंक दबाय या आगू भेजे ले ठगी बगरथे।"}}
+                 "chh": "पहिली जाँचना सुरक्छित हे। लिंक दबाय या आगू भेजे ले ठगी बगरथे।"}},
+    {"q": {"en": "Which link is most likely fake for SBI?",
+           "hi": "SBI के लिए कौन सा लिंक सबसे ज़्यादा नकली लगता है?",
+           "chh": "SBI बर कोन लिंक सबले जादा नकली लागथे?"},
+     "options": {"en": ["onlinesbi.sbi", "sbi-kyc-update.xyz/login", "The SBI YONO app from the Play Store"],
+                 "hi": ["onlinesbi.sbi", "sbi-kyc-update.xyz/login", "Play Store से SBI YONO ऐप"],
+                 "chh": ["onlinesbi.sbi", "sbi-kyc-update.xyz/login", "Play Store ले SBI YONO ऐप"]},
+     "answer": 1,
+     "explain": {"en": "Fake sites add words like 'kyc' or 'update' and use odd endings like .xyz. Type the bank address yourself.",
+                 "hi": "नकली साइटें 'kyc', 'update' जैसे शब्द और .xyz जैसे अजीब अंत लगाती हैं। बैंक का पता खुद टाइप करें।",
+                 "chh": "नकली साइट मन 'kyc', 'update' जइसे सब्द अउ .xyz जइसे अजीब आखिरी लगाथें। बैंक के पता खुदे टाइप कर।"}},
+    {"q": {"en": "You opened a link and typed your card details. What first?",
+           "hi": "आपने लिंक खोलकर कार्ड की जानकारी डाल दी। सबसे पहले क्या करें?",
+           "chh": "तैं लिंक खोल के कार्ड के जानकारी डार देस। सबले पहिली का करँव?"},
+     "options": {"en": ["Wait and see", "Block the card with your bank and call 1930", "Change your phone wallpaper"],
+                 "hi": ["इंतज़ार करें", "बैंक से कार्ड ब्लॉक कराएं और 1930 पर कॉल करें", "फ़ोन का वॉलपेपर बदलें"],
+                 "chh": ["अगोरा कर", "बैंक ले कार्ड ब्लॉक करा अउ 1930 म कॉल कर", "फोन के वॉलपेपर बदल"]},
+     "answer": 1,
+     "explain": {"en": "Act in the first hour: block the card or UPI and report on 1930 so the money can be held.",
+                 "hi": "पहले घंटे में कदम उठाएं: कार्ड या UPI ब्लॉक कराएं और 1930 पर शिकायत करें ताकि पैसा रोका जा सके।",
+                 "chh": "पहिली घंटा म कदम उठा: कार्ड या UPI ब्लॉक करा अउ 1930 म सिकायत कर ताकि पइसा रोके जा सकय।"}}
   ]
 }

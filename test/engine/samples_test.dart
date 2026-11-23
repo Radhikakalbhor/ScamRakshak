@@ -17,6 +17,11 @@ const _expected = <String, (String, String?)>{
   // added samples
   'lottery_kbc_hinglish.txt': ('high', 'lottery_prize'),
   'anydesk_refund_en.txt': ('high', 'remote_access'),
+  // reported real-world calls (caller asks for OTP / KYC number / bank details)
+  'bank_otp_request_1_en.txt': ('high', 'otp_request'),
+  'bank_otp_request_2_en.txt': ('high', 'otp_request'),
+  'bank_otp_request_3_en.txt': ('high', 'details_request'),
+  'bank_otp_request_4_en.txt': ('high', 'otp_request'),
   'loan_app_threat_hi.txt': ('high', 'loan_threat'),
   'fake_kyc_hi.txt': ('high', 'fake_kyc'),
   'customs_arrest_hinglish.txt': ('high', 'digital_arrest'),
@@ -39,7 +44,7 @@ void main() {
     };
   });
 
-  test('there are 13 samples and every one has an expectation', () {
+  test('there are 17 samples and every one has an expectation', () {
     expect(files.keys.toSet(), _expected.keys.toSet());
   });
 

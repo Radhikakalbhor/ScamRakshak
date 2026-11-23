@@ -3,8 +3,9 @@ import 'dart:convert';
 import 'dart:ui' show DartPluginRegistrant;
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart' hide NotificationVisibility;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -14,10 +15,17 @@ import '../../core/strings.dart';
 import 'auto_analyze_core.dart';
 import 'auto_analyze_strings.dart';
 import 'call_timeline.dart';
+import 'recording_warning_strings.dart';
 
-/// Notification payloads.
-String resultPayload(String id) => jsonEncode({'result': id});
+/// Notification payloads. [warn]: HIGH/MEDIUM result that has a full-screen warning.
+String resultPayload(String id, {bool warn = false}) => jsonEncode({'result': id, if (warn) 'warn': true});
 String pendingPayload(String path) => jsonEncode({'pending': path});
+
+/// Message the service isolate sends to the open app when a warning is queued.
+const kWarnMessageKey = 'scamrakshak_warn';
+
+/// MainActivity channel: full-screen-intent permission (Android 14+) and show-when-locked.
+const kAlertChannel = MethodChannel('scamrakshak/alert');
 
 /// Notification action id that opens /report.
 const kReportAction = 'report';
@@ -40,6 +48,15 @@ abstract class AutoAnalyzePlatform {
 
   /// Calls [onTap] for the notification that launched the app and for every later tap.
   Future<void> listenForTaps(NotificationTap onTap);
+
+  /// Android 14+: whether full-screen warnings may take over the screen (true below 14).
+  Future<bool> canUseFullScreenIntent();
+
+  /// Opens the system page "Allow full-screen notifications" for this app.
+  Future<void> openFullScreenIntentSettings();
+
+  /// Lets the warning appear over the lock screen and wake the screen (false: normal again).
+  Future<void> setShowWhenLocked(bool on);
 }
 
 final autoAnalyzePlatformProvider = Provider<AutoAnalyzePlatform>((ref) => PluginAutoAnalyzePlatform());
@@ -134,6 +151,16 @@ class PluginAutoAnalyzePlatform implements AutoAnalyzePlatform {
     final r = launch?.notificationResponse;
     if ((launch?.didNotificationLaunchApp ?? false) && r != null) onTap(r.actionId, r.payload);
   }
+
+  @override
+  Future<bool> canUseFullScreenIntent() async =>
+      await kAlertChannel.invokeMethod<bool>('canUseFullScreenIntent') ?? false;
+
+  @override
+  Future<void> openFullScreenIntentSettings() => kAlertChannel.invokeMethod<void>('openFullScreenIntentSettings');
+
+  @override
+  Future<void> setShowWhenLocked(bool on) => kAlertChannel.invokeMethod<void>('setShowWhenLocked', on);
 }
 
 /// Posts verdict / offline notifications with flutter_local_notifications.
@@ -162,7 +189,7 @@ class LocalAutoAnalyzeNotifier implements AutoAnalyzeNotifier {
   }
 
   S get _s {
-    AutoAnalyzeStrings.ensure();
+    RecordingWarningStrings.ensure();
     return S(locale());
   }
 
@@ -180,6 +207,25 @@ class LocalAutoAnalyzeNotifier implements AutoAnalyzeNotifier {
         ),
       );
 
+  /// HIGH/MEDIUM: max-importance channel with a full-screen intent. Android decides: over the lock
+  /// screen / screen off it may launch the warning (if "full-screen notifications" is allowed on
+  /// Android 14+); otherwise it is a heads-up notification whose tap opens the same warning.
+  NotificationDetails _warningDetails() => NotificationDetails(
+        android: AndroidNotificationDetails(
+          warningChannelId,
+          _s.t('warn_channel'),
+          importance: Importance.max,
+          priority: Priority.max,
+          category: AndroidNotificationCategory.alarm,
+          visibility: NotificationVisibility.public,
+          fullScreenIntent: true,
+          styleInformation: const BigTextStyleInformation(''),
+          actions: [AndroidNotificationAction(kReportAction, _s.t('auto_notif_report'), showsUserInterface: true)],
+        ),
+      );
+
+  static const warningChannelId = 'scamrakshak_recording_warnings';
+
   @override
   Future<void> showVerdict(StoredRecordingResult r) async {
     final p = await initPlugin();
@@ -188,9 +234,18 @@ class LocalAutoAnalyzeNotifier implements AutoAnalyzeNotifier {
     final type = res.scriptType;
     final title = type == null ? s.t('risk_${res.risk}') : '${s.t('risk_${res.risk}')}: ${s.t('script_$type')}';
     final body = '${s.t('auto_notif_body').replaceAll('{p}', '${(res.score * 100).round()}')}\n${r.fileName}';
-    await p.show(stableNotificationId('result:${r.id}'), title, body,
-        _details(report: true, alert: res.risk == 'high'),
-        payload: resultPayload(r.id));
+    final warn = isWarningRisk(res.risk);
+    final nid = stableNotificationId('result:${r.id}');
+    if (warn) {
+      try {
+        await p.show(nid, title, body, _warningDetails(), payload: resultPayload(r.id, warn: true));
+        return;
+      } catch (e) {
+        // Full-screen / warning channel unavailable: the normal notification must still appear.
+        aaLog('full-screen notification failed ($e); posting the normal one');
+      }
+    }
+    await p.show(nid, title, body, _details(report: true, alert: warn), payload: resultPayload(r.id, warn: warn));
   }
 
   @override
@@ -224,14 +279,27 @@ class AutoAnalyzeTaskHandler extends TaskHandler {
 
   @override
   Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
-    AutoAnalyzeStrings.ensure();
-    final store = await AutoAnalyzeStore.open();
-    _processor = RecordingProcessor(
-      store: store,
-      api: ApiClient(),
-      timeline: await CallTimeline.load(),
-      notifier: LocalAutoAnalyzeNotifier(() => store.locale),
-    );
+    aaLog('service start (${starter.name})');
+    AutoAnalyzeStore? store;
+    try {
+      RecordingWarningStrings.ensure();
+      store = await AutoAnalyzeStore.open();
+      final s = store;
+      _processor = RecordingProcessor(
+        store: s,
+        api: ApiClient(),
+        timeline: await CallTimeline.load(),
+        notifier: LocalAutoAnalyzeNotifier(() => s.locale),
+        // If the app is open, it shows the full-screen warning at once (no-op when it is not running).
+        onWarning: (id) => FlutterForegroundTask.sendDataToMain({kWarnMessageKey: id}),
+      );
+      aaLog('service ready: folder=${s.folder} enabled=${s.enabled} server=${await ApiClient().getBaseUrl()}');
+    } catch (e) {
+      aaLog('service start FAILED: $e');
+      try {
+        await store?.setLastError('Watcher could not start: $e');
+      } catch (_) {}
+    }
   }
 
   @override
@@ -240,10 +308,16 @@ class AutoAnalyzeTaskHandler extends TaskHandler {
     if (p == null || _busy) return;
     _busy = true;
     p.tick().then((on) {
-      if (!on) FlutterForegroundTask.stopService();
-    }).catchError((_) {}).whenComplete(() => _busy = false);
+      if (!on) {
+        aaLog('switched off: stopping service');
+        FlutterForegroundTask.stopService();
+      }
+    }).catchError((Object e) {
+      aaLog('poll failed: $e');
+      p.store.setLastError('Poll failed: $e').catchError((Object _) {});
+    }).whenComplete(() => _busy = false);
   }
 
   @override
-  Future<void> onDestroy(DateTime timestamp, bool isTimeout) async {}
+  Future<void> onDestroy(DateTime timestamp, bool isTimeout) async => aaLog('service stopped (timeout=$isTimeout)');
 }

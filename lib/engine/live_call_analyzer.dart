@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/services.dart' show rootBundle;
 
+import 'call_intent.dart';
 import 'models.dart';
 
 /// Running state of a live call (see AGENTS.md).
@@ -39,10 +41,15 @@ class LiveCallAnalyzer {
   final int mediumLevel;
   final int _maxTokens;
 
+  /// Caller-request intent rules ("intents" in call_rules.json); null if absent.
+  final CallIntentRules? intents;
+
   final List<String> _chunks = [];
   final List<({int start, int end, int phrase, CallMatch match})> _found = [];
+  final Set<String> _intentSeen = {};
 
-  LiveCallAnalyzer._(this._phrases, this._caps, this._negators, this._negationWindow, this.highLevel, this.mediumLevel)
+  LiveCallAnalyzer._(this._phrases, this._caps, this._negators, this._negationWindow, this.highLevel, this.mediumLevel,
+      this.intents)
     : _maxTokens = _phrases.fold(1, (m, p) => math.max(m, p.tokens.length));
 
   static Future<LiveCallAnalyzer> load() async =>
@@ -89,7 +96,7 @@ class LiveCallAnalyzer {
       final c = b.tokens.length.compareTo(a.tokens.length);
       return c != 0 ? c : b.tokens.join(' ').length.compareTo(a.tokens.join(' ').length);
     });
-    return LiveCallAnalyzer._(phrases, caps, negators, window, high, medium);
+    return LiveCallAnalyzer._(phrases, caps, negators, window, high, medium, CallIntentRules.fromJson(j));
   }
 
   /// Normalizes one character run: lowercase, drop nukta / ZWJ / ZWNJ / apostrophes,
@@ -176,6 +183,7 @@ class LiveCallAnalyzer {
   void reset() {
     _chunks.clear();
     _found.clear();
+    _intentSeen.clear();
   }
 
   String get transcript => _chunks.join(' ');
@@ -220,6 +228,11 @@ class LiveCallAnalyzer {
     return false;
   }
 
+  /// Evidence accumulates over the whole call so far (all chunks).
+  ///   byType = max(capped phrase sum, caller-request intent weight) per type (see CallAnalyzer.score)
+  ///   high   if total >= levels.high, or 2+ non-pressure types each >= 2
+  ///   medium if total >= levels.medium, or any single non-pressure hit >= 3
+  ///   score  = 1.0 when high, else min(0.95, total / levels.high)
   LiveCallState _state(String text, List<CallMatch> fresh) {
     final raw = <String, int>{};
     var strongest = 0;
@@ -229,13 +242,30 @@ class LiveCallAnalyzer {
       if (f.match.scriptType != 'pressure') strongest = math.max(strongest, w);
     }
     final byType = raw.map((t, v) => MapEntry(t, math.min(v, _caps[t] ?? v)));
+    final toks = tokenize(text);
+    final matches = [
+      for (final f in _found) (start: f.start < toks.length ? toks[f.start].start : 0, match: f.match),
+    ];
+    for (final h in intents?.detect(text) ?? const <IntentHit>[]) {
+      byType[h.type] = math.max(byType[h.type] ?? 0, h.weight);
+      strongest = math.max(strongest, h.weight);
+      if (matches.any((m) => duplicateMatch(m.match, h.match))) continue;
+      matches.add((start: h.start, match: h.match));
+      if (_intentSeen.add('${h.type}|${h.phrase}')) fresh.add(h.match);
+    }
+    matches.sort((a, b) => a.start.compareTo(b.start));
     final total = byType.values.fold(0, (a, b) => a + b);
     final strongTypes = byType.entries.where((e) => e.key != 'pressure' && e.value >= 2).length;
     final risk = (total >= highLevel || strongTypes >= 2)
         ? 'high'
         : (total >= mediumLevel || strongest >= 3 ? 'medium' : 'low');
     final score = risk == 'high' ? 1.0 : math.min(0.95, total / highLevel);
-    return LiveCallState(risk, score, List.unmodifiable([for (final f in _found) f.match]), fresh, text);
+    if (fresh.isNotEmpty) {
+      debugPrint('[detect] Live risk=$risk score=${score.toStringAsFixed(2)} total=$total byType=$byType '
+          'strongest=$strongest strongTypes=$strongTypes (medium>=$mediumLevel high>=$highLevel) '
+          'new=${[for (final m in fresh) '${m.phrase}/${m.scriptType}']}');
+    }
+    return LiveCallState(risk, score, List.unmodifiable([for (final m in matches) m.match]), fresh, text);
   }
 }
 

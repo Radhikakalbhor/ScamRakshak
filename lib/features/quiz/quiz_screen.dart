@@ -6,6 +6,7 @@ import '../../core/strings.dart';
 import '../../core/theme.dart';
 import '../lessons/lesson_detail_screen.dart';
 import '../lessons/lesson_models.dart';
+import 'literacy_score.dart';
 import 'quiz_models.dart';
 import 'quiz_strings.dart';
 
@@ -89,6 +90,7 @@ class _QuizScreenState extends State<QuizScreen> {
     }
     final r = session.score;
     await QuizStore.save(r);
+    await LiteracyStore.recordQuiz(r); // feeds the overall literacy score on the home screen
     if (!mounted) return;
     setState(() {
       _result = r;

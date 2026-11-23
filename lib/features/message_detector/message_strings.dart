@@ -39,6 +39,9 @@ class MessageStrings {
       'msg_advice_3': 'Do not call back or pay any fee they ask for.',
       'msg_advice_4': 'Block the sender. If you lost money, call 1930 at once.',
       'msg_report': 'Report this fraud',
+      'msg_fp_title': 'Help warn others (optional)',
+      'msg_fp_sub':
+          'Sends only an anonymous code made from scam messages, never the text or your number, so a new scam reaching many people can be spotted. Needs internet. Off by default.',
     },
     'hi': {
       'msg_title': 'संदेश जांचें',
@@ -68,6 +71,9 @@ class MessageStrings {
       'msg_advice_3': 'वापस कॉल न करें, कोई फीस न भरें।',
       'msg_advice_4': 'भेजने वाले को ब्लॉक करें। पैसे गए हों तो तुरंत 1930 पर कॉल करें।',
       'msg_report': 'इस ठगी की शिकायत करें',
+      'msg_fp_title': 'दूसरों को सावधान करने में मदद करें (मर्ज़ी से)',
+      'msg_fp_sub':
+          'ठगी वाले मैसेज से बना सिर्फ़ एक बिना नाम का कोड भेजता है, मैसेज या आपका नंबर कभी नहीं, ताकि बहुत लोगों तक पहुँची नई ठगी पकड़ी जा सके। इंटरनेट चाहिए। पहले से बंद रहता है।',
     },
     'chh': {
       'msg_title': 'संदेश जांचव',
@@ -97,6 +103,9 @@ class MessageStrings {
       'msg_advice_3': 'लहुट के कॉल झन कर, कोनो फीस झन भर।',
       'msg_advice_4': 'भेजइया ल ब्लॉक कर। पइसा गे हे त तुरते 1930 म कॉल कर।',
       'msg_report': 'ए ठगी के सिकायत कर',
+      'msg_fp_title': 'दूसर मन ल सावधान करे म मदद कर (अपन मरजी ले)',
+      'msg_fp_sub':
+          'ठगी वाला मैसेज ले बने सिरिफ एक बिना नाम के कोड भेजथे, मैसेज या तोर नंबर कभू नइ, ताकि बहुत मनखे तक पहुँचे नवा ठगी पकड़े जा सकय। इंटरनेट चाही। पहिली ले बंद रहिथे।',
     },
   };
 }

@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/services.dart' show rootBundle;
 
+import 'call_intent.dart';
 import 'models.dart';
 
 /// Detailed scoring of one transcript (see [CallAnalyzer.score]).
@@ -35,11 +37,15 @@ class CallAnalyzer {
   final Set<String> _negators;
   final int _negationWindow;
 
+  /// Caller-request intent rules ("intents" in call_rules.json); null if absent.
+  final CallIntentRules? intents;
+
   /// Minimum total score for 'high' / 'medium' risk.
   final int highLevel;
   final int mediumLevel;
 
-  CallAnalyzer._(this._phrases, this._caps, this._negators, this._negationWindow, this.highLevel, this.mediumLevel);
+  CallAnalyzer._(this._phrases, this._caps, this._negators, this._negationWindow, this.highLevel, this.mediumLevel,
+      this.intents);
 
   static Future<CallAnalyzer> load() async {
     final raw = await rootBundle.loadString(assetPath);
@@ -85,7 +91,7 @@ class CallAnalyzer {
       caps[type] = (r['cap'] as num?)?.toInt() ?? sum;
     }
     phrases.sort((a, b) => b.text.length.compareTo(a.text.length));
-    return CallAnalyzer._(phrases, caps, negators, window, high, medium);
+    return CallAnalyzer._(phrases, caps, negators, window, high, medium, CallIntentRules.fromJson(j));
   }
 
   /// Lowercases, turns punctuation (incl. Devanagari danda) into single spaces, trims, and drops
@@ -126,6 +132,12 @@ class CallAnalyzer {
   CallResult analyze(String transcript) => score(transcript).result;
 
   /// Full scoring: matched phrases, per-type scores and total.
+  ///
+  /// Formula (rule evidence only; the SMS classifier is not used for calls):
+  ///   phrase[type] = min(cap[type], sum of weights of distinct matched phrases of that type)
+  ///   intent[type] = weight of the strongest caller-request hit of that type ([CallIntentRules])
+  ///   byType[type] = max(phrase[type], intent[type])        (no double counting of the same evidence)
+  ///   total        = sum of byType;  high if total >= levels.high, medium if >= levels.medium.
   CallScore score(String transcript) {
     final norm = normalize(transcript);
     final text = norm.text;
@@ -139,19 +151,31 @@ class CallAnalyzer {
         if (p.negatable && _negated(text, m.start)) continue;
         taken.add([m.start, m.end]);
         final original = transcript.substring(norm.sourceIndex[m.start], norm.sourceIndex[m.end - 1] + 1);
-        found.add((start: m.start, match: CallMatch(original.toLowerCase(), p.type), weight: p.weight));
+        // start: offset in the original transcript (comparable with intent hits).
+        found.add((start: norm.sourceIndex[m.start], match: CallMatch(original.toLowerCase(), p.type), weight: p.weight));
         break; // each distinct phrase counts once
       }
     }
-    found.sort((a, b) => a.start.compareTo(b.start));
 
     final raw = <String, int>{};
     for (final f in found) {
       raw[f.match.scriptType] = (raw[f.match.scriptType] ?? 0) + f.weight;
     }
     final byType = raw.map((t, s) => MapEntry(t, math.min(s, _caps[t] ?? s)));
+
+    for (final h in intents?.detect(transcript) ?? const <IntentHit>[]) {
+      byType[h.type] = math.max(byType[h.type] ?? 0, h.weight);
+      if (!found.any((f) => duplicateMatch(f.match, h.match))) {
+        found.add((start: h.start, match: h.match, weight: h.weight));
+      }
+    }
+    found.sort((a, b) => a.start.compareTo(b.start));
+
     final total = byType.values.fold(0, (a, b) => a + b);
     final risk = total >= highLevel ? 'high' : (total >= mediumLevel ? 'medium' : 'low');
+    debugPrint('[detect] CallAnalyzer risk=$risk total=$total byType=$byType '
+        '(medium>=$mediumLevel high>=$highLevel; byType=max(capped phrases, intent); classifier not used) '
+        'matches=${[for (final f in found) '${f.match.phrase}/${f.match.scriptType}/${f.weight}']}');
     return CallScore(CallResult(risk, [for (final f in found) f.match]), byType, total);
   }
 

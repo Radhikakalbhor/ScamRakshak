@@ -78,6 +78,18 @@ Upon startup:
 Live Call Guard sends 6-second chunks to `POST /transcribe?lang=hi|en|auto`. Run
 `python -m unittest test_live_transcribe -v` to check transcription on the bundled demo clips.
 
+Accepted recording formats: wav, mp3, m4a, ogg, amr, aac, 3gp, opus, flac.
+
+Other endpoints (added; `/trends` is unchanged):
+- `GET /trends/summary`: seeded "synthetic" rows and user "live" reports kept apart, per district/type,
+  12-week weekly series. Counts below 5 are hidden.
+- `GET /alerts`: spikes (a district and type with at least 5 live reports in the last 7 days and at least 2x the
+  weekly average of the 4 weeks before) and clusters of opt-in message fingerprints.
+- `POST /fingerprints`: `{"fp": "<16 hex>", "category": "..."}`.
+- `POST /reports`: only the 33 district names or `unknown` are accepted.
+
+Run `python -m unittest test_trends_alerts -v` (no Whisper model needed).
+
 ---
 
 ## Finding Laptop IP for Android Phone Connection

@@ -94,6 +94,9 @@ class LessonRepository {
   static Future<List<Lesson>> loadAll() => Future.wait(kLessonIds.map(load));
 }
 
+/// Bumped whenever a lesson is completed or a quiz is saved (the home literacy score listens).
+final ValueNotifier<int> learningProgressChanged = ValueNotifier<int>(0);
+
 /// Lesson completion ticks stored in shared_preferences.
 class LessonProgress {
   static String _key(String id) => 'lesson_done_$id';
@@ -110,8 +113,10 @@ class LessonProgress {
   static Future<void> markDone(String id) async {
     try {
       final p = await SharedPreferences.getInstance();
+      if (p.getBool(_key(id)) == true) return;
       await p.setBool(_key(id), true);
     } catch (_) {}
+    learningProgressChanged.value++;
   }
 }
 

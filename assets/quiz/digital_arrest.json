@@ -30,6 +30,26 @@
      "answer": 0,
      "explain": {"en": "RBI and the police never hold your money for 'verification'. That account belongs to the thief.",
                  "hi": "RBI या पुलिस कभी 'जाँच' के लिए आपके पैसे नहीं रखते। वह खाता ठग का होता है।",
-                 "chh": "RBI या पुलिस कभू 'जाँच' बर तोर पइसा नइ रखय। ओ खाता ठग के होथे।"}}
+                 "chh": "RBI या पुलिस कभू 'जाँच' बर तोर पइसा नइ रखय। ओ खाता ठग के होथे।"}},
+    {"q": {"en": "Is there anything called 'digital arrest' in Indian law?",
+           "hi": "क्या भारतीय कानून में 'डिजिटल अरेस्ट' जैसी कोई चीज़ है?",
+           "chh": "का भारत के कानून म 'डिजिटल अरेस्ट' जइसे कुछु हे?"},
+     "options": {"en": ["Yes, police can arrest you on video", "No, it is only a scam trick", "Only for big crimes"],
+                 "hi": ["हाँ, पुलिस वीडियो पर गिरफ़्तार कर सकती है", "नहीं, यह सिर्फ़ ठगी की चाल है", "सिर्फ़ बड़े अपराध में"],
+                 "chh": ["हव, पुलिस वीडियो म गिरफ्तार कर सकथे", "नइ, ए सिरिफ ठगी के चाल आय", "सिरिफ बड़े अपराध म"]},
+     "answer": 1,
+     "explain": {"en": "There is no 'digital arrest'. Real police do not keep you on a video call or take money to close a case.",
+                 "hi": "'डिजिटल अरेस्ट' नाम की कोई चीज़ नहीं है। असली पुलिस वीडियो कॉल पर नहीं रोकती, न केस बंद करने के पैसे लेती है।",
+                 "chh": "'डिजिटल अरेस्ट' नाम के कुछु नइ हे। असली पुलिस वीडियो कॉल म नइ रोकय, न केस बंद करे के पइसा लेथे।"}},
+    {"q": {"en": "The 'officer' says: do not tell your family, stay in the room. Why?",
+           "hi": "'अफ़सर' कहता है: परिवार को मत बताना, कमरे में ही रहना। क्यों?",
+           "chh": "'अफसर' कहिथे: परिवार ल झन बताबे, कमरा म रहिबे। काबर?"},
+     "options": {"en": ["To protect the investigation", "So nobody can tell you it is a scam", "It is the law"],
+                 "hi": ["जांच बचाने के लिए", "ताकि कोई आपको न बता सके कि यह ठगी है", "यह कानून है"],
+                 "chh": ["जांच बचाए बर", "ताकि कोनो तोला झन बता सकय के ए ठगी आय", "ए कानून आय"]},
+     "answer": 1,
+     "explain": {"en": "Scammers isolate you so you cannot check. Talk to family and call 1930 at once.",
+                 "hi": "ठग आपको अकेला रखते हैं ताकि आप जांच न कर सकें। परिवार से बात करें और तुरंत 1930 पर कॉल करें।",
+                 "chh": "ठग तोला अकेल्ला रखथें ताकि तैं जांच झन कर सकस। परिवार ले गोठिया अउ तुरते 1930 म कॉल कर।"}}
   ]
 }

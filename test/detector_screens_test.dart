@@ -25,6 +25,13 @@ class _OfflineApi extends ApiClient {
   Future<void> postReport(String type, String district) async {}
 }
 
+class _StatusApi extends ApiClient {
+  final int status;
+  _StatusApi(this.status);
+  @override
+  Future<Map> transcribe(File audio) async => throw ApiException(status, 'x');
+}
+
 class _TranscribeApi extends ApiClient {
   @override
   Future<Map> transcribe(File audio) async =>
@@ -143,6 +150,29 @@ void main() {
   });
 
   group('CallDetectorScreen', () {
+    test('picker lists every call-recording format the backend accepts', () {
+      expect(kCallAudioExtensions, containsAll(['m4a', 'mp3', 'wav', 'amr', 'ogg']));
+    });
+
+    testWidgets('says the backend is needed; unsupported file and server-starting errors are named', (tester) async {
+      _tallView(tester);
+      await tester.pumpWidget(app(CallDetectorScreen(pickAudio: () async => File('x.xyz')), api: _StatusApi(400)));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('needs the ScamRakshak server'), findsOneWidget);
+      expect(find.textContaining('amr'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('call_pick')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('This file type cannot be read'), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(app(CallDetectorScreen(pickAudio: () async => File('x.amr')), api: _StatusApi(503)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('call_pick')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('still starting up'), findsOneWidget);
+    });
+
     testWidgets('backend offline shows friendly message suggesting samples', (tester) async {
       _tallView(tester);
       await tester.pumpWidget(app(CallDetectorScreen(pickAudio: () async => File('x.mp3')), api: _OfflineApi()));

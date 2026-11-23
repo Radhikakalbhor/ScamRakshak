@@ -5,18 +5,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:scam_rakshak/core/api_client.dart';
 import 'package:scam_rakshak/core/providers.dart';
 import 'package:scam_rakshak/engine/call_analyzer.dart';
 import 'package:scam_rakshak/engine/live_call_analyzer.dart';
+import 'package:scam_rakshak/engine/models.dart';
 import 'package:scam_rakshak/features/call_detector/auto_analyze_core.dart';
 import 'package:scam_rakshak/features/call_detector/auto_analyze_screen.dart';
 import 'package:scam_rakshak/features/call_detector/auto_analyze_service.dart';
 import 'package:scam_rakshak/features/call_detector/call_detector_screen.dart';
 import 'package:scam_rakshak/features/call_detector/call_timeline.dart';
 import 'package:scam_rakshak/features/call_detector/recording_result_screen.dart';
+import 'package:scam_rakshak/features/call_detector/recording_warning_screen.dart';
+import 'package:scam_rakshak/features/live_call/recording_inbox.dart';
 import 'package:scam_rakshak/features/report/report_screen.dart';
 
 Map<String, dynamic> _json(String path) => jsonDecode(File(path).readAsStringSync()) as Map<String, dynamic>;
@@ -115,6 +119,30 @@ class FakePlatform implements AutoAnalyzePlatform {
   Future<bool> isServiceRunning() async => running;
   @override
   Future<void> listenForTaps(NotificationTap onTap) async => tap = onTap;
+
+  bool fsi = false;
+  final lock = <bool>[];
+  @override
+  Future<bool> canUseFullScreenIntent() async => fsi;
+  @override
+  Future<void> openFullScreenIntentSettings() async => calls.add('fsi');
+  @override
+  Future<void> setShowWhenLocked(bool on) async => lock.add(on);
+}
+
+/// Returns a fixed verdict (to route HIGH / MEDIUM / LOW deterministically).
+class FixedTimeline extends CallTimeline {
+  String risk;
+  FixedTimeline(this.risk) : super(_timeline().rules, _timeline().live);
+
+  @override
+  CallTimelineResult analyze(String transcript) => CallTimelineResult(
+        risk,
+        switch (risk) { 'high' => 0.9, 'medium' => 0.62, _ => 0.17 },
+        CallResult(risk, risk == 'low' ? const [] : const [CallMatch('share the OTP', 'otp_request'), CallMatch('account blocked', 'fake_kyc')]),
+        const [],
+        transcript,
+      );
 }
 
 void main() {
@@ -253,7 +281,7 @@ void main() {
       expect(v.result.risk, 'high');
       expect(v.result.score, greaterThanOrEqualTo(0.8));
       expect(v.fileName, 'Call_9876543210.m4a');
-      expect(store.processed, [rec.path]);
+      expect(store.processed, [rec.path, recordingIdentity(rec.path, rec.lengthSync(), rec.lastModifiedSync())]);
       expect(store.result(v.id)!.result.transcript, api.text);
       await ticks(5);
       expect(api.uploads, hasLength(1));
@@ -278,17 +306,19 @@ void main() {
         ..error = const ApiOfflineException('down')
         ..reachable = false;
       await ticks(3);
-      expect(notifier.offline, [rec.path]);
+      expect(notifier.offline, [rec.path]); // reported at once (quick /health check), no 5-minute upload hang
+      expect(api.uploads, isEmpty);
       expect(store.pending, [rec.path]);
       expect(store.processed, isEmpty);
+      expect(store.lastError, contains('Server not reachable'));
       await ticks(2 * RecordingProcessor.retryEvery);
-      expect(api.uploads, hasLength(1)); // not re-uploaded while the server is unreachable
+      expect(api.uploads, isEmpty); // not uploaded while the server is unreachable
       api
         ..error = null
         ..reachable = true;
       await ticks(RecordingProcessor.retryEvery);
       expect(notifier.offline, hasLength(1)); // only one "tap to analyze" notification
-      expect(api.uploads, hasLength(2));
+      expect(api.uploads, hasLength(1));
       expect(notifier.verdicts, hasLength(1));
       expect(store.pending, isEmpty);
       expect(notifier.cancelled, contains(rec.path));
@@ -302,7 +332,7 @@ void main() {
       api.error = const ApiException(400, 'bad file');
       final r = await p.process(rec.path);
       expect(r.status, ProcessStatus.failed);
-      expect(store.processed, [rec.path]);
+      expect(store.processed, contains(rec.path));
       expect(store.pending, isEmpty);
       expect(notifier.verdicts, isEmpty);
     });
@@ -310,7 +340,7 @@ void main() {
     test('silent recording -> processed without a verdict', () async {
       api.text = '  ';
       await ticks(3);
-      expect(store.processed, [rec.path]);
+      expect(store.processed, contains(rec.path));
       expect(notifier.verdicts, isEmpty);
     });
 
@@ -340,21 +370,6 @@ void main() {
     });
   });
 
-  test('simulateRecording writes one finished sample mp3 into the folder', () async {
-    TestWidgetsFlutterBinding.ensureInitialized();
-    final dir = Directory.systemTemp.createTempSync('sr_sim_');
-    addTearDown(() => dir.deleteSync(recursive: true));
-    final f = await simulateRecording(dir.path, rootBundle, now: DateTime(2026, 11, 23, 9, 5, 7));
-    expect(fileNameOf(f.path), 'ScamRakshak_demo_call_20261123_090507.mp3');
-    expect(dir.listSync().map((e) => e.path), [f.path]); // no .part left
-    var expected = 0;
-    for (final a in kSimulateClips) {
-      expected += File(a).lengthSync();
-    }
-    expect(f.lengthSync(), expected);
-    expect(f.lengthSync(), greaterThan(RecordingWatcher.minBytes));
-    expect(isRecordingFile(f.path), isTrue);
-  });
 
   group('screens', () {
     late FakePlatform platform;
@@ -412,7 +427,6 @@ void main() {
       expect(platform.calls, ['files', 'notif', 'battery']);
       expect(find.byKey(const Key('auto_allow_files')), findsNothing);
       expect(toggleEnabled(tester), isTrue);
-      expect(tester.widget<OutlinedButton>(find.byKey(const Key('auto_simulate'))).onPressed, isNull);
 
       await tester.tap(find.byKey(const Key('auto_toggle')));
       await tester.pumpAndSettle();
@@ -421,7 +435,7 @@ void main() {
       expect(prefs.getBool(AutoAnalyzeStore.kEnabled), isTrue);
       expect(prefs.getInt(AutoAnalyzeStore.kEnabledAt), isNotNull);
       expect(find.text('On. Watching the folder every 3 seconds.'), findsOneWidget);
-      expect(tester.widget<OutlinedButton>(find.byKey(const Key('auto_simulate'))).onPressed, isNotNull);
+      expect(find.byKey(const Key('auto_simulate')), findsNothing); // no more files written into the folder
 
       await tester.tap(find.byKey(const Key('auto_toggle')));
       await tester.pumpAndSettle();
@@ -525,7 +539,11 @@ void main() {
 
       Future<void> analyze() async {
         await tester.tap(find.byKey(const Key('rec_analyze_now')));
-        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 300)));
+        // Each real file operation (exists, stat) completes in real time, then resumes on a pump.
+        for (var i = 0; i < 6; i++) {
+          await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 150)));
+          await tester.pump();
+        }
         await tester.pumpAndSettle();
       }
 
@@ -536,7 +554,7 @@ void main() {
       expect(find.text('HIGH RISK'), findsOneWidget);
       expect(rec.existsSync(), isTrue);
       final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getStringList(AutoAnalyzeStore.kProcessed), [rec.path]);
+      expect(prefs.getStringList(AutoAnalyzeStore.kProcessed), contains(rec.path));
     });
 
     testWidgets('notification taps open the result, and the Report action opens /report', (tester) async {
@@ -565,4 +583,500 @@ void main() {
       expect(platform.calls, ['start:en']);
     });
   });
+
+  group('watcher qualification (demo/simulated, partial, hidden, processed)', () {
+    final since = DateTime(2026, 11, 23, 10);
+    final t = since.add(const Duration(minutes: 2));
+
+    test('only genuine finished recordings qualify', () async {
+      final files = [
+        RecordingFileInfo('/rec/Ramesh 2026-11-23 19-31-47.m4a', 90000, t), // real recording
+        RecordingFileInfo('/rec/ScamRakshak_demo_call_20261123_193059.mp3', 286848, t), // old Simulate output
+        RecordingFileInfo('/rec/ScamRakshak_demo_call_20261123_193059.mp3.part', 286848, t), // partial demo
+        RecordingFileInfo('/rec/call.m4a.part', 90000, t), // partial download/write
+        RecordingFileInfo('/rec/.trashed-1798035356-Ramesh 2026-11-23 14-14-28.m4a', 90000, t), // MediaStore trash
+        RecordingFileInfo('/rec/.pending-1798035356-call.m4a', 90000, t), // MediaStore pending
+        RecordingFileInfo('/rec/.hidden.mp3', 90000, t),
+      ];
+      final w = RecordingWatcher(list: (_) async => files);
+      List<String> ready = [];
+      for (var i = 0; i < RecordingWatcher.stablePolls; i++) {
+        ready = (await w.poll(folder: '/rec', since: since, processed: const {})).map((f) => f.path).toList();
+      }
+      expect(ready, ['/rec/Ramesh 2026-11-23 19-31-47.m4a']);
+      expect(isGenuineRecording('/rec/my demo.mp3'), isTrue); // a user's own file named "demo" is fine
+    });
+
+    test('already processed (by path or by identity after a rename) is excluded', () async {
+      final real = RecordingFileInfo('/rec/Ramesh 2026-11-23 19-31-47.m4a', 90000, t);
+      final moved = RecordingFileInfo('/rec/Calls/Ramesh 2026-11-23 19-31-47.m4a', 90000, t);
+      final id = recordingIdentity(real.path, real.size, real.modified);
+      expect(recordingIdentity('/x/.trashed-123-Ramesh 2026-11-23 19-31-47.m4a', 90000, t), id);
+      final w = RecordingWatcher(list: (_) async => [real, moved]);
+      for (var i = 0; i < RecordingWatcher.stablePolls; i++) {
+        expect(await w.poll(folder: '/rec', since: since, processed: {id}), isEmpty);
+      }
+    });
+  });
+
+  group('dedupe, demo cleanup and warning routing', () {
+    late Directory dir;
+    late AutoAnalyzeStore store;
+    late FakeApi api;
+    late FakeNotifier notifier;
+    late File rec;
+
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      dir = Directory.systemTemp.createTempSync('sr_warn_');
+      store = await AutoAnalyzeStore.open();
+      await store.setFolder(dir.path);
+      await store.setEnabled(true, now: DateTime.now().subtract(const Duration(minutes: 1)));
+      api = FakeApi();
+      notifier = FakeNotifier();
+      rec = File('${dir.path}${Platform.pathSeparator}Call_9876543210.m4a')..writeAsBytesSync(List.filled(40000, 7));
+    });
+    tearDown(() => dir.deleteSync(recursive: true));
+
+    RecordingProcessor proc({String risk = 'high', void Function(String)? onWarning}) => RecordingProcessor(
+        store: store, api: api, timeline: FixedTimeline(risk), notifier: notifier, onWarning: onWarning);
+
+    Future<void> ticks(RecordingProcessor p, int n) async {
+      for (var i = 0; i < n; i++) {
+        await p.tick();
+      }
+    }
+
+    test('each recording is analysed at most once, across service restarts', () async {
+      await ticks(proc(), 3);
+      expect(api.uploads, [rec.path]);
+      // Service restarted: new processor and a freshly loaded store.
+      final restarted = RecordingProcessor(
+          store: await AutoAnalyzeStore.open(), api: api, timeline: FixedTimeline('high'), notifier: notifier);
+      await ticks(restarted, 6);
+      expect(api.uploads, hasLength(1));
+      // The same recording at another path (moved, same name/size/time) is not analysed again.
+      final other = Directory('${dir.path}${Platform.pathSeparator}moved')..createSync();
+      final copy = File('${other.path}${Platform.pathSeparator}Call_9876543210.m4a')
+        ..writeAsBytesSync(rec.readAsBytesSync());
+      copy.setLastModifiedSync(rec.lastModifiedSync());
+      expect((await restarted.process(copy.path)).status, ProcessStatus.skipped);
+      expect(api.uploads, hasLength(1));
+      expect(store.resultIds, hasLength(1));
+    });
+
+    test('demo files are never analysed; cleanup deletes only the app demo files and their alerts', () async {
+      final demo = File('${dir.path}${Platform.pathSeparator}ScamRakshak_demo_call_20261123_193059.mp3')
+        ..writeAsBytesSync(List.filled(286848, 1));
+      final part = File('${dir.path}${Platform.pathSeparator}ScamRakshak_demo_call_20261123_141820.mp3.part')
+        ..writeAsBytesSync(List.filled(1000, 1));
+      final userDemo = File('${dir.path}${Platform.pathSeparator}my demo.mp3')..writeAsBytesSync(List.filled(40000, 3));
+      expect((await proc().process(demo.path)).status, ProcessStatus.skipped);
+      expect(api.uploads, isEmpty);
+      // An old demo verdict in the alert history is removed too.
+      await store.saveResult(demo.path, FixedTimeline('low').analyze('x'));
+      final realId = await store.saveResult(rec.path, FixedTimeline('high').analyze('y'));
+      final deleted = await cleanUpDemoRecordings(store);
+      expect(deleted, 2);
+      expect(demo.existsSync() || part.existsSync(), isFalse);
+      expect(rec.existsSync() && userDemo.existsSync(), isTrue);
+      expect(store.resultIds, [realId]);
+      // The processor only analyses the real recordings.
+      await ticks(proc(), 3);
+      expect(api.uploads.map(fileNameOf).toSet(), {'Call_9876543210.m4a', 'my demo.mp3'});
+    });
+
+    for (final risk in ['high', 'medium', 'low']) {
+      test('risk routing: $risk -> ${risk == 'low' ? 'notification only' : 'queued full-screen warning'}', () async {
+        final warned = <String>[];
+        await ticks(proc(risk: risk, onWarning: warned.add), 3);
+        final id = store.resultIds.single;
+        expect(notifier.verdicts.single.id, id);
+        if (risk == 'low') {
+          expect(store.warnQueue, isEmpty);
+          expect(warned, isEmpty);
+          expect(store.needsWarning(id), isFalse);
+        } else {
+          expect(store.warnQueue, [id]);
+          expect(warned, [id]);
+          expect(store.nextWarning(), id);
+        }
+      });
+    }
+
+    test('result is saved (and queued) before the notification or the warning', () async {
+      final seen = <String>[];
+      final checking = _CheckingNotifier(store, seen);
+      final p = RecordingProcessor(
+        store: store,
+        api: api,
+        timeline: FixedTimeline('high'),
+        notifier: checking,
+        onWarning: (id) => seen.add('warn:${store.result(id) != null}:${store.warnQueue.contains(id)}'),
+      );
+      await ticks(p, 3);
+      expect(seen, ['notify:true:true', 'warn:true:true']);
+    });
+
+    test('notification still posts when saving, queueing and the app message all throw', () async {
+      final broken = _BrokenStore(store.prefs);
+      final p = RecordingProcessor(
+        store: broken,
+        api: api,
+        timeline: FixedTimeline('high'),
+        notifier: notifier,
+        onWarning: (_) => throw StateError('app gone'),
+      );
+      await ticks(p, 3);
+      expect(notifier.verdicts, hasLength(1));
+      expect(notifier.verdicts.single.result.risk, 'high');
+      expect(notifier.verdicts.single.fileName, 'Call_9876543210.m4a');
+      expect(broken.lastError, contains('save result'));
+    });
+
+    test('warning step failure does not block the notification', () async {
+      final p = proc(onWarning: (_) => throw StateError('app gone'));
+      await ticks(p, 3);
+      expect(notifier.verdicts, hasLength(1));
+      expect(store.resultIds, hasLength(1)); // saved
+      expect(store.warnQueue, hasLength(1)); // queued for when the app opens
+    });
+
+    test('diagnostics list: genuine accepted, demo/partial rejected with reasons', () async {
+      File('${dir.path}${Platform.pathSeparator}ScamRakshak_demo_call_20261123_210600.mp3')
+          .writeAsBytesSync(List.filled(40000, 1));
+      File('${dir.path}${Platform.pathSeparator}call.m4a.part').writeAsBytesSync(List.filled(40000, 1));
+      final p = proc(risk: 'low');
+      await p.tick(); // cleanup removes the demo file on the first poll
+      File('${dir.path}${Platform.pathSeparator}ScamRakshak_demo_call_20261123_210700.mp3')
+          .writeAsBytesSync(List.filled(40000, 1)); // a new one appears later
+      await ticks(p, 3);
+      final d = {for (final x in store.diagnostics) x.name: x};
+      expect(d['Call_9876543210.m4a']!.accepted, isTrue);
+      expect(d['Call_9876543210.m4a']!.reason, 'analysed: LOW 17%');
+      expect(d['ScamRakshak_demo_call_20261123_210700.mp3']!.reason, 'ScamRakshak demo file');
+      expect(d['call.m4a.part']!.reason, 'not an audio recording');
+      expect(api.uploads, [rec.path]);
+      expect(store.diagnostics.length, lessThanOrEqualTo(AutoAnalyzeStore.maxDiag));
+    });
+
+    test('Analyze now from the app (notify: false) raises no warning', () async {
+      final r = await proc().process(rec.path, notify: false);
+      expect(r.status, ProcessStatus.done);
+      expect(store.warnQueue, isEmpty);
+    });
+  });
+
+  group('full-screen warning screens', () {
+    late FakePlatform platform;
+    late FakeApi api;
+
+    setUp(() {
+      SharedPreferences.setMockInitialValues({});
+      platform = FakePlatform();
+      api = FakeApi();
+      // rootBundle caches the load Future from the previous test's fake-async zone; start fresh.
+      rootBundle.evict(kDemoTranscriptAsset);
+    });
+
+    Widget app(Widget home) => ProviderScope(
+          overrides: [
+            autoAnalyzePlatformProvider.overrideWithValue(platform),
+            apiClientProvider.overrideWithValue(api),
+            folderExistsProvider.overrideWithValue((p) async => true),
+            recordingFolderCandidatesProvider.overrideWith((ref) async => const <String>[]),
+            autoAnalyzeNotifierProvider.overrideWithValue(FakeNotifier()),
+            callTimelineProvider.overrideWith((ref) async => _timeline()),
+          ],
+          child: MaterialApp(home: home),
+        );
+
+    void tall(WidgetTester tester) {
+      tester.view.physicalSize = const Size(1000, 3000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+    }
+
+    Future<String> save(String risk, {bool queue = true, String name = 'Call_1.m4a'}) async {
+      final store = await AutoAnalyzeStore.open();
+      final id = await store.saveResult('/storage/emulated/0/Record/Call/$name', FixedTimeline(risk).analyze('Tell me the OTP'));
+      if (queue) await store.enqueueWarning(id);
+      return id;
+    }
+
+    Color bg(WidgetTester tester) => tester.widget<Scaffold>(find.byType(Scaffold).first).backgroundColor!;
+
+    testWidgets('HIGH is red, MEDIUM is amber, with score, type and trigger phrases', (tester) async {
+      tall(tester);
+      final high = (await tester.runAsync(() => save('high')))!;
+      final medium = (await tester.runAsync(() => save('medium', name: 'Call_2.m4a')))!;
+      await tester.pumpWidget(app(RecordingWarningScreen(resultId: high)));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('warn_high')), findsOneWidget);
+      expect(bg(tester), kWarnHighColor);
+      expect(find.text('SCAM CALL WARNING'), findsOneWidget);
+      expect(find.text('Scam score: 90%'), findsOneWidget);
+      expect(find.text('Scam type: Asking for OTP / code'), findsOneWidget);
+      expect(find.text('"share the OTP"'), findsOneWidget);
+      expect(find.byKey(const Key('warn_saved')), findsOneWidget);
+      expect(platform.lock, [true]); // over the lock screen while open
+
+      // Next warning replaces the first: stays over the lock screen in between.
+      await tester.pumpWidget(app(RecordingWarningScreen(key: ValueKey(medium), resultId: medium)));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('warn_medium')), findsOneWidget);
+      expect(bg(tester), kWarnMediumColor);
+      expect(find.text('POSSIBLE SCAM CALL'), findsOneWidget);
+      expect(find.text('Scam score: 62%'), findsOneWidget);
+      expect(platform.lock, [true, true]);
+      await tester.pumpWidget(const SizedBox());
+      expect(platform.lock, [true, true, false]); // normal again once no warning is open
+    });
+
+    testWidgets('Report opens the reporting options carrying the recording; alert stays saved', (tester) async {
+      tall(tester);
+      final id = (await tester.runAsync(() => save('high')))!;
+      await tester.pumpWidget(app(RecordingWarningScreen(resultId: id)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('warn_report')));
+      await tester.pumpAndSettle();
+      expect(find.byType(ReportScreen), findsOneWidget);
+      expect(find.byType(RecordingReportScreen), findsOneWidget);
+      expect(tester.widget<Text>(find.byKey(const Key('rep_evidence_id'))).data, 'Alert ID: $id · Call_1.m4a');
+      final store = (await tester.runAsync(AutoAnalyzeStore.open))!;
+      await tester.runAsync(store.reload);
+      expect(store.result(id), isNotNull);
+      expect(store.needsWarning(id), isFalse);
+    });
+
+    testWidgets('Dismiss closes the warning and opens Recording Alerts; alert stays saved', (tester) async {
+      tall(tester);
+      final id = (await tester.runAsync(() => save('high')))!;
+      await tester.pumpWidget(app(Builder(
+        builder: (context) => Scaffold(
+          body: TextButton(onPressed: () => openRecordingWarning(context, id), child: const Text('open')),
+        ),
+      )));
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('warn_dismiss')));
+      await tester.pumpAndSettle();
+      expect(find.byType(RecordingWarningScreen), findsNothing);
+      expect(find.byType(RecordingInboxScreen), findsOneWidget);
+      expect(find.textContaining('Call_1.m4a'), findsWidgets);
+      final store = (await tester.runAsync(AutoAnalyzeStore.open))!;
+      await tester.runAsync(store.reload);
+      expect(store.result(id), isNotNull);
+    });
+
+    testWidgets('host shows queued warnings one at a time, each once; old notification -> result, not warning',
+        (tester) async {
+      tall(tester);
+      final first = (await tester.runAsync(() => save('high')))!;
+      final second = (await tester.runAsync(() => save('medium', name: 'Call_2.m4a')))!;
+      final low = (await tester.runAsync(() => save('low', queue: false, name: 'Call_3.m4a')))!;
+      await tester.pumpWidget(app(const AutoAnalyzeHost(child: Scaffold(body: Text('home')))));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('warn_high')), findsOneWidget); // oldest first
+      Navigator.of(tester.element(find.byType(RecordingWarningScreen))).pop();
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('warn_medium')), findsOneWidget); // then the next one
+      Navigator.of(tester.element(find.byType(RecordingWarningScreen))).pop();
+      await tester.pumpAndSettle();
+      expect(find.byType(RecordingWarningScreen), findsNothing);
+      expect(find.text('home'), findsOneWidget);
+
+      // Tapping the old notification of a dismissed warning opens the result, not the warning.
+      platform.tap!(null, resultPayload(first, warn: true));
+      await tester.pumpAndSettle();
+      expect(find.byType(RecordingWarningScreen), findsNothing);
+      expect(find.byType(RecordingResultScreen), findsOneWidget);
+      expect(platform.lock.last, isFalse);
+      Navigator.of(tester.element(find.byType(RecordingResultScreen))).pop();
+      await tester.pumpAndSettle();
+
+      // Restart (new host): nothing is shown again; LOW never had a warning.
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(app(const AutoAnalyzeHost(child: Scaffold(body: Text('home')))));
+      await tester.pumpAndSettle();
+      expect(find.byType(RecordingWarningScreen), findsNothing);
+      final store = (await tester.runAsync(AutoAnalyzeStore.open))!;
+      await tester.runAsync(store.reload);
+      expect(store.warnedIds, containsAll([first, second]));
+      expect(store.warnedIds.contains(low), isFalse);
+      expect(store.resultIds, hasLength(3)); // all kept
+    });
+
+    testWidgets('notification tap on a queued warning (app opened from it) shows that warning', (tester) async {
+      tall(tester);
+      final a = (await tester.runAsync(() => save('high')))!;
+      final b = (await tester.runAsync(() => save('high', name: 'Call_2.m4a')))!;
+      // Simulate both already shown except b, then tap b's notification.
+      final store = (await tester.runAsync(AutoAnalyzeStore.open))!;
+      await tester.runAsync(() => store.markWarned(a));
+      await tester.pumpWidget(app(const AutoAnalyzeHost(child: Scaffold(body: Text('home')))));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Call_2.m4a'), findsOneWidget); // b shown at start
+      Navigator.of(tester.element(find.byType(RecordingWarningScreen))).pop();
+      await tester.pumpAndSettle();
+      platform.tap!(null, resultPayload(b, warn: true));
+      await tester.pumpAndSettle();
+      expect(find.byType(RecordingWarningScreen), findsNothing); // shown once only
+    });
+
+    testWidgets('DEMO warning: labelled DEMO, uses no folder, saves nothing', (tester) async {
+      tall(tester);
+      SharedPreferences.setMockInitialValues({
+        AutoAnalyzeStore.kConsent: true,
+        AutoAnalyzeStore.kFolder: '/storage/emulated/0/Record/Call',
+      });
+      await tester.pumpWidget(app(const AutoAnalyzeScreen()));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('auto_demo_warning')));
+      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('warn_demo_banner')), findsOneWidget);
+      expect(find.byKey(const Key('warn_high')), findsOneWidget);
+      expect(find.byKey(const Key('warn_saved')), findsNothing);
+      await tester.tap(find.byKey(const Key('warn_dismiss')));
+      await tester.pumpAndSettle();
+      expect(find.byType(AutoAnalyzeScreen), findsOneWidget);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getStringList(AutoAnalyzeStore.kResults), isNull);
+      expect(prefs.getStringList(AutoAnalyzeStore.kWarnQueue), isNull);
+    });
+
+    testWidgets('with go_router: DEMO -> Report stacks on top; real warning Report/Dismiss navigate', (tester) async {
+      tall(tester);
+      SharedPreferences.setMockInitialValues({AutoAnalyzeStore.kConsent: true});
+      final router = GoRouter(initialLocation: '/call/auto', routes: [
+        GoRoute(path: '/', builder: (_, _) => const Scaffold(body: Text('home'))),
+        GoRoute(path: '/call/auto', builder: (_, _) => const AutoAnalyzeScreen()),
+        GoRoute(path: '/call/warning', builder: (_, s) => RecordingWarningScreen(resultId: s.extra as String)),
+        GoRoute(
+            path: '/call/warning/demo',
+            builder: (_, s) => RecordingWarningScreen.demo(demo: s.extra as CallTimelineResult)),
+        GoRoute(path: '/call/report', builder: (_, s) => RecordingReportScreen(resultId: s.extra as String)),
+        GoRoute(path: '/report', builder: (_, s) => ReportScreen(initialType: s.extra as String?)),
+        GoRoute(path: '/live/inbox', builder: (_, _) => const RecordingInboxScreen()),
+      ]);
+      addTearDown(router.dispose);
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          autoAnalyzePlatformProvider.overrideWithValue(platform),
+          apiClientProvider.overrideWithValue(api),
+          folderExistsProvider.overrideWithValue((p) async => true),
+          recordingFolderCandidatesProvider.overrideWith((ref) async => const <String>[]),
+          callTimelineProvider.overrideWith((ref) async => _timeline()),
+        ],
+        child: MaterialApp.router(routerConfig: router),
+      ));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('auto_demo_warning')));
+      for (var i = 0; i < 40 && find.byType(RecordingWarningScreen).evaluate().isEmpty; i++) {
+        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+        await tester.pump();
+      }
+      await tester.pumpAndSettle();
+      bool demoOnTop() =>
+          router.state.uri.path == '/call/warning/demo' &&
+          tester.widget<RecordingWarningScreen>(find.byType(RecordingWarningScreen)).demo != null;
+      expect(demoOnTop(), isTrue,
+          reason: 'path=${router.state.uri.path} warnings=${find.byType(RecordingWarningScreen).evaluate().length} '
+              'auto=${find.byType(AutoAnalyzeScreen).evaluate().length} ex=${tester.takeException()}');
+      await tester.tap(find.byKey(const Key('warn_report')));
+      await tester.pumpAndSettle();
+      expect(find.byType(ReportScreen), findsOneWidget);
+      router.pop();
+      await tester.pumpAndSettle();
+      expect(demoOnTop(), isTrue); // DEMO still under the report
+
+      final id = (await tester.runAsync(() => save('high')))!;
+      router.push('/call/warning', extra: id);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('warn_report')));
+      await tester.pumpAndSettle();
+      expect(find.byType(RecordingReportScreen), findsOneWidget);
+      router.pop();
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('warn_dismiss')));
+      await tester.pumpAndSettle();
+      expect(find.byType(RecordingInboxScreen), findsOneWidget);
+      expect(find.byType(RecordingWarningScreen), findsNothing);
+    });
+
+    testWidgets('with go_router: after Dismiss, a later warning still opens (no stuck queue)', (tester) async {
+      tall(tester);
+      final first = (await tester.runAsync(() => save('high')))!;
+      final router = GoRouter(routes: [
+        GoRoute(path: '/', builder: (_, _) => const AutoAnalyzeHost(child: Scaffold(body: Text('home')))),
+        GoRoute(path: '/call/warning', builder: (_, s) => RecordingWarningScreen(resultId: s.extra as String)),
+        GoRoute(path: '/call/report', builder: (_, s) => RecordingReportScreen(resultId: s.extra as String)),
+        GoRoute(path: '/call/recording', builder: (_, s) => RecordingResultScreen(payload: s.extra as String?)),
+        GoRoute(path: '/live/inbox', builder: (_, _) => const RecordingInboxScreen()),
+      ]);
+      addTearDown(router.dispose);
+      await tester.pumpWidget(ProviderScope(
+        overrides: [
+          autoAnalyzePlatformProvider.overrideWithValue(platform),
+          apiClientProvider.overrideWithValue(api),
+          autoAnalyzeNotifierProvider.overrideWithValue(FakeNotifier()),
+          callTimelineProvider.overrideWith((ref) async => _timeline()),
+        ],
+        child: MaterialApp.router(routerConfig: router),
+      ));
+      await tester.pumpAndSettle();
+      expect(tester.widget<RecordingWarningScreen>(find.byType(RecordingWarningScreen)).resultId, first);
+      await tester.tap(find.byKey(const Key('warn_dismiss')));
+      await tester.pumpAndSettle();
+      expect(find.byType(RecordingInboxScreen), findsOneWidget);
+
+      // A new HIGH recording is analysed while the app is open (service -> app message / resume).
+      final second = (await tester.runAsync(() => save('high', name: 'Call_2.m4a')))!;
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(tester.widget<RecordingWarningScreen>(find.byType(RecordingWarningScreen)).resultId, second);
+    });
+
+    testWidgets('setup screen guides to allow full-screen warnings (Android 14+)', (tester) async {
+      tall(tester);
+      SharedPreferences.setMockInitialValues({AutoAnalyzeStore.kConsent: true});
+      await tester.pumpWidget(app(const AutoAnalyzeScreen()));
+      await tester.pumpAndSettle();
+      expect(find.text('Allow full-screen warnings'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('auto_allow_fsi')));
+      await tester.pumpAndSettle();
+      expect(platform.calls, contains('fsi'));
+      platform.fsi = true;
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('auto_allow_fsi')), findsNothing);
+    });
+  });
+}
+
+/// A store whose save and warning-queue writes fail (e.g. storage full).
+class _BrokenStore extends AutoAnalyzeStore {
+  _BrokenStore(super.prefs);
+
+  @override
+  Future<String> saveResult(String path, CallTimelineResult r, {DateTime? now}) => throw StateError('disk full');
+
+  @override
+  Future<void> enqueueWarning(String id) => throw StateError('disk full');
+}
+
+/// Records, at notification time, whether the result was already saved and queued.
+class _CheckingNotifier implements AutoAnalyzeNotifier {
+  final AutoAnalyzeStore store;
+  final List<String> seen;
+  _CheckingNotifier(this.store, this.seen);
+
+  @override
+  Future<void> showVerdict(StoredRecordingResult r) async =>
+      seen.add('notify:${store.result(r.id) != null}:${store.warnQueue.contains(r.id)}');
+  @override
+  Future<void> showOffline(String path) async {}
+  @override
+  Future<void> cancelOffline(String path) async {}
 }

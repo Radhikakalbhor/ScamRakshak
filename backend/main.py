@@ -46,13 +46,20 @@ import uvicorn
 
 from database import (
     CHHATTISGARH_DISTRICTS,
+    FINGERPRINT_CATEGORIES,
     REPORT_TYPES,
+    add_fingerprint,
+    canonical_district,
     create_report,
+    get_cluster_alerts,
     get_reports_count,
+    get_spike_alerts,
+    get_trend_summary,
     get_trends,
     init_db,
 )
 from models import (
+    FingerprintCreate,
     HealthResponse,
     ReportCreate,
     ReportResponse,
@@ -81,12 +88,17 @@ HINDI_PROMPT = "यह एक फ़ोन कॉल है। बातची�
 # Optional ?lang= values accepted by /transcribe ("auto" = detect).
 TRANSCRIBE_LANGS = {"hi", "en", "auto"}
 
-# Supported audio extensions strictly per task instructions
+# Audio formats phone call recorders produce (decoded by PyAV/FFmpeg, including AMR-NB/WB and 3GP).
 SUPPORTED_AUDIO_EXTENSIONS = {
     ".wav",
     ".mp3",
     ".m4a",
     ".ogg",
+    ".amr",
+    ".aac",
+    ".3gp",
+    ".opus",
+    ".flac",
 }
 
 
@@ -175,13 +187,7 @@ async def transcribe_audio(
         )
     hint = None if lang == "auto" else lang
 
-    if whisper_model is None:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Whisper transcription model is not ready.",
-        )
-
-    # Validate file extension
+    # Validate file extension (before the model check, so a wrong file is always a clear 400)
     filename = file.filename or "recording.wav"
     suffix = Path(filename).suffix.lower()
 
@@ -192,6 +198,12 @@ async def transcribe_audio(
                 f"Unsupported audio format '{suffix}'. "
                 f"Supported formats: {', '.join(sorted(ext.lstrip('.') for ext in SUPPORTED_AUDIO_EXTENSIONS))}"
             ),
+        )
+
+    if whisper_model is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Whisper transcription model is not ready.",
         )
 
     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
@@ -307,6 +319,14 @@ async def post_report(payload: ReportCreate) -> ReportResponse:
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="District must not be blank.",
         )
+    # Only known district names (or "unknown"): no free text, so no personal data, can be stored.
+    known = canonical_district(clean_district)
+    if known is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Unknown district. Use a Chhattisgarh district name or 'unknown'.",
+        )
+    clean_district = known
 
     if clean_type not in REPORT_TYPES:
         raise HTTPException(
@@ -356,6 +376,37 @@ async def get_district_trends() -> List[Dict[str, Any]]:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to load fraud trends.",
         ) from exc
+
+
+@app.get("/trends/summary", tags=["Trends"], summary="Synthetic vs live report aggregates with a weekly trend")
+async def get_trends_summary() -> Dict[str, Any]:
+    """{"min_count": 5, "synthetic": {...}, "live": {...}}; each part has total, by_district_type,
+    by_district, by_type, weekly (12 weeks, Monday start) and suppressed_cells. Counts below 5 are hidden."""
+    try:
+        return get_trend_summary()
+    except Exception as exc:
+        logger.error("Failed to build trend summary: %s", exc, exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to load fraud trends.") from exc
+
+
+@app.get("/alerts", tags=["Trends"], summary="Emerging-scam alerts")
+async def get_alerts(include_synthetic: bool = Query(False)) -> Dict[str, Any]:
+    """Spikes per district/type (last 7 days vs the 4 weeks before) on live reports, plus clusters of
+    near-identical opt-in message fingerprints. {"window_days": 7, "alerts": [...]}"""
+    try:
+        alerts = get_spike_alerts(include_synthetic=include_synthetic) + get_cluster_alerts()
+        return {"window_days": 7, "alerts": alerts}
+    except Exception as exc:
+        logger.error("Failed to compute alerts: %s", exc, exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to compute alerts.") from exc
+
+
+@app.post("/fingerprints", status_code=status.HTTP_201_CREATED, tags=["Trends"],
+          summary="Opt-in anonymous fingerprint of a scam message")
+async def post_fingerprint(payload: FingerprintCreate) -> Dict[str, Any]:
+    if payload.category not in FINGERPRINT_CATEGORIES:
+        raise HTTPException(status_code=422, detail="Unknown category.")
+    return {"status": "success", "id": add_fingerprint(payload.fp, payload.category)}
 
 
 if __name__ == "__main__":

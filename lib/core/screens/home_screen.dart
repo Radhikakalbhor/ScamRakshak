@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/qr_check/qr_check_strings.dart';
+import '../../features/quiz/literacy_score.dart';
 import '../strings.dart';
 import '../theme.dart';
 import '../widgets/language_switcher.dart';
@@ -13,6 +15,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    QrCheckStrings.ensure();
     final s = S.of(context);
 
     final navigationTiles = [
@@ -39,6 +42,14 @@ class HomeScreen extends StatelessWidget {
         iconColor: const Color(0xFFB71C1C),
         iconBgColor: const Color(0xFFFFEBEE),
         route: '/live',
+      ),
+      _HomeTileData(
+        titleKey: 'check_qr',
+        subtitleKey: 'check_qr_sub',
+        icon: Icons.qr_code_2_rounded,
+        iconColor: const Color(0xFFE65100),
+        iconBgColor: const Color(0xFFFFF3E0),
+        route: '/qr',
       ),
       _HomeTileData(
         titleKey: 'report_fraud',
@@ -147,7 +158,10 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
 
-              // Six Navigation Tiles
+              // One overall Digital Financial Literacy Score (quiz + lessons) with a recommendation.
+              const LiteracyScoreCard(),
+
+              // Navigation Tiles
               ...navigationTiles.map(
                 (tile) => _buildLargeNavTile(
                   context: context,

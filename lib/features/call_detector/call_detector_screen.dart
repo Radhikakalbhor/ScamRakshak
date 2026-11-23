@@ -16,11 +16,16 @@ import '../report/report_nav.dart';
 import 'auto_analyze_screen.dart';
 import 'auto_analyze_strings.dart';
 import 'call_highlight.dart';
+import 'call_triggers.dart';
 
 typedef AudioPicker = Future<File?> Function();
 
+/// Call-recording formats the backend accepts (POST /transcribe).
+const kCallAudioExtensions = ['m4a', 'mp3', 'wav', 'amr', 'ogg', 'aac', '3gp'];
+
 Future<File?> _defaultPicker() async {
-  final res = await FilePicker.platform.pickFiles(type: FileType.audio);
+  // FileType.audio hides .amr/.3gp on some phones, so list the extensions explicitly.
+  final res = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: kCallAudioExtensions);
   final path = res?.files.single.path;
   return path == null ? null : File(path);
 }
@@ -41,7 +46,11 @@ class CallDetectorScreen extends ConsumerStatefulWidget {
   /// Picks the audio file; injectable for tests.
   final AudioPicker pickAudio;
 
-  const CallDetectorScreen({super.key, this.pickAudio = _defaultPicker});
+  /// A recording shared from another app (a private cache copy made by MainActivity). It is analysed
+  /// at once and deleted when this screen closes; the original recording is never touched.
+  final File? initialAudio;
+
+  const CallDetectorScreen({super.key, this.pickAudio = _defaultPicker, this.initialAudio});
 
   @override
   ConsumerState<CallDetectorScreen> createState() => _CallDetectorScreenState();
@@ -59,6 +68,26 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
     super.initState();
     AutoAnalyzeStrings.ensure();
     _samples = loadSamplePaths();
+    final shared = widget.initialAudio;
+    if (shared != null) {
+      _busy = true;
+      ref.read(callAnalyzerProvider.future).then((_) {
+        if (mounted) _transcribe(shared);
+      }, onError: (Object _) {
+        if (mounted) setState(() => _busy = false);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    final shared = widget.initialAudio;
+    if (shared != null) {
+      try {
+        if (shared.existsSync()) shared.deleteSync(); // our cache copy only
+      } catch (_) {}
+    }
+    super.dispose();
   }
 
   void _analyze(String transcript, {bool sample = false}) {
@@ -90,7 +119,16 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
       setState(() => _errorKey = 'call_no_file');
       return;
     }
-    setState(() => _busy = true);
+    await _transcribe(file);
+  }
+
+  Future<void> _transcribe(File file) async {
+    setState(() {
+      _busy = true;
+      _errorKey = null;
+      _result = null;
+      _transcript = null;
+    });
     String? errorKey;
     String text = '';
     try {
@@ -99,6 +137,12 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
       if (text.isEmpty) errorKey = 'call_empty_transcript';
     } on ApiOfflineException {
       errorKey = 'call_backend_offline';
+    } on ApiException catch (e) {
+      errorKey = switch (e.statusCode) {
+        400 || 415 => 'call_format_unsupported',
+        503 => 'call_server_busy',
+        _ => 'call_transcribe_failed',
+      };
     } catch (_) {
       errorKey = 'call_transcribe_failed';
     }
@@ -142,6 +186,14 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
                 child: Text(s.t('call_pick_audio'), style: const TextStyle(fontSize: 18)),
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(
+                s.t('call_needs_server').replaceAll('{formats}', kCallAudioExtensions.join(', ')),
+                key: const Key('call_needs_server'),
+                style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+              ),
+            ),
             if (_busy)
               Padding(
                 padding: const EdgeInsets.only(top: 12),
@@ -158,6 +210,16 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
                 child: Text(s.t('call_rules_error'), style: const TextStyle(color: AppTheme.errorRed)),
               ),
             if (_errorKey != null) _errorBox(s.t(_errorKey!)),
+            if (_errorKey != null && !_busy && widget.initialAudio != null && widget.initialAudio!.existsSync())
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  key: const Key('call_retry_shared'),
+                  onPressed: () => _transcribe(widget.initialAudio!),
+                  icon: const Icon(Icons.refresh_rounded),
+                  label: Text(s.t('btn_retry')),
+                ),
+              ),
             const SizedBox(height: 12),
             Card(
               child: ListTile(
@@ -229,7 +291,6 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
   Widget _resultView(S s, CallResult r, String transcript) {
     final color = _riskColor(r.risk);
     final type = mainScriptType(r);
-    final pieces = splitHighlights(transcript, r.matches.map((m) => m.phrase));
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       Container(
         key: const Key('call_risk'),
@@ -251,7 +312,8 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
         ]),
       ),
       const SizedBox(height: 12),
-      Text(r.risk == 'low' ? s.t('call_low_note') : s.t('call_advice_high'), style: const TextStyle(fontSize: 16)),
+      Text(s.t(callNoteKey(r)), key: const Key('call_note'), style: const TextStyle(fontSize: 16)),
+      if (r.matches.isNotEmpty) ...[const SizedBox(height: 10), CallTriggerList(result: r)],
       const SizedBox(height: 16),
       Text(s.t('call_transcript'), style: Theme.of(context).textTheme.titleLarge),
       if (r.matches.isNotEmpty)
@@ -262,18 +324,7 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
           padding: const EdgeInsets.all(14),
           child: Text.rich(
             key: const Key('call_transcript'),
-            TextSpan(children: [
-              for (final p in pieces)
-                TextSpan(
-                  text: p.text,
-                  style: p.highlighted
-                      ? const TextStyle(
-                          backgroundColor: Color(0xFFFFCDD2),
-                          color: AppTheme.errorRed,
-                          fontWeight: FontWeight.bold)
-                      : null,
-                ),
-            ]),
+            callTranscriptSpan(transcript, r.matches),
             style: const TextStyle(fontSize: 17, height: 1.5, color: AppTheme.textPrimary),
           ),
         ),

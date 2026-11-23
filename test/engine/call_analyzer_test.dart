@@ -154,21 +154,23 @@ void main() {
       expect(low.total, 2);
       expect(low.result.risk, 'low');
 
-      final medium = a.score('Aapka KYC pending hai, OTP bataiye');
-      expect(medium.byType, {'fake_kyc': 2, 'otp_request': 3});
-      expect(medium.total, 5);
+      // Caller asks for the OTP: intent rule (secret_weight 4) -> MEDIUM on its own.
+      final medium = a.score('OTP bataiye');
+      expect(medium.byType, {'otp_request': 4});
       expect(medium.result.risk, 'medium');
 
-      final high = a.score('Aapka KYC pending hai, OTP bataiye turant');
-      expect(high.total, 6);
+      // ...under a KYC pretext: + fake_kyc phrase (2) + impersonation (3) -> HIGH.
+      final high = a.score('Aapka KYC pending hai, OTP bataiye');
+      expect(high.byType, {'fake_kyc': 2, 'otp_request': 4, 'impersonation': 3});
+      expect(high.total, 9);
       expect(high.result.risk, 'high');
     });
 
     test('exact boundaries: total == medium -> medium, total == high -> high', () {
-      expect(a.score('OTP bataiye').total, 3);
-      expect(a.analyze('OTP bataiye').risk, 'medium');
-      expect(a.score('OTP bataiye, AnyDesk').total, 6);
-      expect(a.analyze('OTP bataiye, AnyDesk').risk, 'high');
+      expect(a.score('Aapka KYC update karna hai').total, 3); // phrase only, no request
+      expect(a.analyze('Aapka KYC update karna hai').risk, 'medium');
+      expect(a.score('KYC update ke liye AnyDesk').total, 6);
+      expect(a.analyze('KYC update ke liye AnyDesk').risk, 'high');
     });
 
     test('a type never scores above its cap', () {
@@ -178,7 +180,8 @@ void main() {
     });
 
     test('each distinct phrase counts once', () {
-      expect(a.score('OTP bataiye. OTP bataiye. OTP bataiye.').byType, {'otp_request': 3});
+      // byType = max(phrase 3, intent 4), not 3 x 3.
+      expect(a.score('OTP bataiye. OTP bataiye. OTP bataiye.').byType, {'otp_request': 4});
     });
 
     test('overlapping phrases count only the longest', () {
@@ -196,8 +199,8 @@ void main() {
 
     test('matches keep the original wording and follow transcript order', () {
       final m = a.analyze('Main bank se bol raha hu, aapka KYC pending hai, OTP, bataiye turant').matches;
-      expect(m.map((x) => x.phrase), ['kyc', 'otp, bataiye', 'turant']);
-      expect(m.map((x) => x.scriptType), ['fake_kyc', 'otp_request', 'pressure']);
+      expect(m.map((x) => x.phrase), ['bank', 'kyc', 'otp, bataiye', 'turant']);
+      expect(m.map((x) => x.scriptType), ['impersonation', 'fake_kyc', 'otp_request', 'pressure']);
     });
   });
 

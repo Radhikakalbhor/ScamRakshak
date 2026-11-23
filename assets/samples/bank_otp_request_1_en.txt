@@ -1,0 +1,1 @@
+I am from a bank. Please give me your 6-digit OTP and bank KYC number.

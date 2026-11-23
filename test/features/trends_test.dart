@@ -49,9 +49,64 @@ final _records = [
 class _OfflineApi extends ApiClient {
   @override
   Future<List<Map>> getTrends() async => throw const ApiOfflineException('offline');
+  @override
+  Future<Map> getTrendSummary() async => throw const ApiOfflineException('offline');
+  @override
+  Future<List<Map>> getAlerts() async => throw const ApiOfflineException('offline');
 }
 
+/// New server: GET /trends/summary + GET /alerts.
+class _SummaryApi extends ApiClient {
+  @override
+  Future<Map> getTrendSummary() async => {
+        'min_count': 5,
+        'live': {
+          'total': 9,
+          'by_district': [
+            {'district': 'Korba', 'count': 6},
+          ],
+          'by_type': [
+            {'type': 'fake_qr', 'count': 6},
+          ],
+          'by_district_type': [
+            {'district': 'Korba', 'type': 'fake_qr', 'count': 6},
+          ],
+          'weekly': [
+            {'week_start': '2026-11-09', 'count': null},
+            {'week_start': '2026-11-16', 'count': 0},
+            {'week_start': '2026-11-23', 'count': 6},
+          ],
+          'suppressed_cells': 2,
+        },
+        'synthetic': {
+          'total': 300,
+          'by_district': [
+            {'district': 'Raipur', 'count': 55},
+          ],
+          'by_type': [
+            {'type': 'otp', 'count': 23},
+          ],
+          'by_district_type': [],
+          'weekly': [
+            {'week_start': '2026-11-23', 'count': 20},
+          ],
+          'suppressed_cells': 0,
+        },
+      };
+
+  @override
+  Future<List<Map>> getAlerts() async => [
+        {'kind': 'spike', 'district': 'Korba', 'type': 'fake_qr', 'recent': 6, 'baseline_weekly': 0.5, 'ratio': 6},
+        {'kind': 'cluster', 'category': 'otp_request', 'size': 7},
+      ];
+}
+
+/// Older server without /trends/summary (404): falls back to GET /trends, labelled as mixed data.
 class _ServerApi extends ApiClient {
+  @override
+  Future<Map> getTrendSummary() async => throw const ApiException(404, 'not found');
+  @override
+  Future<List<Map>> getAlerts() async => throw const ApiException(404, 'not found');
   @override
   Future<List<Map>> getTrends() async => [
     {'district': 'Raipur', 'type': 'otp', 'count': 12},
@@ -292,6 +347,48 @@ void main() {
       expect(find.text('20 reports'), findsOneWidget);
       expect(find.text('Raipur'), findsOneWidget);
       expect(find.textContaining('sample reports'), findsOneWidget);
+      expect(find.byKey(const Key('trends_src_mixed')), findsOneWidget);
+    });
+
+    testWidgets('server summary: live and synthetic data are labelled apart, weekly trend, hidden small groups, '
+        'emerging-scam alerts', (tester) async {
+      _tallView(tester);
+      SharedPreferences.setMockInitialValues({});
+      await tester.pumpWidget(_app(api: _SummaryApi()));
+      await _settle(tester);
+      await tester.tap(find.byKey(const Key('trends_server_load')));
+      await _settle(tester);
+
+      expect(find.text('Live reports'), findsOneWidget);
+      expect(find.text('Synthetic demo data'), findsOneWidget);
+      expect(find.textContaining('Not real incidents'), findsOneWidget);
+      expect(find.descendant(of: find.byKey(const Key('trends_block_live')), matching: find.text('9 reports')),
+          findsOneWidget);
+      expect(find.descendant(of: find.byKey(const Key('trends_block_synthetic')), matching: find.text('300 reports')),
+          findsOneWidget);
+      expect(find.descendant(of: find.byKey(const Key('trends_weekly_live')), matching: find.text('<5')),
+          findsOneWidget);
+      expect(find.byKey(const Key('trends_suppressed_live')), findsOneWidget);
+      expect(find.byKey(const Key('trends_suppressed_synthetic')), findsNothing);
+
+      final alerts = find.byKey(const Key('trends_alerts'));
+      expect(find.descendant(of: alerts, matching: find.textContaining('Korba')), findsOneWidget);
+      expect(find.descendant(of: alerts, matching: find.textContaining('near-identical')), findsOneWidget);
+    });
+
+    test('summary parsing keeps suppressed weeks as null and ignores bad alerts', () {
+      final sum = ServerSummary.fromJson({
+        'live': {
+          'total': 3,
+          'weekly': [
+            {'week_start': '2026-11-23', 'count': null},
+          ],
+        },
+      });
+      expect(sum.minCount, 5);
+      expect(sum.live.weekly.single.count, isNull);
+      expect(sum.synthetic.total, 0);
+      expect(EmergingAlert.tryFrom({'kind': 'other'}), isNull);
     });
   });
 

@@ -46,7 +46,7 @@ class LiveCallStrings {
       'live_not_saved': 'Audio is not saved.',
       'live_demo_sub': 'Plays a recorded sample call. Works offline.',
       'live_mic_sub':
-          'Listens to a call playing on loudspeaker from another phone nearby. Android does not let apps hear calls on this same phone. Needs the ScamRakshak server.',
+          'Uses this phone\'s microphone to listen to a call on speakerphone (best: the call on another phone held nearby). It may not work on all phones: Android usually does not let apps hear a call on the same phone. Needs the ScamRakshak server.',
       'live_play': 'Play sample call',
       'live_replay': 'Play again',
       'live_start_again': 'Listen again',
@@ -123,7 +123,7 @@ class LiveCallStrings {
       'live_not_saved': 'आवाज़ सेव नहीं होती।',
       'live_demo_sub': 'रिकॉर्ड किया हुआ नमूना कॉल चलाता है। बिना इंटरनेट चलता है।',
       'live_mic_sub':
-          'पास रखे दूसरे फोन पर लाउडस्पीकर पर चल रहा कॉल सुनता है। Android इसी फोन के कॉल को ऐप को सुनने नहीं देता। ScamRakshak सर्वर चाहिए।',
+          'इस फोन के माइक से स्पीकरफ़ोन पर चल रहा कॉल सुनता है (सबसे अच्छा: पास रखे दूसरे फोन का कॉल)। यह हर फोन पर काम नहीं कर सकता: Android आमतौर पर इसी फोन का कॉल ऐप को सुनने नहीं देता। ScamRakshak सर्वर चाहिए।',
       'live_play': 'नमूना कॉल चलाएं',
       'live_replay': 'फिर से चलाएं',
       'live_start_again': 'फिर से सुनें',
@@ -200,7 +200,7 @@ class LiveCallStrings {
       'live_not_saved': 'आवाज सेव नइ होवय।',
       'live_demo_sub': 'रिकॉर्ड करे नमूना कॉल चलाथे। बिना इंटरनेट चलथे।',
       'live_mic_sub':
-          'लकठा म रखे दूसर फोन म लाउडस्पीकर म चलत कॉल ल सुनथे। Android इही फोन के कॉल ल ऐप ल सुने नइ देवय। ScamRakshak सर्वर चाही।',
+          'ए फोन के माइक ले स्पीकरफोन म चलत कॉल ल सुनथे (सबले बढ़िया: लकठा म रखे दूसर फोन के कॉल)। ए हर फोन म नइ चल सकय: Android आमतौर म इही फोन के कॉल ल ऐप ल सुने नइ देवय। ScamRakshak सर्वर चाही।',
       'live_play': 'नमूना कॉल चलावव',
       'live_replay': 'फेर चलावव',
       'live_start_again': 'फेर सुनव',

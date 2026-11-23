@@ -22,6 +22,11 @@ class CallStrings {
           'Could not reach the ScamRakshak server, so the recording was not converted. Check your internet, or try a sample call below.',
       'call_transcribe_failed': 'The recording could not be converted. Please try another file or a sample call.',
       'call_no_file': 'No file was chosen.',
+      'call_needs_server':
+          'Formats: {formats}. Turning a recording into text needs the ScamRakshak server (internet or the same Wi-Fi). Sample calls work offline.',
+      'call_format_unsupported':
+          'This file type cannot be read. Use a call recording in m4a, mp3, wav, amr, ogg, aac or 3gp.',
+      'call_server_busy': 'The ScamRakshak server is still starting up. Please try again in a minute.',
       'call_empty_transcript': 'No speech was found in this recording.',
       'call_loading_rules': 'Preparing the checker…',
       'call_rules_error': 'The call checker could not start. Please restart the app.',
@@ -46,6 +51,10 @@ class CallStrings {
       'script_electricity_bill': 'Fake electricity bill',
       'script_upi_collect': 'UPI collect / QR trick',
       'script_pressure': 'Pressure tactics',
+      'script_details_request': 'Asking for card / account / KYC details',
+      'script_impersonation': 'Claims to be a bank, police or courier',
+      'call_low_with_signs': 'Some warning signs were found, but not enough to call it a scam. Be careful: never share OTP, PIN or card details on a call.',
+      'call_triggers': 'Why: words that matched',
     },
     'hi': {
       'call_title': 'कॉल जांचें',
@@ -58,6 +67,11 @@ class CallStrings {
           'ScamRakshak सर्वर से जुड़ नहीं पाए, इसलिए रिकॉर्डिंग नहीं बदली। इंटरनेट जांचें या नीचे नमूना कॉल आज़माएँ।',
       'call_transcribe_failed': 'रिकॉर्डिंग नहीं बदल पाई। दूसरी फ़ाइल या नमूना कॉल आज़माएँ।',
       'call_no_file': 'कोई फ़ाइल नहीं चुनी गई।',
+      'call_needs_server':
+          'फ़ॉर्मेट: {formats}। रिकॉर्डिंग को शब्दों में बदलने के लिए ScamRakshak सर्वर (इंटरनेट या वही Wi-Fi) चाहिए। नमूना कॉल बिना इंटरनेट चलते हैं।',
+      'call_format_unsupported':
+          'यह फ़ाइल पढ़ी नहीं जा सकती। m4a, mp3, wav, amr, ogg, aac या 3gp वाली कॉल रिकॉर्डिंग चुनें।',
+      'call_server_busy': 'ScamRakshak सर्वर अभी शुरू हो रहा है। एक मिनट बाद फिर कोशिश करें।',
       'call_empty_transcript': 'इस रिकॉर्डिंग में कोई बात नहीं मिली।',
       'call_loading_rules': 'जांच तैयार हो रही है…',
       'call_rules_error': 'कॉल जांच शुरू नहीं हो पाई। ऐप दोबारा खोलें।',
@@ -82,6 +96,10 @@ class CallStrings {
       'script_electricity_bill': 'नकली बिजली बिल',
       'script_upi_collect': 'UPI रिक्वेस्ट / QR की चाल',
       'script_pressure': 'डराना / जल्दबाज़ी',
+      'script_details_request': 'कार्ड / खाता / केवाईसी की जानकारी माँगना',
+      'script_impersonation': 'बैंक, पुलिस या कूरियर होने का दावा',
+      'call_low_with_signs': 'कुछ खतरे के निशान मिले, पर ठगी कहने के लिए काफ़ी नहीं। सावधान रहें: कॉल पर OTP, PIN या कार्ड की जानकारी कभी न दें।',
+      'call_triggers': 'वजह: ये शब्द मिले',
     },
     'chh': {
       'call_title': 'कॉल जांचव',
@@ -94,6 +112,11 @@ class CallStrings {
           'ScamRakshak सर्वर ले नइ जुड़ पाइस, तेकर सेती रिकॉर्डिंग नइ बदलिस। इंटरनेट देख या तरी नमूना कॉल देख।',
       'call_transcribe_failed': 'रिकॉर्डिंग नइ बदलिस। दूसर फाइल या नमूना कॉल देख।',
       'call_no_file': 'कोनो फाइल नइ चुने गिस।',
+      'call_needs_server':
+          'फॉर्मेट: {formats}। रिकॉर्डिंग ल सब्द म बदले बर ScamRakshak सर्वर (इंटरनेट या उही Wi-Fi) चाही। नमूना कॉल बिना इंटरनेट चलथे।',
+      'call_format_unsupported':
+          'ए फाइल ल पढ़े नइ जा सकय। m4a, mp3, wav, amr, ogg, aac या 3gp वाला कॉल रिकॉर्डिंग चुन।',
+      'call_server_busy': 'ScamRakshak सर्वर अभी सुरू होवत हे। एक मिनट बाद फेर कोसिस कर।',
       'call_empty_transcript': 'ए रिकॉर्डिंग म कोनो गोठ नइ मिलिस।',
       'call_loading_rules': 'जांच तियार होवत हे…',
       'call_rules_error': 'कॉल जांच सुरू नइ होइस। ऐप ल फेर खोल।',
@@ -118,6 +141,10 @@ class CallStrings {
       'script_electricity_bill': 'नकली बिजली बिल',
       'script_upi_collect': 'UPI रिक्वेस्ट / QR के चाल',
       'script_pressure': 'डरवाना / हड़बड़ी',
+      'script_details_request': 'कार्ड / खाता / केवाईसी के जानकारी माँगना',
+      'script_impersonation': 'बैंक, पुलिस या कूरियर होय के दावा',
+      'call_low_with_signs': 'कुछ खतरा के निसान मिलिस, फेर ठगी कहे बर बहुत नइ। सावधान रह: कॉल म OTP, PIN या कार्ड के जानकारी कभू झन दे।',
+      'call_triggers': 'कारन: ए सब्द मिलिस',
     },
   };
 }

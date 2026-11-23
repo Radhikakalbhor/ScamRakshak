@@ -404,6 +404,13 @@ void main() {
     expect(find.byKey(const Key('live_server')), findsOneWidget);
   }
 
+  testLive('mic mode says it uses the microphone with speakerphone and may not work on all phones', (t) async {
+    await pumpScreen(t);
+    await switchToMic(t);
+    expect(find.textContaining('microphone to listen to a call on speakerphone'), findsOneWidget);
+    expect(find.textContaining('may not work on all phones'), findsOneWidget);
+  });
+
   testLive('mic: server unreachable -> clear error with address and a Demo button that works', (t) async {
     await pumpScreen(t, withApi: FakeApi(reachable: false));
     await switchToMic(t);

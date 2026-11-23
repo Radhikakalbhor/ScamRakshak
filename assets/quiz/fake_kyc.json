@@ -30,6 +30,26 @@
      "answer": 2,
      "explain": {"en": "Go to the branch with Aadhaar and PAN, or use the official app you downloaded yourself.",
                  "hi": "आधार और पैन लेकर शाखा जाएँ, या खुद डाउनलोड किया असली ऐप इस्तेमाल करें।",
-                 "chh": "आधार अउ पैन धर के साखा जा, या खुद डाउनलोड करे असली ऐप चला।"}}
+                 "chh": "आधार अउ पैन धर के साखा जा, या खुद डाउनलोड करे असली ऐप चला।"}},
+    {"q": {"en": "Your bank's KYC update is due. Where should you do it?",
+           "hi": "बैंक का KYC अपडेट करना है। कहाँ करें?",
+           "chh": "बैंक के KYC अपडेट करना हे। कहाँ करँव?"},
+     "options": {"en": ["Through a link in an SMS", "At the branch or in the official bank app", "With a caller on WhatsApp"],
+                 "hi": ["SMS के लिंक से", "बैंक शाखा में या बैंक के असली ऐप में", "WhatsApp पर कॉल करने वाले के साथ"],
+                 "chh": ["SMS के लिंक ले", "बैंक साखा म या बैंक के असली ऐप म", "WhatsApp म फोन करइया संग"]},
+     "answer": 1,
+     "explain": {"en": "Banks do KYC at the branch or inside their own app, never through SMS links or callers.",
+                 "hi": "बैंक KYC शाखा में या अपने ऐप में करते हैं, कभी SMS लिंक या कॉल से नहीं।",
+                 "chh": "बैंक KYC साखा म या अपन ऐप म करथें, कभू SMS लिंक या फोन ले नइ।"}},
+    {"q": {"en": "A 'KYC agent' asks you to install an app so he can help. What happens if you do?",
+           "hi": "'KYC एजेंट' मदद के लिए एक ऐप डालने को कहता है। डालने पर क्या होगा?",
+           "chh": "'KYC एजेंट' मदद बर एक ऐप डारे बर कहिथे। डारे म का होही?"},
+     "options": {"en": ["Your KYC gets done", "He can see your screen and empty your account", "Nothing"],
+                 "hi": ["आपका KYC हो जाएगा", "वह आपकी स्क्रीन देखकर खाता खाली कर सकता है", "कुछ नहीं"],
+                 "chh": ["तोर KYC हो जाही", "ओ तोर स्क्रीन देख के खाता खाली कर सकथे", "कुछु नइ"]},
+     "answer": 1,
+     "explain": {"en": "Screen-sharing apps give the scammer your OTPs and PIN. Never install apps on a caller's request.",
+                 "hi": "स्क्रीन शेयर ऐप से ठग आपके OTP और PIN देख लेता है। किसी के कहने पर ऐप न डालें।",
+                 "chh": "स्क्रीन सेयर ऐप ले ठग तोर OTP अउ PIN देख लेथे। काकरो कहे म ऐप झन डार।"}}
   ]
 }
