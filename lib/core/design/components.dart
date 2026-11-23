@@ -325,6 +325,9 @@ class PrimaryButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool filled;
   final Color color;
+
+  /// Text/icon color; defaults to white on filled, [color] on outlined.
+  final Color? foreground;
   final bool busy;
   const PrimaryButton({
     super.key,
@@ -333,6 +336,7 @@ class PrimaryButton extends StatelessWidget {
     this.onPressed,
     this.filled = true,
     this.color = DsColors.ink,
+    this.foreground,
     this.busy = false,
   });
 
@@ -340,7 +344,7 @@ class PrimaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final enabled = onPressed != null && !busy;
     final base = filled ? color : Colors.transparent;
-    final fg = filled ? DsColors.onDark : color;
+    final fg = foreground ?? (filled ? DsColors.onDark : color);
     return Opacity(
       opacity: enabled || busy ? 1 : 0.45,
       child: Pressable(

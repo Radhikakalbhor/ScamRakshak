@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/design/components.dart';
+import '../../core/design/tokens.dart';
 import '../../core/strings.dart';
 import '../live_call/recording_inbox.dart';
 import '../report/report_nav.dart';
@@ -14,9 +16,9 @@ import 'auto_analyze_service.dart';
 import 'call_timeline.dart';
 import 'recording_warning_strings.dart';
 
-/// HIGH: deep red with white text; MEDIUM: amber with black text (both high contrast).
-const kWarnHighColor = Color(0xFFB71C1C);
-const kWarnMediumColor = Color(0xFFFFB300);
+/// HIGH: solid alert red with white text; MEDIUM: amber with ink text (both high contrast).
+const kWarnHighColor = DsColors.alert;
+const kWarnMediumColor = DsColors.amber;
 
 /// Opens the full-screen warning for a saved result (go_router when present, else Navigator).
 Future<void> openRecordingWarning(BuildContext context, String id) async {
@@ -137,104 +139,95 @@ class _RecordingWarningScreenState extends ConsumerState<RecordingWarningScreen>
     RecordingWarningStrings.ensure();
     final s = S.of(context);
     final r = widget.demo ?? _saved?.result;
-    if (!_loaded) return const Scaffold(backgroundColor: kWarnHighColor, body: Center(child: CircularProgressIndicator()));
+    if (!_loaded) return const Scaffold(backgroundColor: kWarnHighColor, body: LoadingState());
     if (r == null) {
       return Scaffold(
         appBar: AppBar(),
-        body: Center(child: Text(s.t('auto_result_missing'), key: const Key('warn_missing'))),
+        body: Center(child: Text(s.t('auto_result_missing'), key: const Key('warn_missing'), style: DsType.body)),
       );
     }
     final high = r.risk == 'high';
     final bg = high ? kWarnHighColor : kWarnMediumColor;
-    final fg = high ? Colors.white : Colors.black;
+    final fg = high ? DsColors.onDark : DsColors.ink;
     final type = r.scriptType;
     final phrases = [for (final m in r.result.matches) m.phrase].take(5).toList();
-    final big = TextStyle(color: fg, fontSize: 30, fontWeight: FontWeight.w900, height: 1.15);
-    final body = TextStyle(color: fg, fontSize: 19, height: 1.35);
-    final label = TextStyle(color: fg, fontSize: 17, fontWeight: FontWeight.bold);
+    final body = DsType.body.copyWith(color: fg, fontSize: 18);
+    final small = DsType.body.copyWith(color: fg);
+    final label = DsType.section.copyWith(color: fg);
 
     return Scaffold(
       key: Key(high ? 'warn_high' : 'warn_medium'),
       backgroundColor: bg,
       body: SafeArea(
-        child: ListView(padding: const EdgeInsets.fromLTRB(20, 16, 20, 24), children: [
+        child: ListView(padding: const EdgeInsets.fromLTRB(DsSpace.xl, DsSpace.l, DsSpace.xl, DsSpace.xxl), children: [
           if (widget.demo != null)
             Container(
               key: const Key('warn_demo_banner'),
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-              color: Colors.black,
+              margin: const EdgeInsets.only(bottom: DsSpace.m),
+              padding: const EdgeInsets.symmetric(vertical: DsSpace.s, horizontal: DsSpace.m),
+              decoration: BoxDecoration(color: DsColors.ink, borderRadius: BorderRadius.circular(DsRadius.tile)),
               child: Text(s.t('warn_demo_banner'),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
+                  textAlign: TextAlign.center, style: DsType.label.copyWith(color: DsColors.onDark, fontSize: 17)),
             ),
-          Icon(high ? Icons.gpp_bad_rounded : Icons.warning_amber_rounded, color: fg, size: 88),
-          const SizedBox(height: 8),
+          Center(
+            child: IconBadge(high ? Icons.gpp_bad_outlined : Icons.warning_amber_rounded,
+                size: 88, background: fg, foreground: bg),
+          ),
+          const SizedBox(height: DsSpace.l),
           Text(s.t(high ? 'warn_title_high' : 'warn_title_medium'),
-              key: const Key('warn_title'), textAlign: TextAlign.center, style: big),
-          const SizedBox(height: 6),
+              key: const Key('warn_title'),
+              textAlign: TextAlign.center,
+              style: DsType.headline.copyWith(color: fg, fontWeight: DsWeight.semibold)),
+          const SizedBox(height: DsSpace.s),
           Text(s.t('warn_subtitle'), textAlign: TextAlign.center, style: body),
-          const SizedBox(height: 18),
+          const SizedBox(height: DsSpace.xl),
           Text('${s.t('warn_score')}: ${(r.score * 100).round()}%',
-              key: const Key('warn_score'), textAlign: TextAlign.center, style: big.copyWith(fontSize: 34)),
+              key: const Key('warn_score'), textAlign: TextAlign.center, style: DsType.number.copyWith(color: fg, fontSize: 36)),
           if (type != null) ...[
-            const SizedBox(height: 6),
+            const SizedBox(height: DsSpace.s),
             Text('${s.t('warn_type')}: ${s.t('script_$type')}',
-                key: const Key('warn_type'), textAlign: TextAlign.center, style: label.copyWith(fontSize: 20)),
+                key: const Key('warn_type'), textAlign: TextAlign.center, style: label),
           ],
           if (phrases.isNotEmpty) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: DsSpace.xl),
             Text(s.t('warn_reasons'), style: label),
-            const SizedBox(height: 6),
-            Wrap(spacing: 8, runSpacing: 8, children: [
+            const SizedBox(height: DsSpace.s),
+            Wrap(spacing: DsSpace.s, runSpacing: DsSpace.s, children: [
               for (final p in phrases)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: high ? Colors.white : Colors.black,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text('"$p"',
-                      style: TextStyle(color: high ? kWarnHighColor : Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
-                ),
+                PillChip(label: '"$p"', background: fg, foreground: high ? kWarnHighColor : DsColors.onDark),
             ]),
           ],
-          const SizedBox(height: 16),
+          const SizedBox(height: DsSpace.xl),
           Text(s.t(high ? 'warn_advice_high' : 'warn_advice_medium'), key: const Key('warn_advice'), style: body),
           if (_saved != null) ...[
-            const SizedBox(height: 12),
-            Text('${s.t('warn_recording')}: ${_saved!.fileName}', style: body.copyWith(fontSize: 16)),
-            Text('${s.t('warn_time')}: ${_fmt(_saved!.at)}', style: body.copyWith(fontSize: 16)),
-            Text(s.t('warn_saved'), key: const Key('warn_saved'), style: body.copyWith(fontSize: 16)),
+            const SizedBox(height: DsSpace.m),
+            Text('${s.t('warn_recording')}: ${_saved!.fileName}', style: small),
+            Text('${s.t('warn_time')}: ${_fmt(_saved!.at)}', style: small),
+            Text(s.t('warn_saved'), key: const Key('warn_saved'), style: small),
           ],
-          const SizedBox(height: 22),
-          FilledButton.icon(
+          const SizedBox(height: DsSpace.xxl),
+          PrimaryButton(
             key: const Key('warn_report'),
-            style: FilledButton.styleFrom(
-              backgroundColor: high ? Colors.white : Colors.black,
-              foregroundColor: high ? kWarnHighColor : Colors.white,
-              minimumSize: const Size.fromHeight(64),
-            ),
+            label: s.t('warn_report'),
+            icon: Icons.report_outlined,
+            color: fg,
+            foreground: high ? kWarnHighColor : DsColors.onDark,
             onPressed: _report,
-            icon: const Icon(Icons.report_rounded, size: 28),
-            label: Text(s.t('warn_report'), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
           ),
-          const SizedBox(height: 12),
-          OutlinedButton(
+          const SizedBox(height: DsSpace.m),
+          PrimaryButton(
             key: const Key('warn_dismiss'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: fg,
-              side: BorderSide(color: fg, width: 2),
-              minimumSize: const Size.fromHeight(60),
-            ),
+            label: s.t('warn_dismiss'),
+            filled: false,
+            color: fg,
             onPressed: _dismiss,
-            child: Text(s.t('warn_dismiss'), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           ),
         ]),
       ),
     );
   }
 }
+
 
 String _fmt(DateTime t) {
   String two(int v) => v.toString().padLeft(2, '0');
@@ -289,36 +282,35 @@ class _RecordingReportScreenState extends ConsumerState<RecordingReportScreen> {
       body: Column(children: [
         const Expanded(child: ReportScreen(initialType: 'call')),
         if (saved != null)
-          Material(
+          Container(
             key: const Key('rep_evidence'),
-            elevation: 8,
-            color: const Color(0xFFFFF3E0),
+            decoration: const BoxDecoration(
+              color: DsColors.peach,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(DsRadius.card)),
+            ),
             child: SafeArea(
               top: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
+                padding: const EdgeInsets.fromLTRB(DsSpace.xl, DsSpace.l, DsSpace.m, DsSpace.l),
                 child: Row(children: [
-                  const Icon(Icons.attach_file_rounded),
-                  const SizedBox(width: 8),
+                  const IconBadge(Icons.attach_file_rounded),
+                  const SizedBox(width: DsSpace.m),
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-                      Text(s.t('rep_evidence_title'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text(s.t('rep_evidence_title'), style: DsType.title),
                       Text('${s.t('rep_evidence_id')}: ${saved.id} · ${saved.fileName}',
-                          key: const Key('rep_evidence_id'), style: const TextStyle(fontSize: 15)),
+                          key: const Key('rep_evidence_id'), style: DsType.body),
                       Text('${s.t('risk_${saved.result.risk}')} · ${(saved.result.score * 100).round()}% · ${_fmt(saved.at)}',
-                          style: const TextStyle(fontSize: 15)),
+                          style: DsType.small),
                     ]),
                   ),
-                  TextButton(
+                  PillChip(
                     key: const Key('rep_evidence_copy'),
-                    onPressed: () async {
+                    label: s.t('rep_evidence_copy'),
+                    onTap: () async {
                       await Clipboard.setData(ClipboardData(text: recordingEvidenceText(s, saved)));
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(SnackBar(content: Text(s.t('rep_evidence_copied'))));
-                      }
+                      if (context.mounted) showDsToast(context, s.t('rep_evidence_copied'));
                     },
-                    child: Text(s.t('rep_evidence_copy')),
                   ),
                 ]),
               ),
