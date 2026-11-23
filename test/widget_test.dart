@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart' show Size;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,6 +9,9 @@ void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   testWidgets('ScamRakshak launches to the home screen', (tester) async {
+    tester.view.physicalSize = const Size(1170, 7500); // 390 x 2500 dp: whole home without scrolling
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(tester.view.reset);
     await tester.pumpWidget(const ProviderScope(child: ScamRakshakApp()));
     await tester.pumpAndSettle();
 
@@ -16,8 +20,8 @@ void main() {
       'Check Message',
       'Check Call',
       'Report Fraud',
-      'Learn',
-      'Quiz',
+      'Open lessons',
+      'Take a quiz',
       'Scam Trends',
     ]) {
       expect(find.text(title), findsOneWidget);

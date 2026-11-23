@@ -1,187 +1,197 @@
 import 'package:flutter/material.dart';
 
-/// AppTheme defines the visual design system for ScamRakshak.
-/// Focused on high contrast, large touch targets, readable typography,
-/// and a reassuring teal/green cybersecurity palette tailored for all users.
+import 'design/tokens.dart';
+
+/// App-wide theme built ONLY from the design tokens (lib/core/design/tokens.dart,
+/// documented in design/DESIGN_SYSTEM.md): warm off-white page, flat pastel surfaces,
+/// large radii, light tight-tracked Inter Tight with Noto Sans Devanagari fallback.
+///
+/// The color names below are kept as aliases so existing screens keep compiling and
+/// automatically follow the design system. New code should use the Ds* tokens directly.
 class AppTheme {
-  // Brand Colors
-  static const Color primaryTeal = Color(0xFF00796B);
-  static const Color primaryDarkTeal = Color(0xFF004D40);
-  static const Color primaryLightTeal = Color(0xFFE0F2F1);
+  // Brand / accents
+  static const Color primaryTeal = DsColors.brand;
+  static const Color primaryDarkTeal = DsColors.brand;
+  static const Color primaryLightTeal = DsColors.powder;
 
-  static const Color secondaryNavy = Color(0xFF0D47A1);
-  static const Color secondaryLightBlue = Color(0xFFE3F2FD);
+  static const Color secondaryNavy = DsColors.ink;
+  static const Color secondaryLightBlue = DsColors.powder;
 
-  static const Color backgroundLight = Color(0xFFF7FAF8);
-  static const Color surfaceWhite = Color(0xFFFFFFFF);
-  static const Color cardBorderColor = Color(0xFFCFD8DC);
+  // Surfaces
+  static const Color backgroundLight = DsColors.page;
+  static const Color surfaceWhite = DsColors.surface;
+  static const Color cardBorderColor = DsColors.line;
 
-  // Status & Fraud Awareness Colors
-  static const Color errorRed = Color(0xFFD32F2F);
-  static const Color warningOrange = Color(0xFFE65100);
-  static const Color successGreen = Color(0xFF2E7D32);
+  // Semantic status colors (alert is the only saturated color in the system)
+  static const Color errorRed = DsColors.alert;
+  static const Color warningOrange = DsColors.caution;
+  static const Color successGreen = DsColors.safe;
 
-  // Text Colors
-  static const Color textPrimary = Color(0xFF1B2E28);
-  static const Color textSecondary = Color(0xFF455A64);
+  // Text
+  static const Color textPrimary = DsColors.ink;
+  static const Color textSecondary = DsColors.muted;
 
-  // App-wide Font Family
-  static const String fontFamily = 'Noto Sans Devanagari';
+  // Font (Latin); Devanagari falls back to the bundled Noto Sans Devanagari.
+  static const String fontFamily = DsFont.family;
+  static const List<String> fontFamilyFallback = DsFont.fallback;
+
+  static TextStyle _t(double size, FontWeight w, {double height = 1.3, double ls = 0, Color color = DsColors.ink}) =>
+      TextStyle(
+        fontFamily: fontFamily,
+        fontFamilyFallback: fontFamilyFallback,
+        fontSize: size,
+        fontWeight: w,
+        height: height,
+        letterSpacing: ls,
+        color: color,
+      );
 
   static ThemeData get lightTheme {
-    final colorScheme = ColorScheme.light(
-      primary: primaryTeal,
-      onPrimary: Colors.white,
-      primaryContainer: primaryLightTeal,
-      onPrimaryContainer: primaryDarkTeal,
-      secondary: secondaryNavy,
-      onSecondary: Colors.white,
-      secondaryContainer: secondaryLightBlue,
-      onSecondaryContainer: secondaryNavy,
-      surface: surfaceWhite,
-      onSurface: textPrimary,
-      error: errorRed,
-      onError: Colors.white,
+    const colorScheme = ColorScheme.light(
+      primary: DsColors.brand,
+      onPrimary: DsColors.onDark,
+      primaryContainer: DsColors.powder,
+      onPrimaryContainer: DsColors.ink,
+      secondary: DsColors.ink,
+      onSecondary: DsColors.onDark,
+      secondaryContainer: DsColors.lavender,
+      onSecondaryContainer: DsColors.ink,
+      tertiaryContainer: DsColors.mint,
+      surface: DsColors.surface,
+      onSurface: DsColors.ink,
+      onSurfaceVariant: DsColors.muted,
+      outline: DsColors.line,
+      outlineVariant: DsColors.line,
+      error: DsColors.alert,
+      onError: DsColors.alertInk,
     );
+    final pill = RoundedRectangleBorder(borderRadius: BorderRadius.circular(DsRadius.pill));
+    final label = _t(16, FontWeight.w500, ls: -0.1);
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
       fontFamily: fontFamily,
-      scaffoldBackgroundColor: backgroundLight,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: primaryTeal,
-        foregroundColor: Colors.white,
+      fontFamilyFallback: fontFamilyFallback,
+      scaffoldBackgroundColor: DsColors.page,
+      splashFactory: NoSplash.splashFactory,
+      appBarTheme: AppBarTheme(
+        backgroundColor: DsColors.page,
+        foregroundColor: DsColors.ink,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
-        centerTitle: true,
-        titleTextStyle: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 22,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-          letterSpacing: 0.5,
-        ),
-        iconTheme: IconThemeData(color: Colors.white, size: 28),
+        scrolledUnderElevation: 0,
+        centerTitle: false,
+        titleTextStyle: _t(20, FontWeight.w500, ls: -0.3),
+        iconTheme: const IconThemeData(color: DsColors.ink, size: 26),
       ),
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 28,
-          fontWeight: FontWeight.bold,
-          color: textPrimary,
-          height: 1.3,
-        ),
-        headlineMedium: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-          color: textPrimary,
-          height: 1.3,
-        ),
-        headlineSmall: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
-          color: textPrimary,
-          height: 1.3,
-        ),
-        titleLarge: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 19,
-          fontWeight: FontWeight.bold,
-          color: textPrimary,
-        ),
-        titleMedium: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 17,
-          fontWeight: FontWeight.w600,
-          color: textPrimary,
-        ),
-        bodyLarge: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 16,
-          fontWeight: FontWeight.normal,
-          color: textPrimary,
-          height: 1.4,
-        ),
-        bodyMedium: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 14,
-          fontWeight: FontWeight.normal,
-          color: textSecondary,
-          height: 1.4,
-        ),
-        labelLarge: TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 0.5,
-        ),
+      textTheme: TextTheme(
+        displayLarge: DsType.display,
+        displayMedium: DsType.headline,
+        headlineLarge: _t(28, FontWeight.w300, height: 1.1, ls: -0.8),
+        headlineMedium: _t(24, FontWeight.w300, height: 1.15, ls: -0.6),
+        headlineSmall: _t(20, FontWeight.w400, height: 1.2, ls: -0.3),
+        titleLarge: _t(19, FontWeight.w500, ls: -0.2),
+        titleMedium: _t(17, FontWeight.w500, ls: -0.1),
+        bodyLarge: _t(16, FontWeight.w400, height: 1.4),
+        bodyMedium: _t(14, FontWeight.w400, height: 1.4, color: DsColors.muted),
+        labelLarge: label,
       ),
       cardTheme: CardThemeData(
-        color: surfaceWhite,
-        elevation: 2,
-        shadowColor: Colors.black.withValues(alpha: 0.08),
+        color: DsColors.surface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: cardBorderColor, width: 1.2),
+          borderRadius: BorderRadius.circular(DsRadius.tile),
+          side: const BorderSide(color: DsColors.line),
         ),
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+        margin: const EdgeInsets.symmetric(vertical: DsSpace.s, horizontal: DsSpace.m),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: DsColors.ink,
+          foregroundColor: DsColors.onDark,
+          minimumSize: const Size(kDsTouch, 52),
+          padding: const EdgeInsets.symmetric(horizontal: DsSpace.xl, vertical: DsSpace.m),
+          shape: pill,
+          textStyle: label,
+        ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryTeal,
-          foregroundColor: Colors.white,
-          minimumSize: const Size.fromHeight(56),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          textStyle: const TextStyle(
-            fontFamily: fontFamily,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-          elevation: 2,
+          backgroundColor: DsColors.ink,
+          foregroundColor: DsColors.onDark,
+          minimumSize: const Size.fromHeight(52),
+          padding: const EdgeInsets.symmetric(horizontal: DsSpace.xl, vertical: DsSpace.m),
+          shape: pill,
+          textStyle: label,
+          elevation: 0,
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: primaryTeal,
-          minimumSize: const Size.fromHeight(52),
-          side: const BorderSide(color: primaryTeal, width: 2),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          textStyle: const TextStyle(
-            fontFamily: fontFamily,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+          foregroundColor: DsColors.ink,
+          minimumSize: const Size(kDsTouch, 48),
+          side: const BorderSide(color: DsColors.ink, width: 1.2),
+          padding: const EdgeInsets.symmetric(horizontal: DsSpace.xl, vertical: DsSpace.m),
+          shape: pill,
+          textStyle: label,
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: DsColors.ink,
+          minimumSize: const Size(kDsTouch, kDsTouch),
+          shape: pill,
+          textStyle: label,
         ),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: Colors.white,
-        selectedColor: primaryLightTeal,
-        labelStyle: const TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
-          color: textPrimary,
-        ),
-        secondaryLabelStyle: const TextStyle(
-          fontFamily: fontFamily,
-          fontSize: 15,
-          fontWeight: FontWeight.bold,
-          color: primaryDarkTeal,
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        backgroundColor: DsColors.surface,
+        selectedColor: DsColors.brand,
+        labelStyle: _t(15, FontWeight.w500),
+        secondaryLabelStyle: _t(15, FontWeight.w600, color: DsColors.onDark),
+        padding: const EdgeInsets.symmetric(horizontal: DsSpace.m, vertical: DsSpace.s),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: const BorderSide(color: cardBorderColor),
+          borderRadius: BorderRadius.circular(DsRadius.pill),
+          side: const BorderSide(color: DsColors.line),
         ),
       ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: DsColors.surface,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(DsRadius.tile),
+          borderSide: const BorderSide(color: DsColors.line),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(DsRadius.tile),
+          borderSide: const BorderSide(color: DsColors.line),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(DsRadius.tile),
+          borderSide: const BorderSide(color: DsColors.brand, width: 1.6),
+        ),
+      ),
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: DsColors.ink,
+        linearTrackColor: DsColors.track,
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? DsColors.onDark : null),
+        trackColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? DsColors.brand : null),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: DsColors.ink,
+        contentTextStyle: _t(15, FontWeight.w400, color: DsColors.onDark),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DsRadius.tile)),
+      ),
+      dividerTheme: const DividerThemeData(color: DsColors.line, thickness: 1),
+      // Smooth, subtle screen changes (Android app).
+      pageTransitionsTheme: const PageTransitionsTheme(builders: {
+        TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+      }),
     );
   }
 }

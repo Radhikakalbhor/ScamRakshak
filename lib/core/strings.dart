@@ -17,6 +17,9 @@ class S {
       'app_tagline': 'Your Guardian Against Digital Fraud',
       'offline_badge': 'Offline Protected',
       'select_language': 'Language / भाषा',
+      'home_title': 'Stay safe\nfrom fraud',
+      'notifications': 'Notifications',
+      'call_1930': 'Call 1930, cyber fraud helpline',
 
       // Home Navigation Tiles
       'check_message': 'Check Message',
@@ -52,6 +55,9 @@ class S {
       'app_tagline': 'डिजिटल धोखाधड़ी से आपकी सुरक्षा',
       'offline_badge': 'बिना इंटरनेट सुरक्षित',
       'select_language': 'भाषा चुनें',
+      'home_title': 'ठगी से\nसुरक्षित रहें',
+      'notifications': 'सूचनाएँ',
+      'call_1930': '1930 पर कॉल करें, साइबर ठगी हेल्पलाइन',
 
       // Home Navigation Tiles
       'check_message': 'संदेश जांचें',
@@ -87,6 +93,9 @@ class S {
       'app_tagline': 'डिजिटल ठगी ले आपमन के रक्षा',
       'offline_badge': 'बिना इंटरनेट चलहि',
       'select_language': 'भाखा चुनव',
+      'home_title': 'ठगी ले\nबांच के रहव',
+      'notifications': 'सूचना',
+      'call_1930': '1930 म कॉल करव, साइबर ठगी हेल्पलाइन',
 
       // Home Navigation Tiles
       'check_message': 'संदेश जांचव',
