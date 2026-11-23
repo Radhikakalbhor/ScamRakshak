@@ -8,7 +8,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/providers.dart';
 import '../../core/strings.dart';
-import '../../core/theme.dart';
+import '../../core/design/components.dart';
+import '../../core/design/tokens.dart';
 import '../report/report_nav.dart';
 import 'auto_analyze_core.dart';
 import 'auto_analyze_service.dart';
@@ -112,7 +113,7 @@ class _RecordingResultScreenState extends ConsumerState<RecordingResultScreen> {
           builder: (context, snap) {
             if (snap.hasError) return _message(s.t('auto_result_missing'));
             final st = snap.data;
-            if (st == null) return const Center(child: CircularProgressIndicator());
+            if (st == null) return const LoadingState();
             if (_pendingPath != null) return _pendingView(s);
             final id = _resultId;
             final saved = id == null ? null : st.result(id);
@@ -125,142 +126,102 @@ class _RecordingResultScreenState extends ConsumerState<RecordingResultScreen> {
   }
 
   Widget _message(String text) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(text, key: const Key('rec_message'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 17)),
-        ),
+        child: EmptyState(icon: Icons.history_toggle_off_rounded, title: text, key: const Key('rec_message')),
       );
 
-  Widget _pendingView(S s) => ListView(padding: const EdgeInsets.all(16), children: [
-        Text(s.t('auto_pending_title'), style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 8),
-        Text(s.t('auto_pending_body'), style: const TextStyle(fontSize: 16)),
-        const SizedBox(height: 8),
-        Text('${s.t('auto_result_file')}: ${fileNameOf(_pendingPath!)}',
-            style: const TextStyle(color: AppTheme.textSecondary)),
-        const SizedBox(height: 16),
-        FilledButton.icon(
+  static const _pad = EdgeInsets.fromLTRB(DsSpace.xl, DsSpace.s, DsSpace.xl, DsSpace.section);
+
+  Widget _pendingView(S s) => ListView(padding: _pad, children: [
+        Text(s.t('auto_pending_title'), style: DsType.cardTitle),
+        const SizedBox(height: DsSpace.s),
+        Text(s.t('auto_pending_body'), style: DsType.body),
+        const SizedBox(height: DsSpace.s),
+        Text('${s.t('auto_result_file')}: ${fileNameOf(_pendingPath!)}', style: DsType.small),
+        const SizedBox(height: DsSpace.xl),
+        PrimaryButton(
           key: const Key('rec_analyze_now'),
+          label: _busy ? s.t('call_transcribing') : s.t('auto_pending_analyze'),
+          icon: Icons.shield_outlined,
+          busy: _busy,
           onPressed: _busy ? null : _analyzeNow,
-          icon: _busy
-              ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-              : const Icon(Icons.shield_rounded),
-          label: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Text(_busy ? s.t('call_transcribing') : s.t('auto_pending_analyze'), style: const TextStyle(fontSize: 18)),
-          ),
         ),
         if (_errorKey != null)
-          Container(
-            key: const Key('rec_error'),
-            margin: const EdgeInsets.only(top: 12),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF3E0),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppTheme.warningOrange),
+          Padding(
+            padding: const EdgeInsets.only(top: DsSpace.m),
+            child: SurfacePanel(
+              key: const Key('rec_error'),
+              color: DsColors.cautionSoft,
+              padding: const EdgeInsets.all(DsSpace.l),
+              child: Text(s.t(_errorKey!), style: DsType.body),
             ),
-            child: Text(s.t(_errorKey!), style: const TextStyle(fontSize: 15)),
           ),
       ]);
 
-  Color _color(String risk) => switch (risk) {
-        'high' => AppTheme.errorRed,
-        'medium' => AppTheme.warningOrange,
-        _ => AppTheme.successGreen,
-      };
-
   Widget _resultView(S s, StoredRecordingResult saved) {
     final r = saved.result;
-    final color = _color(r.risk);
+    final verdict = riskVerdict(r.risk);
     final type = r.scriptType;
     final pct = (r.score * 100).round();
     final first = r.firstAlertAt;
-    return ListView(padding: const EdgeInsets.all(16), children: [
-      Container(
+    return ListView(padding: _pad, children: [
+      VerdictBanner(
         key: const Key('rec_verdict'),
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(18)),
-        child: Row(children: [
-          Icon(r.risk == 'low' ? Icons.verified_user_rounded : Icons.phone_locked_rounded, color: Colors.white, size: 48),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(s.t('risk_${r.risk}'),
-                  style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-              if (type != null)
-                Text('${s.t('call_detected_type')}: ${s.t('script_$type')}',
-                    style: const TextStyle(color: Colors.white, fontSize: 17)),
-              Text('${s.t('auto_result_score')}: $pct%',
-                  key: const Key('rec_score'), style: const TextStyle(color: Colors.white, fontSize: 17)),
-            ]),
-          ),
-        ]),
+        verdict: verdict,
+        icon: r.risk == 'low' ? Icons.verified_user_outlined : Icons.phone_locked_outlined,
+        title: s.t('risk_${r.risk}'),
+        lines: [if (type != null) '${s.t('call_detected_type')}: ${s.t('script_$type')}'],
       ),
-      const SizedBox(height: 8),
-      ClipRRect(
-        borderRadius: BorderRadius.circular(6),
-        child: LinearProgressIndicator(value: r.score, minHeight: 10, color: color, backgroundColor: const Color(0xFFE0E0E0)),
-      ),
-      const SizedBox(height: 8),
-      Text('${s.t('auto_result_file')}: ${saved.fileName}', style: const TextStyle(color: AppTheme.textSecondary)),
-      if (first != null) Text(s.t('auto_result_first_alert').replaceAll('{n}', '${first + 1}')),
-      const SizedBox(height: 12),
-      Text(s.t(callNoteKey(r.result)), key: const Key('rec_note'), style: const TextStyle(fontSize: 16)),
-      if (r.result.matches.isNotEmpty) ...[const SizedBox(height: 10), CallTriggerList(result: r.result)],
+      const SizedBox(height: DsSpace.m),
+      Text('${s.t('auto_result_score')}: $pct%', key: const Key('rec_score'), style: DsType.title),
+      const SizedBox(height: DsSpace.s),
+      ProgressBar(value: r.score, color: verdictColor(verdict), semanticLabel: s.t('auto_result_score')),
+      const SizedBox(height: DsSpace.s),
+      Text('${s.t('auto_result_file')}: ${saved.fileName}', style: DsType.small),
+      if (first != null) Text(s.t('auto_result_first_alert').replaceAll('{n}', '${first + 1}'), style: DsType.small),
+      const SizedBox(height: DsSpace.l),
+      Text(s.t(callNoteKey(r.result)), key: const Key('rec_note'), style: DsType.body),
+      if (r.result.matches.isNotEmpty) ...[const SizedBox(height: DsSpace.m), CallTriggerList(result: r.result)],
       if (r.risk != 'low') ...[
-        const SizedBox(height: 12),
-        FilledButton.icon(
+        const SizedBox(height: DsSpace.l),
+        PrimaryButton(
           key: const Key('rec_report'),
-          style: FilledButton.styleFrom(backgroundColor: AppTheme.errorRed),
+          label: s.t('call_report'),
+          icon: Icons.report_outlined,
+          color: DsColors.alert,
           onPressed: () => openRecordingReport(context, saved.id),
-          icon: const Icon(Icons.report_rounded),
-          label: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Text(s.t('call_report'), style: const TextStyle(fontSize: 18)),
-          ),
         ),
       ],
       if (r.points.length > 1) ...[
-        const SizedBox(height: 16),
-        Text(s.t('auto_result_timeline'), style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 6),
+        const SizedBox(height: DsSpace.xl),
+        Text(s.t('auto_result_timeline'), style: DsType.section),
+        const SizedBox(height: DsSpace.s),
         for (var i = 0; i < r.points.length; i++)
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 3),
+            padding: const EdgeInsets.symmetric(vertical: DsSpace.xs),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Icon(Icons.circle, size: 12, color: _color(r.points[i].risk)),
+                padding: const EdgeInsets.only(top: DsSpace.xs),
+                child: Icon(Icons.circle, size: 12, color: verdictColor(riskVerdict(r.points[i].risk))),
               ),
-              const SizedBox(width: 8),
-              SizedBox(width: 26, child: Text('${i + 1}.', style: const TextStyle(color: AppTheme.textSecondary))),
+              const SizedBox(width: DsSpace.s),
+              SizedBox(width: 26, child: Text('${i + 1}.', style: DsType.small)),
               Expanded(
                 child: Text(r.points[i].text,
-                    style: TextStyle(
-                        fontWeight: r.points[i].newMatches.isEmpty ? FontWeight.normal : FontWeight.bold)),
+                    style: DsType.body.copyWith(
+                        fontWeight: r.points[i].newMatches.isEmpty ? DsWeight.medium : DsWeight.semibold)),
               ),
             ]),
           ),
       ],
-      const SizedBox(height: 16),
-      Text(s.t('call_transcript'), style: Theme.of(context).textTheme.titleLarge),
-      if (r.result.matches.isNotEmpty)
-        Text(s.t('call_highlight_note'), style: const TextStyle(color: AppTheme.textSecondary)),
-      const SizedBox(height: 6),
-      Card(
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Text.rich(
-            key: const Key('rec_transcript'),
-            callTranscriptSpan(r.transcript, r.result.matches),
-            style: const TextStyle(fontSize: 17, height: 1.5, color: AppTheme.textPrimary),
-          ),
-        ),
-      ),
+      const SizedBox(height: DsSpace.xl),
+      Text(s.t('call_transcript'), style: DsType.section),
+      if (r.result.matches.isNotEmpty) Text(s.t('call_highlight_note'), style: DsType.small),
+      const SizedBox(height: DsSpace.s),
+      CallTranscriptCard(transcript: r.transcript, matches: r.result.matches, textKey: const Key('rec_transcript')),
     ]);
   }
 }
+
 
 /// Wraps the home screen:
 /// - shows queued full-screen warnings (HIGH/MEDIUM recordings), one at a time, each only once:

@@ -165,7 +165,7 @@ void main() {
       if (s is TextSpan && s.text != null) spans.add(s);
       return true;
     });
-    final keyText = spans.where((s) => s.style?.fontWeight == FontWeight.bold).map((s) => s.text!.toLowerCase()).toList();
+    final keyText = spans.where((s) => s.style?.fontWeight == kKeyWordWeight).map((s) => s.text!.toLowerCase()).toList();
     expect(keyText, contains('need your otp'));
     expect(spans.every((s) => s.style?.backgroundColor != null), isTrue); // whole sentence shaded
     expect(spans.where((s) => s.style?.backgroundColor == kDangerSentenceColor), isNotEmpty);

@@ -9,7 +9,8 @@ import 'package:go_router/go_router.dart';
 import '../../core/api_client.dart';
 import '../../core/providers.dart';
 import '../../core/strings.dart';
-import '../../core/theme.dart';
+import '../../core/design/components.dart';
+import '../../core/design/tokens.dart';
 import '../../engine/models.dart';
 import '../dashboard/detection_history.dart';
 import '../report/report_nav.dart';
@@ -173,91 +174,87 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
       appBar: AppBar(title: Text(s.t('call_title'))),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(DsSpace.xl, DsSpace.s, DsSpace.xl, DsSpace.section),
           children: [
-            Text(s.t('call_intro'), style: const TextStyle(fontSize: 16)),
-            const SizedBox(height: 14),
-            FilledButton.icon(
+            Text(s.t('call_intro'), style: DsType.body),
+            const SizedBox(height: DsSpace.l),
+            PrimaryButton(
               key: const Key('call_pick'),
+              label: s.t('call_pick_audio'),
+              icon: Icons.audio_file_outlined,
+              busy: _busy,
               onPressed: _busy || !rules.hasValue ? null : _pickAndTranscribe,
-              icon: const Icon(Icons.audio_file_rounded),
-              label: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Text(s.t('call_pick_audio'), style: const TextStyle(fontSize: 18)),
-              ),
             ),
             Padding(
-              padding: const EdgeInsets.only(top: 6),
+              padding: const EdgeInsets.only(top: DsSpace.s),
               child: Text(
                 s.t('call_needs_server').replaceAll('{formats}', kCallAudioExtensions.join(', ')),
                 key: const Key('call_needs_server'),
-                style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13),
+                style: DsType.small,
               ),
             ),
             if (_busy)
               Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Row(children: [
-                  const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
-                  const SizedBox(width: 10),
-                  Expanded(child: Text(s.t('call_transcribing'))),
-                ]),
+                padding: const EdgeInsets.only(top: DsSpace.m),
+                child: Text(s.t('call_transcribing'), style: DsType.body),
               ),
-            if (rules.isLoading) Padding(padding: const EdgeInsets.only(top: 8), child: Text(s.t('call_loading_rules'))),
+            if (rules.isLoading)
+              Padding(padding: const EdgeInsets.only(top: DsSpace.s), child: Text(s.t('call_loading_rules'), style: DsType.small)),
             if (rules.hasError)
               Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(s.t('call_rules_error'), style: const TextStyle(color: AppTheme.errorRed)),
+                padding: const EdgeInsets.only(top: DsSpace.s),
+                child: Text(s.t('call_rules_error'), style: DsType.body.copyWith(color: DsColors.alert)),
               ),
             if (_errorKey != null) _errorBox(s.t(_errorKey!)),
             if (_errorKey != null && !_busy && widget.initialAudio != null && widget.initialAudio!.existsSync())
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  key: const Key('call_retry_shared'),
-                  onPressed: () => _transcribe(widget.initialAudio!),
-                  icon: const Icon(Icons.refresh_rounded),
-                  label: Text(s.t('btn_retry')),
+              Padding(
+                padding: const EdgeInsets.only(top: DsSpace.s),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: PillChip(
+                    key: const Key('call_retry_shared'),
+                    icon: Icons.refresh_rounded,
+                    label: s.t('btn_retry'),
+                    onTap: () => _transcribe(widget.initialAudio!),
+                  ),
                 ),
               ),
-            const SizedBox(height: 12),
-            Card(
-              child: ListTile(
-                key: const Key('call_auto_entry'),
-                leading: const Icon(Icons.auto_mode_rounded, color: AppTheme.primaryTeal, size: 32),
-                title: Text(s.t('auto_entry'), style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(s.t('auto_entry_sub')),
-                trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 18),
-                onTap: () {
-                  final router = GoRouter.maybeOf(context);
-                  if (router != null) {
-                    router.push('/call/auto');
-                  } else {
-                    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AutoAnalyzeScreen()));
-                  }
-                },
-              ),
+            const SizedBox(height: DsSpace.l),
+            FeatureCard(
+              key: const Key('call_auto_entry'),
+              color: DsColors.mint,
+              icon: Icons.auto_mode_rounded,
+              title: s.t('auto_entry'),
+              subtitle: s.t('auto_entry_sub'),
+              onTap: () {
+                final router = GoRouter.maybeOf(context);
+                if (router != null) {
+                  router.push('/call/auto');
+                } else {
+                  Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const AutoAnalyzeScreen()));
+                }
+              },
             ),
-            const SizedBox(height: 16),
-            Text(s.t('call_samples'), style: const TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 6),
+            const SizedBox(height: DsSpace.xl),
+            Text(s.t('call_samples'), style: DsType.greeting),
+            const SizedBox(height: DsSpace.s),
             FutureBuilder<List<String>>(
               future: _samples,
               builder: (context, snap) {
                 final paths = snap.data ?? const <String>[];
-                return Wrap(spacing: 8, runSpacing: 4, children: [
+                return Wrap(spacing: DsSpace.s, runSpacing: DsSpace.s, children: [
                   for (var i = 0; i < paths.length; i++)
-                    ActionChip(
+                    PillChip(
                       key: Key('call_sample_$i'),
-                      avatar: const Icon(Icons.record_voice_over_rounded, size: 18),
-                      label: Text('${s.t('call_sample')} ${i + 1}'),
-                      onPressed: _busy || !rules.hasValue ? null : () => _useSample(paths[i]),
+                      icon: Icons.record_voice_over_outlined,
+                      label: '${s.t('call_sample')} ${i + 1}',
+                      onTap: _busy || !rules.hasValue ? null : () => _useSample(paths[i]),
                     ),
                 ]);
               },
             ),
             if (_result != null && _transcript != null) ...[
-              const SizedBox(height: 20),
+              const SizedBox(height: DsSpace.xxl),
               _resultView(s, _result!, _transcript!),
             ],
           ],
@@ -266,80 +263,46 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
     );
   }
 
-  Widget _errorBox(String msg) => Container(
-        key: const Key('call_error'),
-        margin: const EdgeInsets.only(top: 12),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFF3E0),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.warningOrange),
+  Widget _errorBox(String msg) => Padding(
+        padding: const EdgeInsets.only(top: DsSpace.m),
+        child: SurfacePanel(
+          key: const Key('call_error'),
+          color: DsColors.cautionSoft,
+          padding: const EdgeInsets.all(DsSpace.l),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Icon(Icons.wifi_off_rounded, color: DsColors.caution),
+            const SizedBox(width: DsSpace.s),
+            Expanded(child: Text(msg, style: DsType.body)),
+          ]),
         ),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Icon(Icons.wifi_off_rounded, color: AppTheme.warningOrange),
-          const SizedBox(width: 8),
-          Expanded(child: Text(msg, style: const TextStyle(fontSize: 15))),
-        ]),
       );
 
-  Color _riskColor(String risk) => switch (risk) {
-        'high' => AppTheme.errorRed,
-        'medium' => AppTheme.warningOrange,
-        _ => AppTheme.successGreen,
-      };
-
   Widget _resultView(S s, CallResult r, String transcript) {
-    final color = _riskColor(r.risk);
     final type = mainScriptType(r);
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Container(
+      VerdictBanner(
         key: const Key('call_risk'),
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(18)),
-        child: Row(children: [
-          Icon(r.risk == 'low' ? Icons.verified_user_rounded : Icons.phone_locked_rounded,
-              color: Colors.white, size: 48),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(s.t('risk_${r.risk}'),
-                  style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-              if (type != null && r.risk != 'low')
-                Text('${s.t('call_detected_type')}: ${s.t('script_$type')}',
-                    style: const TextStyle(color: Colors.white, fontSize: 17)),
-            ]),
-          ),
-        ]),
+        verdict: riskVerdict(r.risk),
+        icon: r.risk == 'low' ? Icons.verified_user_outlined : Icons.phone_locked_outlined,
+        title: s.t('risk_${r.risk}'),
+        lines: [if (type != null && r.risk != 'low') '${s.t('call_detected_type')}: ${s.t('script_$type')}'],
       ),
-      const SizedBox(height: 12),
-      Text(s.t(callNoteKey(r)), key: const Key('call_note'), style: const TextStyle(fontSize: 16)),
-      if (r.matches.isNotEmpty) ...[const SizedBox(height: 10), CallTriggerList(result: r)],
-      const SizedBox(height: 16),
-      Text(s.t('call_transcript'), style: Theme.of(context).textTheme.titleLarge),
-      if (r.matches.isNotEmpty)
-        Text(s.t('call_highlight_note'), style: const TextStyle(color: AppTheme.textSecondary)),
-      const SizedBox(height: 6),
-      Card(
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Text.rich(
-            key: const Key('call_transcript'),
-            callTranscriptSpan(transcript, r.matches),
-            style: const TextStyle(fontSize: 17, height: 1.5, color: AppTheme.textPrimary),
-          ),
-        ),
-      ),
+      const SizedBox(height: DsSpace.l),
+      Text(s.t(callNoteKey(r)), key: const Key('call_note'), style: DsType.body),
+      if (r.matches.isNotEmpty) ...[const SizedBox(height: DsSpace.m), CallTriggerList(result: r)],
+      const SizedBox(height: DsSpace.xl),
+      Text(s.t('call_transcript'), style: DsType.section),
+      if (r.matches.isNotEmpty) Text(s.t('call_highlight_note'), style: DsType.small),
+      const SizedBox(height: DsSpace.s),
+      CallTranscriptCard(transcript: transcript, matches: r.matches, textKey: const Key('call_transcript')),
       if (r.risk != 'low') ...[
-        const SizedBox(height: 12),
-        FilledButton.icon(
+        const SizedBox(height: DsSpace.l),
+        PrimaryButton(
           key: const Key('call_report'),
-          style: FilledButton.styleFrom(backgroundColor: AppTheme.errorRed),
+          label: s.t('call_report'),
+          icon: Icons.report_outlined,
+          color: DsColors.alert,
           onPressed: () => openReport(context, type: 'call'),
-          icon: const Icon(Icons.report_rounded),
-          label: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Text(s.t('call_report'), style: const TextStyle(fontSize: 18)),
-          ),
         ),
       ],
     ]);

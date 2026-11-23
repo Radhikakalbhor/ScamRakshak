@@ -18,6 +18,7 @@ import 'package:scam_rakshak/features/call_detector/auto_analyze_screen.dart';
 import 'package:scam_rakshak/features/call_detector/auto_analyze_service.dart';
 import 'package:scam_rakshak/features/call_detector/call_detector_screen.dart';
 import 'package:scam_rakshak/features/call_detector/call_timeline.dart';
+import 'package:scam_rakshak/features/call_detector/call_triggers.dart';
 import 'package:scam_rakshak/features/call_detector/recording_result_screen.dart';
 import 'package:scam_rakshak/features/call_detector/recording_warning_screen.dart';
 import 'package:scam_rakshak/features/live_call/recording_inbox.dart';
@@ -515,7 +516,7 @@ void main() {
         spans.add(s);
         return true;
       });
-      expect(spans.whereType<TextSpan>().any((s) => s.style?.fontWeight == FontWeight.bold), isTrue);
+      expect(spans.whereType<TextSpan>().any((s) => s.style?.fontWeight == kKeyWordWeight), isTrue);
       await tester.tap(find.byKey(const Key('rec_report')));
       await tester.pumpAndSettle();
       expect(find.byType(ReportScreen), findsOneWidget);

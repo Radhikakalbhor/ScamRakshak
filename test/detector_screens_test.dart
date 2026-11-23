@@ -222,7 +222,8 @@ void main() {
       await tester.pumpAndSettle();
 
       final n = Directory('assets/samples').listSync().where((f) => f.path.endsWith('.txt')).length;
-      expect(find.byType(ActionChip), findsNWidgets(n));
+      expect(find.byKey(Key('call_sample_${n - 1}')), findsOneWidget);
+      expect(find.byKey(Key('call_sample_$n')), findsNothing);
     });
   });
 }
