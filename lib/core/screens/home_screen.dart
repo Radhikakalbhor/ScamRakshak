@@ -64,7 +64,7 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: DsSpace.xxl),
 
             // 2: Language / भाषा
-            _Panel(
+            SurfacePanel(
               key: const Key('home_language'),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(s.t('select_language'), style: DsType.greeting),
@@ -85,8 +85,8 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: DsSpace.l),
 
             // 5, 6, 7 + Live Call Guard: feature grid
-            _FeatureRow(children: [
-              _FeatureCard(
+            PairRow(
+              left: FeatureCard(
                 key: const Key('home_tile_message'),
                 color: DsColors.peach,
                 icon: Icons.chat_bubble_outline_rounded,
@@ -94,7 +94,7 @@ class HomeScreen extends StatelessWidget {
                 subtitle: s.t('check_message_sub'),
                 onTap: () => _go(context, '/message'),
               ),
-              _FeatureCard(
+              right: FeatureCard(
                 key: const Key('home_tile_qr'),
                 color: DsColors.powder,
                 icon: Icons.qr_code_2_rounded,
@@ -102,10 +102,10 @@ class HomeScreen extends StatelessWidget {
                 subtitle: s.t('check_qr_sub'),
                 onTap: () => _go(context, '/qr'),
               ),
-            ]),
+            ),
             const SizedBox(height: DsSpace.m),
-            _FeatureRow(children: [
-              _FeatureCard(
+            PairRow(
+              left: FeatureCard(
                 key: const Key('home_tile_call'),
                 color: DsColors.mint,
                 icon: Icons.call_outlined,
@@ -113,7 +113,7 @@ class HomeScreen extends StatelessWidget {
                 subtitle: s.t('check_call_sub'),
                 onTap: () => _go(context, '/call'),
               ),
-              _FeatureCard(
+              right: FeatureCard(
                 key: const Key('home_tile_live'),
                 color: DsColors.lavender,
                 icon: Icons.graphic_eq_rounded,
@@ -121,7 +121,7 @@ class HomeScreen extends StatelessWidget {
                 subtitle: s.t('live_call_sub'),
                 onTap: () => _go(context, '/live'),
               ),
-            ]),
+            ),
             const SizedBox(height: DsSpace.l),
 
             // 8: Digital Financial Literacy Score
@@ -129,7 +129,7 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: DsSpace.l),
 
             // Existing feature kept below the spec'd sections: Scam Trends.
-            _Panel(
+            SurfacePanel(
               key: const Key('home_trends'),
               onTap: () => _go(context, '/dashboard'),
               semanticLabel: '${s.t('scam_trends')}. ${s.t('scam_trends_sub')}',
@@ -149,29 +149,6 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-/// White rounded panel on the off-white page (hairline border, no shadow).
-class _Panel extends StatelessWidget {
-  final Widget child;
-  final VoidCallback? onTap;
-  final String? semanticLabel;
-  const _Panel({super.key, required this.child, this.onTap, this.semanticLabel});
-
-  @override
-  Widget build(BuildContext context) {
-    final panel = Container(
-      padding: const EdgeInsets.all(DsSpace.xl),
-      decoration: BoxDecoration(
-        color: DsColors.surface,
-        borderRadius: BorderRadius.circular(DsRadius.card),
-        border: Border.all(color: DsColors.line),
-      ),
-      child: child,
-    );
-    if (onTap == null) return panel;
-    return Pressable(onTap: onTap, semanticLabel: semanticLabel, child: ExcludeSemantics(child: panel));
   }
 }
 
@@ -206,7 +183,7 @@ class _ReportFraudCard extends StatelessWidget {
               ArrowButton(color: onAlert),
             ]),
             const SizedBox(height: DsSpace.xl),
-            Text(title, style: DsType.headline.copyWith(color: onAlert, fontWeight: FontWeight.w400)),
+            Text(title, style: DsType.headline.copyWith(color: onAlert)),
             const SizedBox(height: DsSpace.xs),
             Text(subtitle, style: DsType.body.copyWith(color: onAlert)),
             const SizedBox(height: DsSpace.l),
@@ -230,54 +207,6 @@ class _ReportFraudCard extends StatelessWidget {
       ),
     ]);
   }
-}
-
-/// Two equal-height cards side by side.
-class _FeatureRow extends StatelessWidget {
-  final List<Widget> children;
-  const _FeatureRow({required this.children});
-
-  @override
-  Widget build(BuildContext context) => IntrinsicHeight(
-        child: Row(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Expanded(child: children[0]),
-          const SizedBox(width: DsSpace.m),
-          Expanded(child: children[1]),
-        ]),
-      );
-}
-
-class _FeatureCard extends StatelessWidget {
-  final Color color;
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-  const _FeatureCard({
-    super.key,
-    required this.color,
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) => PastelCard(
-        color: color,
-        onTap: onTap,
-        padding: const EdgeInsets.all(DsSpace.l),
-        semanticLabel: '$title. $subtitle',
-        child: ExcludeSemantics(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [IconBadge(icon), const Spacer(), const ArrowButton()]),
-            const SizedBox(height: DsSpace.xxl),
-            Text(title, style: DsType.cardTitle.copyWith(fontSize: 20)),
-            const SizedBox(height: DsSpace.xs),
-            Text(subtitle, style: DsType.small),
-          ]),
-        ),
-      );
 }
 
 /// Digital Financial Literacy Score: score at the upper right, progress bar, guidance, next step,
@@ -344,7 +273,7 @@ class _LiteracyPanelState extends State<_LiteracyPanel> {
       _ => s.t('dfl_all_good'),
     };
     final n = kLessonIds.length;
-    return _Panel(
+    return SurfacePanel(
       key: const Key('home_literacy'),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -378,7 +307,7 @@ class _LiteracyPanelState extends State<_LiteracyPanel> {
             style: DsType.body,
           ),
         const SizedBox(height: DsSpace.s),
-        Text(next, key: const Key('home_dfl_next'), style: DsType.body.copyWith(fontWeight: FontWeight.w600)),
+        Text(next, key: const Key('home_dfl_next'), style: DsType.body.copyWith(fontWeight: DsWeight.semibold)),
         const SizedBox(height: DsSpace.xl),
         PrimaryButton(
           key: const Key('home_open_lessons'),

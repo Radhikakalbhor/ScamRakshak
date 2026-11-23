@@ -107,13 +107,16 @@ void main() {
       expect(RegExp(r'Color\(0x').hasMatch(src), isFalse, reason: '$path: raw color, use DsColors');
       expect(RegExp(r'fontFamily:').hasMatch(src), isFalse, reason: '$path: use DsType / DsFont');
       expect(RegExp(r'BorderRadius\.circular\(\d').hasMatch(src), isFalse, reason: '$path: use DsRadius');
+      expect(RegExp(r'FontWeight\.w\d').hasMatch(src), isFalse, reason: '$path: use DsWeight / DsType');
     }
     final pubspec = File('pubspec.yaml').readAsStringSync();
     expect(pubspec, contains('family: ${DsFont.family}'));
-    for (final w in ['Light', 'Regular', 'Medium', 'SemiBold']) {
+    for (final w in ['Regular', 'Medium', 'SemiBold', 'Bold']) {
       expect(File('assets/fonts/InterTight-$w.ttf').lengthSync(), greaterThan(40000));
+      expect(File('assets/fonts/NotoSansDevanagari-$w.ttf').lengthSync(), greaterThan(100000));
+      expect(pubspec, contains('assets/fonts/NotoSansDevanagari-$w.ttf'));
     }
     expect(File('design/DESIGN_SYSTEM.md').existsSync(), isTrue);
-    expect(File('CLAUDE.md').readAsStringSync().trimLeft(), startsWith('All UI must follow /design/DESIGN_SYSTEM.md'));
+    expect(File('CLAUDE.md').readAsStringSync().trimLeft(), startsWith('All UI must use the shared components and tokens. Never hardcode colors, radii, fonts, font weights or spacing.'));
   });
 }

@@ -66,7 +66,7 @@ class AppTheme {
       onError: DsColors.alertInk,
     );
     final pill = RoundedRectangleBorder(borderRadius: BorderRadius.circular(DsRadius.pill));
-    final label = _t(16, FontWeight.w500, ls: -0.1);
+    final label = _t(16, DsWeight.semibold, ls: -0.1);
 
     return ThemeData(
       useMaterial3: true,
@@ -82,19 +82,19 @@ class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        titleTextStyle: _t(20, FontWeight.w500, ls: -0.3),
+        titleTextStyle: _t(20, DsWeight.semibold, ls: -0.3),
         iconTheme: const IconThemeData(color: DsColors.ink, size: 26),
       ),
       textTheme: TextTheme(
         displayLarge: DsType.display,
         displayMedium: DsType.headline,
-        headlineLarge: _t(28, FontWeight.w300, height: 1.1, ls: -0.8),
-        headlineMedium: _t(24, FontWeight.w300, height: 1.15, ls: -0.6),
-        headlineSmall: _t(20, FontWeight.w400, height: 1.2, ls: -0.3),
-        titleLarge: _t(19, FontWeight.w500, ls: -0.2),
-        titleMedium: _t(17, FontWeight.w500, ls: -0.1),
-        bodyLarge: _t(16, FontWeight.w400, height: 1.4),
-        bodyMedium: _t(14, FontWeight.w400, height: 1.4, color: DsColors.muted),
+        headlineLarge: _t(28, DsWeight.medium, height: 1.1, ls: -0.8),
+        headlineMedium: _t(24, DsWeight.medium, height: 1.15, ls: -0.6),
+        headlineSmall: _t(20, DsWeight.semibold, height: 1.2, ls: -0.3),
+        titleLarge: _t(19, DsWeight.semibold, ls: -0.2),
+        titleMedium: _t(17, DsWeight.semibold, ls: -0.1),
+        bodyLarge: _t(16, DsWeight.medium, height: 1.4),
+        bodyMedium: _t(14, DsWeight.medium, height: 1.4, color: DsColors.muted),
         labelLarge: label,
       ),
       cardTheme: CardThemeData(
@@ -149,8 +149,8 @@ class AppTheme {
       chipTheme: ChipThemeData(
         backgroundColor: DsColors.surface,
         selectedColor: DsColors.brand,
-        labelStyle: _t(15, FontWeight.w500),
-        secondaryLabelStyle: _t(15, FontWeight.w600, color: DsColors.onDark),
+        labelStyle: _t(15, DsWeight.semibold),
+        secondaryLabelStyle: _t(15, DsWeight.semibold, color: DsColors.onDark),
         padding: const EdgeInsets.symmetric(horizontal: DsSpace.m, vertical: DsSpace.s),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(DsRadius.pill),
@@ -183,7 +183,7 @@ class AppTheme {
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: DsColors.ink,
-        contentTextStyle: _t(15, FontWeight.w400, color: DsColors.onDark),
+        contentTextStyle: _t(15, DsWeight.medium, color: DsColors.onDark),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DsRadius.tile)),
       ),
