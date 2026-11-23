@@ -472,7 +472,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('This folder cannot be read'), findsOneWidget);
       expect(toggleEnabled(tester), isFalse);
-      await tester.tap(find.widgetWithText(ActionChip, 'Recordings/Call'));
+      await tester.tap(find.text('Recordings/Call'));
       await tester.pumpAndSettle();
       expect(toggleEnabled(tester), isTrue);
     });

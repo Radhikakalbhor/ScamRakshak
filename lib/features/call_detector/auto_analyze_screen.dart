@@ -6,7 +6,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/providers.dart';
 import '../../core/strings.dart';
-import '../../core/theme.dart';
+import '../../core/design/components.dart';
+import '../../core/design/tokens.dart';
 import 'auto_analyze_core.dart';
 import 'auto_analyze_service.dart';
 import 'recording_result_screen.dart' show callTimelineProvider;
@@ -102,8 +103,7 @@ class _AutoAnalyzeScreenState extends ConsumerState<AutoAnalyzeScreen> with Widg
     });
   }
 
-  void _snack(String key) =>
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(S.of(context).t(key))));
+  void _snack(String key) => showDsToast(context, S.of(context).t(key));
 
   Future<void> _run(Future<void> Function() f) async {
     if (_busy) return;
@@ -161,7 +161,7 @@ class _AutoAnalyzeScreenState extends ConsumerState<AutoAnalyzeScreen> with Widg
     if (store == null) {
       return Scaffold(
         appBar: AppBar(title: Text(s.t('auto_title'))),
-        body: const Center(child: CircularProgressIndicator()),
+        body: const LoadingState(),
       );
     }
     final consent = store.consent;
@@ -173,71 +173,69 @@ class _AutoAnalyzeScreenState extends ConsumerState<AutoAnalyzeScreen> with Widg
     return Scaffold(
       appBar: AppBar(title: Text(s.t('auto_title'))),
       body: SafeArea(
-        child: ListView(padding: const EdgeInsets.all(16), children: [
-          Card(
+        child: ListView(padding: const EdgeInsets.fromLTRB(DsSpace.xl, DsSpace.s, DsSpace.xl, DsSpace.section), children: [
+          PastelCard(
             key: const Key('auto_consent'),
-            color: consent ? null : const Color(0xFFFFF8E1),
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                Row(children: [
-                  const Icon(Icons.privacy_tip_rounded, color: AppTheme.primaryTeal),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(s.t('auto_consent_title'), style: Theme.of(context).textTheme.titleLarge)),
-                ]),
-                const SizedBox(height: 8),
-                Text(s.t('auto_consent'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 6),
-                Text(s.t('auto_consent_more'), style: const TextStyle(fontSize: 15)),
-                const SizedBox(height: 10),
-                if (consent)
-                  Row(children: [
-                    const Icon(Icons.check_circle_rounded, color: AppTheme.successGreen),
-                    const SizedBox(width: 6),
-                    Expanded(child: Text(s.t('auto_consent_agree'))),
-                  ])
-                else
-                  FilledButton(
-                    key: const Key('auto_agree'),
-                    onPressed: _busy ? null : () => _run(() => store.setConsent(true)),
-                    child: Text(s.t('auto_consent_agree')),
-                  ),
+            color: consent ? DsColors.mint : DsColors.peach,
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              Row(children: [
+                const IconBadge(Icons.privacy_tip_outlined),
+                const SizedBox(width: DsSpace.m),
+                Expanded(child: Text(s.t('auto_consent_title'), style: DsType.cardTitle)),
               ]),
-            ),
+              const SizedBox(height: DsSpace.m),
+              Text(s.t('auto_consent'), style: DsType.title),
+              const SizedBox(height: DsSpace.s),
+              Text(s.t('auto_consent_more'), style: DsType.body),
+              const SizedBox(height: DsSpace.l),
+              if (consent)
+                Row(children: [
+                  const Icon(Icons.check_circle_outline_rounded, color: DsColors.safe),
+                  const SizedBox(width: DsSpace.s),
+                  Expanded(child: Text(s.t('auto_consent_agree'), style: DsType.title)),
+                ])
+              else
+                PrimaryButton(
+                  key: const Key('auto_agree'),
+                  label: s.t('auto_consent_agree'),
+                  onPressed: _busy ? null : () => _run(() => store.setConsent(true)),
+                ),
+            ]),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: DsSpace.m),
           _step(
             n: 1,
             done: folder != null && _folderOk,
             enabled: consent,
             title: s.t('auto_step_folder'),
             body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(folder ?? s.t('auto_step_folder_none'),
-                  key: const Key('auto_folder'), style: const TextStyle(color: AppTheme.textSecondary)),
+              Text(folder ?? s.t('auto_step_folder_none'), key: const Key('auto_folder'), style: DsType.small),
               if (folder != null && !_folderOk)
-                Text(s.t('auto_step_folder_missing'), style: const TextStyle(color: AppTheme.errorRed)),
+                Text(s.t('auto_step_folder_missing'), style: DsType.body.copyWith(color: DsColors.alert)),
               if (candidates.isNotEmpty) ...[
-                const SizedBox(height: 6),
-                Text(s.t('auto_step_folder_found')),
-                Wrap(spacing: 6, children: [
+                const SizedBox(height: DsSpace.s),
+                Text(s.t('auto_step_folder_found'), style: DsType.small),
+                const SizedBox(height: DsSpace.xs),
+                Wrap(spacing: DsSpace.s, runSpacing: DsSpace.s, children: [
                   for (final c in candidates)
-                    ActionChip(
-                      label: Text(c.replaceFirst('/storage/emulated/0/', '')),
-                      onPressed: !consent || _busy ? null : () => _run(() => _setFolder(c)),
+                    PillChip(
+                      label: c.replaceFirst('/storage/emulated/0/', ''),
+                      icon: Icons.folder_outlined,
+                      onTap: !consent || _busy ? null : () => _run(() => _setFolder(c)),
                     ),
                 ]),
               ],
-              const SizedBox(height: 6),
-              OutlinedButton.icon(
+              const SizedBox(height: DsSpace.s),
+              PillChip(
                 key: const Key('auto_pick_folder'),
-                onPressed: !consent || _busy
+                icon: Icons.folder_open_outlined,
+                label: s.t('auto_step_folder_pick'),
+                onTap: !consent || _busy
                     ? null
                     : () => _run(() async {
                           final p = await _platform.pickFolder();
                           if (p != null && p.isNotEmpty) await _setFolder(p);
                         }),
-                icon: const Icon(Icons.folder_open_rounded),
-                label: Text(s.t('auto_step_folder_pick')),
               ),
             ]),
           ),
@@ -265,11 +263,12 @@ class _AutoAnalyzeScreenState extends ConsumerState<AutoAnalyzeScreen> with Widg
             body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               _permissionBody(s, 'auto_step_battery_help', 'auto_allow_battery', _battery,
                   () => _run(() async => _platform.requestBatteryUnrestricted())),
-              TextButton.icon(
+              const SizedBox(height: DsSpace.s),
+              PillChip(
                 key: const Key('auto_app_settings'),
-                onPressed: !consent ? null : () => _run(_platform.openSettings),
-                icon: const Icon(Icons.settings_rounded),
-                label: Text(s.t('auto_open_settings')),
+                icon: Icons.settings_outlined,
+                label: s.t('auto_open_settings'),
+                onTap: !consent ? null : () => _run(_platform.openSettings),
               ),
             ]),
           ),
@@ -278,43 +277,41 @@ class _AutoAnalyzeScreenState extends ConsumerState<AutoAnalyzeScreen> with Widg
             done: _fsi,
             enabled: consent,
             title: s.t('auto_step_fsi'),
-            body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(s.t('auto_step_fsi_help'), style: const TextStyle(color: AppTheme.textSecondary)),
-              if (!_fsi) ...[
-                const SizedBox(height: 6),
-                FilledButton.tonal(
-                  key: const Key('auto_allow_fsi'),
-                  onPressed: _busy || !consent ? null : () => _run(_platform.openFullScreenIntentSettings),
-                  child: Text(s.t('auto_allow')),
-                ),
-              ],
-            ]),
+            body: _permissionBody(s, 'auto_step_fsi_help', 'auto_allow_fsi', _fsi,
+                () => _run(_platform.openFullScreenIntentSettings)),
           ),
-          const SizedBox(height: 8),
-          Card(
-            child: SwitchListTile(
-              key: const Key('auto_toggle'),
-              value: on,
-              onChanged: _busy || (!on && !ready) ? null : _toggle,
-              title: Text(s.t('auto_toggle'), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
-              subtitle: Text(s.t(on ? 'auto_toggle_sub_on' : (ready ? 'auto_toggle_sub_ready' : 'auto_toggle_sub_off'))),
+          const SizedBox(height: DsSpace.s),
+          SurfacePanel(
+            color: on ? DsColors.mint : DsColors.surface,
+            padding: const EdgeInsets.symmetric(vertical: DsSpace.s, horizontal: DsSpace.xs),
+            child: Material(
+              type: MaterialType.transparency,
+              child: SwitchListTile(
+                key: const Key('auto_toggle'),
+                value: on,
+                onChanged: _busy || (!on && !ready) ? null : _toggle,
+                title: Text(s.t('auto_toggle'), style: DsType.title),
+                subtitle: Text(s.t(on ? 'auto_toggle_sub_on' : (ready ? 'auto_toggle_sub_ready' : 'auto_toggle_sub_off')),
+                    style: DsType.small),
+              ),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-            child: Text('${s.t('auto_server')}: $_server', style: const TextStyle(color: AppTheme.textSecondary)),
+            padding: const EdgeInsets.symmetric(horizontal: DsSpace.xs, vertical: DsSpace.s),
+            child: Text('${s.t('auto_server')}: $_server', style: DsType.small),
           ),
           _diagnosticsCard(s, store),
-          const Divider(height: 24),
-          OutlinedButton.icon(
+          const SizedBox(height: DsSpace.xl),
+          PrimaryButton(
             key: const Key('auto_demo_warning'),
+            label: s.t('auto_demo'),
+            icon: Icons.science_outlined,
+            filled: false,
             onPressed: _busy ? null : _demo,
-            icon: const Icon(Icons.science_rounded),
-            label: Text(s.t('auto_demo')),
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Text(s.t('auto_demo_help'), style: const TextStyle(color: AppTheme.textSecondary)),
+            padding: const EdgeInsets.only(top: DsSpace.s),
+            child: Text(s.t('auto_demo_help'), style: DsType.small),
           ),
         ]),
       ),
@@ -326,61 +323,63 @@ class _AutoAnalyzeScreenState extends ConsumerState<AutoAnalyzeScreen> with Widg
     final diag = store.diagnostics;
     final err = store.lastError;
     String two(int v) => v.toString().padLeft(2, '0');
-    return Card(
+    return SurfacePanel(
       key: const Key('auto_diag'),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            Expanded(child: Text(s.t('auto_diag_title'), style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold))),
-            IconButton(
-              key: const Key('auto_diag_refresh'),
-              tooltip: s.t('auto_diag_refresh'),
-              onPressed: _refresh,
-              icon: const Icon(Icons.refresh_rounded),
-            ),
-          ]),
-          if (err != null)
-            Container(
-              key: const Key('auto_diag_error'),
-              width: double.infinity,
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.all(10),
-              color: const Color(0xFFFFEBEE),
-              child: Text('${s.t('auto_diag_last_error')}: $err', style: const TextStyle(color: AppTheme.errorRed)),
-            ),
-          if (diag.isEmpty) Text(s.t('auto_diag_empty'), style: const TextStyle(color: AppTheme.textSecondary)),
-          for (final d in diag)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 3),
-              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Icon(d.accepted ? Icons.check_circle_rounded : Icons.remove_circle_outline_rounded,
-                    size: 18, color: d.accepted ? AppTheme.successGreen : AppTheme.textSecondary),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text.rich(TextSpan(children: [
-                    TextSpan(text: d.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                    TextSpan(
-                        text: '\n${two(d.at.hour)}:${two(d.at.minute)}:${two(d.at.second)} · '
-                            '${s.t(d.accepted ? 'auto_diag_accepted' : 'auto_diag_rejected')}: ${d.reason}'),
-                  ])),
-                ),
-              ]),
-            ),
+      padding: const EdgeInsets.all(DsSpace.l),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Expanded(child: Text(s.t('auto_diag_title'), style: DsType.section)),
+          ArrowButton(
+            key: const Key('auto_diag_refresh'),
+            icon: Icons.refresh_rounded,
+            semanticLabel: s.t('auto_diag_refresh'),
+            onTap: _refresh,
+          ),
         ]),
-      ),
+        const SizedBox(height: DsSpace.s),
+        if (err != null)
+          Container(
+            key: const Key('auto_diag_error'),
+            width: double.infinity,
+            margin: const EdgeInsets.only(bottom: DsSpace.s),
+            padding: const EdgeInsets.all(DsSpace.m),
+            decoration: BoxDecoration(color: DsColors.alertSoft, borderRadius: BorderRadius.circular(DsRadius.tile)),
+            child: Text('${s.t('auto_diag_last_error')}: $err', style: DsType.body),
+          ),
+        if (diag.isEmpty) Text(s.t('auto_diag_empty'), style: DsType.small),
+        for (final d in diag)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: DsSpace.xs),
+            child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Icon(d.accepted ? Icons.check_circle_outline_rounded : Icons.remove_circle_outline_rounded,
+                  size: 18, color: d.accepted ? DsColors.safe : DsColors.muted),
+              const SizedBox(width: DsSpace.s),
+              Expanded(
+                child: Text.rich(TextSpan(children: [
+                  TextSpan(text: d.name, style: DsType.title.copyWith(fontSize: 15)),
+                  TextSpan(
+                      text: '\n${two(d.at.hour)}:${two(d.at.minute)}:${two(d.at.second)} · '
+                          '${s.t(d.accepted ? 'auto_diag_accepted' : 'auto_diag_rejected')}: ${d.reason}',
+                      style: DsType.small),
+                ])),
+              ),
+            ]),
+          ),
+      ]),
     );
   }
 
   Widget _permissionBody(S s, String helpKey, String buttonKey, bool granted, VoidCallback onAllow) =>
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text(s.t(helpKey), style: const TextStyle(color: AppTheme.textSecondary)),
+        Text(s.t(helpKey), style: DsType.small),
         if (!granted) ...[
-          const SizedBox(height: 6),
-          FilledButton.tonal(
+          const SizedBox(height: DsSpace.s),
+          PillChip(
             key: Key(buttonKey),
-            onPressed: _busy || !(_store?.consent ?? false) ? null : onAllow,
-            child: Text(s.t('auto_allow')),
+            label: s.t('auto_allow'),
+            background: DsColors.brand,
+            foreground: DsColors.onDark,
+            onTap: _busy || !(_store?.consent ?? false) ? null : onAllow,
           ),
         ],
       ]);
@@ -394,23 +393,26 @@ class _AutoAnalyzeScreenState extends ConsumerState<AutoAnalyzeScreen> with Widg
   }) =>
       Opacity(
         opacity: enabled ? 1 : 0.5,
-        child: Card(
-          key: Key('auto_step_$n'),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: DsSpace.s),
+          child: SurfacePanel(
+            key: Key('auto_step_$n'),
+            padding: const EdgeInsets.all(DsSpace.l),
             child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              CircleAvatar(
-                radius: 15,
-                backgroundColor: done ? AppTheme.successGreen : AppTheme.primaryTeal,
+              Container(
+                width: 30,
+                height: 30,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(color: done ? DsColors.safe : DsColors.ink, shape: BoxShape.circle),
                 child: done
-                    ? const Icon(Icons.check_rounded, color: Colors.white, size: 18)
-                    : Text('$n', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    ? const Icon(Icons.check_rounded, color: DsColors.onDark, size: 18)
+                    : Text('$n', style: DsType.caption.copyWith(color: DsColors.onDark)),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: DsSpace.m),
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
+                  Text(title, style: DsType.title),
+                  const SizedBox(height: DsSpace.xs),
                   body,
                 ]),
               ),
