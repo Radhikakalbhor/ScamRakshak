@@ -40,7 +40,6 @@ void main() {
     double y(Finder f) => tester.getTopLeft(f).dy;
     final order = [
       find.text('ScamRakshak'),
-      find.text('Language / भाषा'),
       find.text('Report Fraud'),
       find.text('Check Message'),
       find.text('Check Call'),
@@ -56,8 +55,6 @@ void main() {
     expect(y(find.text('Live Call Guard')), y(find.text('Check Call')));
     for (final copy in [
       'EN',
-      'हिन्दी',
-      'छत्तीसगढ़ी',
       '1930',
       'Register incident & alert community',
       'Detect SMS & WhatsApp fraud',
@@ -81,7 +78,7 @@ void main() {
     expect(find.bySemanticsLabel('Notifications'), findsOneWidget);
     expect(find.bySemanticsLabel(RegExp('Call 1930')), findsOneWidget);
     expect(find.bySemanticsLabel(RegExp('Report Fraud')), findsWidgets);
-    for (final k in ['home_notifications', 'home_call_1930', 'lang_en', 'lang_hi', 'lang_chh', 'home_open_lessons', 'home_take_quiz']) {
+    for (final k in ['home_notifications', 'home_call_1930', 'home_language_button', 'home_open_lessons', 'home_take_quiz']) {
       final size = tester.getSize(find.byKey(Key(k)));
       expect(size.height, greaterThanOrEqualTo(kDsTouch), reason: k);
       expect(size.width, greaterThanOrEqualTo(kDsTouch), reason: k);
@@ -90,6 +87,21 @@ void main() {
     await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
     await expectLater(tester, meetsGuideline(textContrastGuideline));
     handle.dispose();
+  });
+
+  testWidgets('language button opens sheet with all supported languages', (tester) async {
+    await _pump(tester);
+    await tester.tap(find.byKey(const Key('home_language_button')));
+    await tester.pumpAndSettle();
+
+    for (final copy in ['EN', 'हिन्दी', 'छत्तीसगढ़ी']) {
+      expect(find.text(copy), findsWidgets, reason: copy);
+    }
+    for (final k in ['lang_en', 'lang_hi', 'lang_chh']) {
+      final size = tester.getSize(find.byKey(Key(k)));
+      expect(size.height, greaterThanOrEqualTo(kDsTouch), reason: k);
+      expect(size.width, greaterThanOrEqualTo(kDsTouch), reason: k);
+    }
   });
 
   for (final lang in S.supportedLanguages) {

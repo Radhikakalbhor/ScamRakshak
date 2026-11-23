@@ -94,12 +94,12 @@ class _QrCheckScreenState extends State<QrCheckScreen> {
           Text(s.t('qr_intro'), style: DsType.body),
           const SizedBox(height: DsSpace.l),
           PastelCard(
-            color: DsColors.peach,
+            color: DsColors.alert,
             padding: const EdgeInsets.all(DsSpace.l),
             child: Row(children: [
-              const IconBadge(Icons.qr_code_2_rounded),
+              const IconBadge(Icons.qr_code_2_rounded, background: DsColors.surface, foreground: DsColors.alert),
               const SizedBox(width: DsSpace.m),
-              Expanded(child: Text(s.t('qr_rule'), style: DsType.title)),
+              Expanded(child: Text(s.t('qr_rule'), style: DsType.title.copyWith(color: DsColors.alertInk))),
             ]),
           ),
           const SizedBox(height: DsSpace.xl),

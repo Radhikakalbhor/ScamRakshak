@@ -309,9 +309,11 @@ class ScreenHeader extends StatelessWidget {
         if (greeting != null) ...[
           const SizedBox(height: DsSpace.xxl),
           Text(greeting!, style: DsType.greeting),
+        ] else if (title != null) ...[
+          const SizedBox(height: DsSpace.xxl),
         ],
         if (title != null) ...[
-          const SizedBox(height: DsSpace.xs),
+          if (greeting != null) const SizedBox(height: DsSpace.xs),
           Text(title!, style: DsType.display),
         ],
       ]);

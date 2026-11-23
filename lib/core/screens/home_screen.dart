@@ -40,7 +40,7 @@ class HomeScreen extends StatelessWidget {
           key: const Key('home_list'),
           padding: const EdgeInsets.fromLTRB(DsSpace.xl, DsSpace.m, DsSpace.xl, DsSpace.section),
           children: [
-            // 1 + 3: header
+            // 1 + 3: header with brand and language/notification actions
             ScreenHeader(
               leading: Semantics(
                 label: s.t('app_name'),
@@ -51,6 +51,7 @@ class HomeScreen extends StatelessWidget {
               ),
               brand: s.t('app_name'),
               actions: [
+                const LanguageButton(),
                 ArrowButton(
                   key: const Key('home_notifications'),
                   icon: Icons.notifications_none_rounded,
@@ -58,21 +59,9 @@ class HomeScreen extends StatelessWidget {
                   onTap: () => _go(context, '/live/inbox'),
                 ),
               ],
-              greeting: s.t('offline_badge'),
               title: s.t('home_title'),
             ),
-            const SizedBox(height: DsSpace.xxl),
-
-            // 2: Language / भाषा
-            SurfacePanel(
-              key: const Key('home_language'),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(s.t('select_language'), style: DsType.greeting),
-                const SizedBox(height: DsSpace.m),
-                const LanguageSwitcher(),
-              ]),
-            ),
-            const SizedBox(height: DsSpace.l),
+            const SizedBox(height: DsSpace.xl),
 
             // 4: Report Fraud (the one alert-colored card)
             _ReportFraudCard(

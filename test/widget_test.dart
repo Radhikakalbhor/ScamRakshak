@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart' show Size;
+import 'package:flutter/widgets.dart' show Key, Size;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,6 +30,9 @@ void main() {
 
   testWidgets('Language switcher changes the UI language', (tester) async {
     await tester.pumpWidget(const ProviderScope(child: ScamRakshakApp()));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('home_language_button')));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('हिन्दी'));
