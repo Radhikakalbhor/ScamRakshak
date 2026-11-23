@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import '../../core/design/components.dart';
+import '../../core/design/tokens.dart';
 import '../../core/strings.dart';
 import 'qr_check_strings.dart';
 
@@ -197,7 +199,7 @@ class _QrScannerPageState extends State<QrScannerPage> with WidgetsBindingObserv
     final msg = r.status == QrImageStatus.noQr
         ? s.t('qr_image_no_qr')
         : [s.t('qr_image_failed'), if (r.error != null) '${s.t('qr_camera_error_code')}: ${r.error}'].join('\n');
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    showDsToast(context, msg);
   }
 
   Widget _errorView(S s, MobileScannerException error) {
@@ -207,27 +209,28 @@ class _QrScannerPageState extends State<QrScannerPage> with WidgetsBindingObserv
         .join(' · ');
     return Center(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(DsSpace.xxl),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          const Icon(Icons.no_photography_rounded, color: Colors.white70, size: 56),
-          const SizedBox(height: 12),
+          const IconBadge(Icons.no_photography_outlined, size: 64, background: DsColors.onDark, foreground: DsColors.camera),
+          const SizedBox(height: DsSpace.m),
           Text(s.t(qrCameraErrorKey(error.errorCode)),
               key: const Key('qr_camera_error'),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white, fontSize: 17)),
-          const SizedBox(height: 8),
+              style: DsType.title.copyWith(color: DsColors.onDark)),
+          const SizedBox(height: DsSpace.s),
           Text('${s.t('qr_camera_error_code')}: $detail',
               key: const Key('qr_camera_error_code'),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white60, fontSize: 13)),
-          const SizedBox(height: 16),
+              style: DsType.small.copyWith(color: DsColors.onDark)),
+          const SizedBox(height: DsSpace.l),
           if (error.errorCode != MobileScannerErrorCode.permissionDenied)
-            OutlinedButton.icon(
+            PrimaryButton(
               key: const Key('qr_camera_retry'),
-              style: OutlinedButton.styleFrom(foregroundColor: Colors.white),
+              label: s.t('qr_camera_retry'),
+              icon: Icons.refresh_rounded,
+              filled: false,
+              color: DsColors.onDark,
               onPressed: _retry,
-              icon: const Icon(Icons.refresh_rounded),
-              label: Text(s.t('qr_camera_retry')),
             ),
         ]),
       ),
@@ -239,7 +242,7 @@ class _QrScannerPageState extends State<QrScannerPage> with WidgetsBindingObserv
     QrCheckStrings.ensure();
     final s = S.of(context);
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: DsColors.camera,
       appBar: AppBar(title: Text(s.t('qr_scan_title'))),
       body: Stack(children: [
         MobileScanner(
@@ -250,17 +253,19 @@ class _QrScannerPageState extends State<QrScannerPage> with WidgetsBindingObserv
           alignment: Alignment.bottomCenter,
           child: Container(
             width: double.infinity,
-            color: Colors.black54,
-            padding: const EdgeInsets.all(16),
+            color: DsColors.scrim,
+            padding: const EdgeInsets.fromLTRB(DsSpace.xl, DsSpace.l, DsSpace.xl, DsSpace.xl),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               Text(s.t('qr_scan_hint'),
-                  textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 16)),
-              const SizedBox(height: 10),
-              FilledButton.icon(
+                  textAlign: TextAlign.center, style: DsType.body.copyWith(color: DsColors.onDark)),
+              const SizedBox(height: DsSpace.m),
+              PrimaryButton(
                 key: const Key('qr_scan_page_image'),
+                label: s.t('qr_scan_image'),
+                icon: Icons.image_search_rounded,
+                filled: false,
+                color: DsColors.onDark,
                 onPressed: _fromImage,
-                icon: const Icon(Icons.image_search_rounded),
-                label: Text(s.t('qr_scan_image')),
               ),
             ]),
           ),

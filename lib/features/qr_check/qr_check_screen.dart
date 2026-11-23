@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../core/strings.dart';
-import '../../core/theme.dart';
+import '../../core/design/components.dart';
+import '../../core/design/tokens.dart';
 import '../report/report_nav.dart';
 import '../report/report_strings.dart';
 import 'qr_check_strings.dart';
@@ -41,7 +42,7 @@ class _QrCheckScreenState extends State<QrCheckScreen> {
     ReportStrings.ensure();
   }
 
-  void _snack(String text) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  void _snack(String text) => showDsToast(context, text);
 
   void _check(String raw) => setState(() {
         _raw = raw;
@@ -81,6 +82,7 @@ class _QrCheckScreenState extends State<QrCheckScreen> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     QrCheckStrings.ensure();
@@ -88,115 +90,107 @@ class _QrCheckScreenState extends State<QrCheckScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(s.t('qr_title'))),
       body: SafeArea(
-        child: ListView(padding: const EdgeInsets.all(16), children: [
-          Text(s.t('qr_intro'), style: const TextStyle(fontSize: 16)),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: const Color(0xFFFFF3E0), borderRadius: BorderRadius.circular(12)),
+        child: ListView(padding: const EdgeInsets.fromLTRB(DsSpace.xl, DsSpace.s, DsSpace.xl, DsSpace.section), children: [
+          Text(s.t('qr_intro'), style: DsType.body),
+          const SizedBox(height: DsSpace.l),
+          PastelCard(
+            color: DsColors.peach,
+            padding: const EdgeInsets.all(DsSpace.l),
             child: Row(children: [
-              const Icon(Icons.qr_code_2_rounded, color: AppTheme.warningOrange),
-              const SizedBox(width: 8),
-              Expanded(child: Text(s.t('qr_rule'), style: const TextStyle(fontWeight: FontWeight.w600))),
+              const IconBadge(Icons.qr_code_2_rounded),
+              const SizedBox(width: DsSpace.m),
+              Expanded(child: Text(s.t('qr_rule'), style: DsType.title)),
             ]),
           ),
-          const SizedBox(height: 16),
-          if (_scanner != null)
-            FilledButton.icon(
+          const SizedBox(height: DsSpace.xl),
+          if (_scanner != null) ...[
+            PrimaryButton(
               key: const Key('qr_scan'),
+              label: s.t('qr_scan'),
+              icon: Icons.qr_code_scanner_rounded,
               onPressed: _scan,
-              icon: const Icon(Icons.qr_code_scanner_rounded),
-              label: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Text(s.t('qr_scan'), style: const TextStyle(fontSize: 18)),
-              ),
             ),
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
+            const SizedBox(height: DsSpace.s),
+          ],
+          PrimaryButton(
             key: const Key('qr_scan_image'),
+            label: s.t('qr_scan_image'),
+            icon: Icons.image_search_rounded,
+            filled: false,
             onPressed: _scanImage,
-            icon: const Icon(Icons.image_search_rounded),
-            label: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Text(s.t('qr_scan_image'), style: const TextStyle(fontSize: 18)),
-            ),
           ),
           if (_raw != null) ...[
-            const SizedBox(height: 16),
-            Text(s.t('qr_scanned_text'), style: const TextStyle(color: AppTheme.textSecondary)),
-            SelectableText(_raw!, key: const Key('qr_raw'), style: const TextStyle(fontSize: 15)),
+            const SizedBox(height: DsSpace.xl),
+            Text(s.t('qr_scanned_text'), style: DsType.greeting),
+            const SizedBox(height: DsSpace.xs),
+            SelectableText(_raw!, key: const Key('qr_raw'), style: DsType.body),
           ],
-          if (_result != null) ...[const SizedBox(height: 16), _resultView(s, _result!)],
+          if (_result != null) ...[const SizedBox(height: DsSpace.xl), _resultView(s, _result!)],
         ]),
       ),
     );
   }
 
   Widget _row(S s, String label, String? value, {Key? key}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 3),
+        padding: const EdgeInsets.symmetric(vertical: DsSpace.xs),
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          SizedBox(width: 130, child: Text(label, style: const TextStyle(color: AppTheme.textSecondary))),
+          SizedBox(width: 130, child: Text(label, style: DsType.small)),
           Expanded(
-            child: Text(value == null || value.isEmpty ? s.t('qr_missing') : value,
-                key: key, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            child: Text(value == null || value.isEmpty ? s.t('qr_missing') : value, key: key, style: DsType.title),
           ),
         ]),
       );
 
   Widget _resultView(S s, UpiQrResult r) {
-    final color = switch (r.level) {
-      'danger' => AppTheme.errorRed,
-      'caution' => AppTheme.warningOrange,
-      _ => AppTheme.successGreen,
+    final verdict = switch (r.level) {
+      'danger' => DsVerdict.danger,
+      'caution' => DsVerdict.caution,
+      _ => DsVerdict.safe,
     };
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Container(
+      VerdictBanner(
         key: const Key('qr_verdict'),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(16)),
-        child: Row(children: [
-          Icon(r.level == 'ok' ? Icons.verified_user_rounded : Icons.gpp_bad_rounded, color: Colors.white, size: 40),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(s.t('qr_level_${r.level}'),
-                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-          ),
-        ]),
+        verdict: verdict,
+        icon: r.level == 'ok' ? Icons.verified_user_outlined : Icons.gpp_bad_outlined,
+        title: s.t('qr_level_${r.level}'),
       ),
-      if (r.isUpi)
-        Card(
-          margin: const EdgeInsets.only(top: 12),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(children: [
-              _row(s, s.t('qr_payee_id'), r.pa, key: const Key('qr_pa')),
-              _row(s, s.t('qr_payee_name'), r.pn, key: const Key('qr_pn')),
-              if (r.am != null) _row(s, s.t('qr_amount'), '₹${r.am}'),
-              if (r.tn != null) _row(s, s.t('qr_note'), r.tn),
-            ]),
-          ),
+      if (r.isUpi) ...[
+        const SizedBox(height: DsSpace.m),
+        SurfacePanel(
+          padding: const EdgeInsets.all(DsSpace.l),
+          child: Column(children: [
+            _row(s, s.t('qr_payee_id'), r.pa, key: const Key('qr_pa')),
+            _row(s, s.t('qr_payee_name'), r.pn, key: const Key('qr_pn')),
+            if (r.am != null) _row(s, s.t('qr_amount'), '₹${r.am}'),
+            if (r.tn != null) _row(s, s.t('qr_note'), r.tn),
+          ]),
         ),
-      const SizedBox(height: 8),
+      ],
+      const SizedBox(height: DsSpace.s),
       for (final risk in r.risks)
-        Card(
-          key: Key('qr_risk_$risk'),
-          color: kDangerRisks.contains(risk) ? const Color(0xFFFFEBEE) : const Color(0xFFFFF8E1),
-          child: ListTile(
-            leading: Icon(kDangerRisks.contains(risk) ? Icons.dangerous_rounded : Icons.warning_amber_rounded,
-                color: kDangerRisks.contains(risk) ? AppTheme.errorRed : AppTheme.warningOrange),
-            title: Text(s.t('qr_risk_$risk'), style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(s.t('qr_risk_${risk}_sub')),
+        Padding(
+          padding: const EdgeInsets.only(top: DsSpace.s),
+          child: DsListTile(
+            key: Key('qr_risk_$risk'),
+            color: kDangerRisks.contains(risk) ? DsColors.alertSoft : DsColors.cautionSoft,
+            leading: Icon(kDangerRisks.contains(risk) ? Icons.dangerous_outlined : Icons.warning_amber_rounded,
+                color: kDangerRisks.contains(risk) ? DsColors.alert : DsColors.caution),
+            title: s.t('qr_risk_$risk'),
+            subtitle: s.t('qr_risk_${risk}_sub'),
           ),
         ),
-      if (r.level == 'ok') Text(s.t('qr_ok_note'), key: const Key('qr_ok_note')),
+      if (r.level == 'ok') ...[
+        const SizedBox(height: DsSpace.s),
+        Text(s.t('qr_ok_note'), key: const Key('qr_ok_note'), style: DsType.body),
+      ],
       if (r.level == 'danger') ...[
-        const SizedBox(height: 8),
-        FilledButton.icon(
+        const SizedBox(height: DsSpace.l),
+        PrimaryButton(
           key: const Key('qr_report'),
-          style: FilledButton.styleFrom(backgroundColor: AppTheme.errorRed),
+          label: s.t('report_title'),
+          icon: Icons.report_outlined,
+          color: DsColors.alert,
           onPressed: () => openReport(context, type: 'fake_qr'),
-          icon: const Icon(Icons.report_rounded),
-          label: Text(s.t('report_title')),
         ),
       ],
     ]);
