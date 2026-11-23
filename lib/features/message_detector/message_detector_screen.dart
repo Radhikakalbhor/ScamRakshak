@@ -6,6 +6,7 @@ import '../../core/providers.dart';
 import '../../core/strings.dart';
 import '../../core/theme.dart';
 import '../../engine/models.dart';
+import '../dashboard/detection_history.dart';
 import '../report/report_nav.dart';
 import 'message_examples.dart';
 import 'message_strings.dart';
@@ -61,10 +62,13 @@ class _MessageDetectorScreenState extends ConsumerState<MessageDetectorScreen> {
     final classifier = ref.read(scamClassifierProvider).valueOrNull;
     if (classifier == null) return;
     FocusScope.of(context).unfocus();
+    final result = classifier.classify(text);
     setState(() {
-      _result = classifier.classify(text);
+      _result = result;
       _checkedText = text;
     });
+    // Feeds Scam Trends (verdict + category only, never the text).
+    recordMessageCheck(ref, text, result, sample: kMessageExamples.values.contains(text));
   }
 
   @override

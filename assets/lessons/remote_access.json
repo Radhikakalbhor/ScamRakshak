@@ -1,0 +1,53 @@
+{
+  "id": "remote_access",
+  "title": {"en": "Screen-sharing app tricks", "hi": "स्क्रीन शेयर ऐप की चाल", "chh": "स्क्रीन सेयर ऐप के चाल"},
+  "category": "calls",
+  "summary": {
+    "en": "Fraudsters ask you to install apps like AnyDesk or TeamViewer. Then they can see your screen and your OTPs.",
+    "hi": "ठग AnyDesk या TeamViewer जैसे ऐप डालने को कहते हैं। फिर वे आपकी स्क्रीन और OTP देख लेते हैं।",
+    "chh": "ठग मन AnyDesk या TeamViewer जइसे ऐप डाले बर कहिथें। फेर ओमन तोर स्क्रीन अउ OTP देख लेथें।"},
+  "example": {
+    "en": "Mohan wanted a refund for a failed payment. The 'customer care' asked him to install AnyDesk and open his bank app. Money left his account while he watched.",
+    "hi": "मोहन को अटके पेमेंट का रिफंड चाहिए था। 'कस्टमर केयर' ने AnyDesk डलवाया और बैंक ऐप खुलवाया। उसके देखते-देखते पैसे निकल गए।",
+    "chh": "मोहन ल अटके पेमेंट के रिफंड चाही रहिस। 'कस्टमर केयर' ह AnyDesk डरवाइस अउ बैंक ऐप खोलवाइस। ओकर देखते-देखत पइसा निकल गे।"},
+  "signs": [
+    {"en": "They ask you to install AnyDesk, TeamViewer, QuickSupport or a 'support app'.",
+     "hi": "AnyDesk, TeamViewer, QuickSupport या कोई 'सपोर्ट ऐप' डालने को कहते हैं।",
+     "chh": "AnyDesk, TeamViewer, QuickSupport या कोनो 'सपोर्ट ऐप' डाले बर कहिथें।"},
+    {"en": "They ask for the 9-digit code shown in the app.",
+     "hi": "ऐप में दिखा 9 अंकों का कोड माँगते हैं।",
+     "chh": "ऐप म देखत 9 अंक के कोड माँगथें।"},
+    {"en": "They promise a refund, cashback or help with a problem.",
+     "hi": "रिफंड, कैशबैक या मदद का वादा करते हैं।",
+     "chh": "रिफंड, कैसबैक या मदद के वादा करथें।"}
+  ],
+  "steps": [
+    {"en": "Never install an app because a caller told you to.",
+     "hi": "किसी कॉल करने वाले के कहने पर कोई ऐप न डालें।",
+     "chh": "कोनो फोन करइया के कहे म कोनो ऐप झन डार।"},
+    {"en": "If you installed one, switch off the internet and uninstall it right away.",
+     "hi": "अगर डाल दिया है, तो तुरंत इंटरनेट बंद करें और ऐप हटा दें।",
+     "chh": "कहूँ डार दे हस, त तुरते इंटरनेट बंद कर अउ ऐप हटा दे।"},
+    {"en": "Refunds come back on their own. You never need to share your screen.",
+     "hi": "रिफंड अपने आप आता है। स्क्रीन शेयर करने की कभी ज़रूरत नहीं।",
+     "chh": "रिफंड अपने-आप आथे। स्क्रीन सेयर करे के कभू जरूरत नइ हे।"}
+  ],
+  "cards": [
+    {"icon": "screen_share", "text": {
+      "en": "Screen-sharing apps let a stranger see everything on your phone.",
+      "hi": "स्क्रीन शेयर ऐप से अनजान आदमी आपके फ़ोन की हर चीज़ देख लेता है।",
+      "chh": "स्क्रीन सेयर ऐप ले अनजान मनखे तोर फोन के जम्मो चीज देख लेथे।"}},
+    {"icon": "support_agent", "text": {
+      "en": "Real customer care never asks you to install AnyDesk or TeamViewer.",
+      "hi": "असली कस्टमर केयर कभी AnyDesk या TeamViewer डालने को नहीं कहता।",
+      "chh": "असली कस्टमर केयर कभू AnyDesk या TeamViewer डारे बर नइ कहय।"}},
+    {"icon": "visibility_off", "text": {
+      "en": "Never open your bank app while a stranger can see your screen.",
+      "hi": "जब कोई अनजान स्क्रीन देख रहा हो, तब बैंक ऐप न खोलें।",
+      "chh": "जब कोनो अनजान स्क्रीन देखत होय, तब बैंक ऐप झन खोल।"}},
+    {"icon": "phone_disabled", "text": {
+      "en": "Cut the call, remove the app, and call 1930 if money was taken.",
+      "hi": "फ़ोन काटें, ऐप हटाएँ, और पैसे गए हों तो 1930 पर फ़ोन करें।",
+      "chh": "फोन काट, ऐप हटा, अउ पइसा गे होय त 1930 म फोन कर।"}}
+  ]
+}

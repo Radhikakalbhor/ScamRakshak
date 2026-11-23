@@ -1,0 +1,53 @@
+{
+  "id": "digital_arrest",
+  "title": {"en": "Fake police and 'digital arrest'", "hi": "नकली पुलिस और 'डिजिटल अरेस्ट'", "chh": "नकली पुलिस अउ 'डिजिटल अरेस्ट'"},
+  "category": "calls",
+  "summary": {
+    "en": "Callers pretend to be police, CBI or customs. They say you are under 'digital arrest' and must send money to clear your name.",
+    "hi": "फ़ोन करने वाले पुलिस, CBI या कस्टम बनते हैं। कहते हैं आप 'डिजिटल अरेस्ट' में हैं और नाम साफ़ करने के लिए पैसे भेजें।",
+    "chh": "फोन करइया मन पुलिस, CBI या कस्टम बनथें। कहिथें तैं 'डिजिटल अरेस्ट' म हस अउ नाम साफ करे बर पइसा भेज।"},
+  "example": {
+    "en": "A retired teacher was kept on a video call for two days by 'CBI officers' in uniform. They showed a fake warrant and took her savings of ₹12 lakh.",
+    "hi": "एक रिटायर्ड शिक्षिका को वर्दी पहने 'CBI अफ़सरों' ने दो दिन वीडियो कॉल पर रखा। नकली वारंट दिखाकर उनकी ₹12 लाख की बचत ले ली।",
+    "chh": "एक रिटायर गुरुजी दीदी ल वर्दी पहिरे 'CBI अफसर' मन दू दिन वीडियो कॉल म रखिन। नकली वारंट देखा के ओकर ₹12 लाख के बचत ले लिन।"},
+  "signs": [
+    {"en": "They say your Aadhaar or a parcel is linked to drugs or money laundering.",
+     "hi": "कहते हैं आपके आधार या पार्सल का संबंध ड्रग्स या मनी लॉन्ड्रिंग से है।",
+     "chh": "कहिथें तोर आधार या पार्सल के संबंध ड्रग्स या मनी लॉन्ड्रिंग ले हे।"},
+    {"en": "They keep you on a video call and say 'do not tell anyone'.",
+     "hi": "वीडियो कॉल पर रोके रखते हैं और कहते हैं 'किसी को मत बताना'।",
+     "chh": "वीडियो कॉल म रोक के रखथें अउ कहिथें 'काकरो ल झन बताबे'।"},
+    {"en": "They ask you to move money to a 'safe' or 'RBI' account.",
+     "hi": "पैसे को 'सुरक्षित' या 'RBI' खाते में भेजने को कहते हैं।",
+     "chh": "पइसा ल 'सुरक्छित' या 'RBI' खाता म भेजे बर कहिथें।"}
+  ],
+  "steps": [
+    {"en": "There is no 'digital arrest' in Indian law. Police never arrest anyone on a video call.",
+     "hi": "भारत के कानून में 'डिजिटल अरेस्ट' जैसा कुछ नहीं है। पुलिस वीडियो कॉल पर गिरफ़्तार नहीं करती।",
+     "chh": "भारत के कानून म 'डिजिटल अरेस्ट' कुछु नइ हे। पुलिस वीडियो कॉल म गिरफ्तार नइ करय।"},
+    {"en": "Cut the call and tell your family right away.",
+     "hi": "फ़ोन काटें और तुरंत परिवार को बताएँ।",
+     "chh": "फोन काट अउ तुरते परिवार ल बता।"},
+    {"en": "Report the number on 1930 or cybercrime.gov.in.",
+     "hi": "उस नंबर की शिकायत 1930 या cybercrime.gov.in पर करें।",
+     "chh": "ओ नंबर के सिकायत 1930 या cybercrime.gov.in म कर।"}
+  ],
+  "cards": [
+    {"icon": "gavel", "text": {
+      "en": "Police, CBI or courts never ask for money on a phone or video call.",
+      "hi": "पुलिस, CBI या कोर्ट कभी फ़ोन या वीडियो कॉल पर पैसे नहीं माँगते।",
+      "chh": "पुलिस, CBI या कोर्ट कभू फोन या वीडियो कॉल म पइसा नइ माँगय।"}},
+    {"icon": "warning", "text": {
+      "en": "Uniforms, logos and 'warrants' on video can all be fake.",
+      "hi": "वीडियो पर वर्दी, लोगो और 'वारंट' सब नकली हो सकते हैं।",
+      "chh": "वीडियो म वर्दी, लोगो अउ 'वारंट' सब नकली हो सकथे।"}},
+    {"icon": "voice_over_off", "text": {
+      "en": "'Do not tell anyone' is the biggest warning sign. Tell your family.",
+      "hi": "'किसी को मत बताना' सबसे बड़ा खतरे का निशान है। परिवार को बताएँ।",
+      "chh": "'काकरो ल झन बताबे' सबले बड़े खतरा के निसान आय। परिवार ल बता।"}},
+    {"icon": "support_agent", "text": {
+      "en": "Scared by such a call? Hang up and dial 1930.",
+      "hi": "ऐसे कॉल से डर लगे? फ़ोन काटें और 1930 डायल करें।",
+      "chh": "अइसन कॉल ले डर लगय? फोन काट अउ 1930 लगा।"}}
+  ]
+}

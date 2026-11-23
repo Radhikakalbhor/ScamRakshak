@@ -1,11 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/call_detector/call_detector_screen.dart';
+import '../features/dashboard/trends_screen.dart';
+import '../features/lessons/lesson_list_screen.dart';
 import '../features/message_detector/message_detector_screen.dart';
+import '../features/quiz/quiz_screen.dart';
 import '../features/report/report_screen.dart';
 import 'screens/home_screen.dart';
-import 'screens/placeholder_screen.dart';
 
 /// App router configuration using GoRouter.
 /// Routes correspond to core navigation specified in AGENTS.md and task specs.
@@ -31,27 +32,15 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/lessons',
-      builder: (context, state) => const PlaceholderFeatureScreen(
-        titleKey: 'learn',
-        icon: Icons.school_rounded,
-        moduleOwner: 'Aagam (lib/features/lessons)',
-      ),
+      builder: (context, state) => const LessonListScreen(),
     ),
     GoRoute(
       path: '/quiz',
-      builder: (context, state) => const PlaceholderFeatureScreen(
-        titleKey: 'quiz',
-        icon: Icons.psychology_rounded,
-        moduleOwner: 'Aagam (lib/features/quiz)',
-      ),
+      builder: (context, state) => const QuizScreen(),
     ),
     GoRoute(
       path: '/dashboard',
-      builder: (context, state) => const PlaceholderFeatureScreen(
-        titleKey: 'scam_trends',
-        icon: Icons.insights_rounded,
-        moduleOwner: 'Aagam (lib/features/dashboard)',
-      ),
+      builder: (context, state) => const TrendsScreen(),
     ),
   ],
 );

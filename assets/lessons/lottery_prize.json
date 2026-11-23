@@ -1,0 +1,53 @@
+{
+  "id": "lottery_prize",
+  "title": {"en": "Lottery, prize and KBC scams", "hi": "लॉटरी, इनाम और KBC ठगी", "chh": "लॉटरी, इनाम अउ KBC ठगी"},
+  "category": "online",
+  "summary": {
+    "en": "You get a call or message saying you won a lottery, a car or a KBC prize. To get it, you must first pay a 'fee'.",
+    "hi": "कॉल या मैसेज आता है कि आपने लॉटरी, कार या KBC इनाम जीता है। इसे पाने के लिए पहले 'फ़ीस' भरनी होगी।",
+    "chh": "कॉल या मैसेज आथे के तैं लॉटरी, कार या KBC इनाम जीते हस। एला पाय बर पहिली 'फीस' भरे ल पड़ही।"},
+  "example": {
+    "en": "Raju got a WhatsApp voice note: 'Congratulations, your number won ₹25 lakh in the KBC lucky draw. Pay a ₹12,500 registration fee today.' He paid three times. No prize came.",
+    "hi": "राजू को WhatsApp पर आवाज़ वाला मैसेज आया: 'बधाई हो, आपके नंबर ने KBC लकी ड्रॉ में ₹25 लाख जीते। आज ₹12,500 रजिस्ट्रेशन फ़ीस भरें।' उसने तीन बार पैसे भरे। कोई इनाम नहीं आया।",
+    "chh": "राजू ल WhatsApp म आवाज वाला मैसेज आइस: 'बधाई हो, तोर नंबर ह KBC लकी ड्रॉ म ₹25 लाख जीते हे। आज ₹12,500 रजिस्ट्रेसन फीस भर।' ओ तीन घाँव पइसा भरिस। कोनो इनाम नइ आइस।"},
+  "signs": [
+    {"en": "You won a lottery you never bought.",
+     "hi": "ऐसी लॉटरी जीती जो आपने कभी खरीदी ही नहीं।",
+     "chh": "अइसन लॉटरी जीते जऊन तैं कभू बिसाय नइ हस।"},
+    {"en": "You must pay a fee, tax or GST before getting the prize.",
+     "hi": "इनाम से पहले फ़ीस, टैक्स या GST भरने को कहते हैं।",
+     "chh": "इनाम ले पहिली फीस, टैक्स या GST भरे बर कहिथें।"},
+    {"en": "Photos of famous people and 'offer ends today'.",
+     "hi": "मशहूर लोगों की फ़ोटो और 'ऑफ़र आज ही तक'।",
+     "chh": "नामी मनखे मन के फोटो अउ 'ऑफर आजेच तक'।"}
+  ],
+  "steps": [
+    {"en": "A real prize never asks you to pay first.",
+     "hi": "असली इनाम के लिए पहले पैसे नहीं देने पड़ते।",
+     "chh": "असली इनाम बर पहिली पइसा नइ देय ल पड़य।"},
+    {"en": "KBC does not run lucky draws on WhatsApp.",
+     "hi": "KBC WhatsApp पर लकी ड्रॉ नहीं चलाता।",
+     "chh": "KBC WhatsApp म लकी ड्रॉ नइ चलाय।"},
+    {"en": "Block the number and delete the message.",
+     "hi": "नंबर ब्लॉक करें और मैसेज मिटा दें।",
+     "chh": "नंबर ल ब्लॉक कर अउ मैसेज ल मेटा दे।"}
+  ],
+  "cards": [
+    {"icon": "card_giftcard", "text": {
+      "en": "You cannot win a lottery you did not enter.",
+      "hi": "जिस लॉटरी में आप थे ही नहीं, वह आप जीत नहीं सकते।",
+      "chh": "जऊन लॉटरी म तैं रहे नइ हस, ओला तैं जीत नइ सकस।"}},
+    {"icon": "money_off", "text": {
+      "en": "'Pay a small fee to get a big prize' is always a scam.",
+      "hi": "'बड़ा इनाम पाने के लिए छोटी फ़ीस भरो' — यह हमेशा ठगी है।",
+      "chh": "'बड़े इनाम पाय बर छोटे फीस भर' — ए हमेसा ठगी आय।"}},
+    {"icon": "warning", "text": {
+      "en": "After the first payment, they ask again and again.",
+      "hi": "पहली बार पैसे देने के बाद वे बार-बार माँगते हैं।",
+      "chh": "पहिली घाँव पइसा देय के बाद ओमन घेरी-बेरी माँगथें।"}},
+    {"icon": "block", "text": {
+      "en": "Do not reply. Block the number.",
+      "hi": "जवाब न दें। नंबर ब्लॉक करें।",
+      "chh": "जवाब झन दे। नंबर ल ब्लॉक कर।"}}
+  ]
+}

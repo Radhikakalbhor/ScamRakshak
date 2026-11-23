@@ -1,6 +1,37 @@
 {
   "id": "qr",
   "title": {"en": "Safe QR payments", "hi": "QR से सुरक्षित भुगतान", "chh": "QR ले सुरक्छित भुगतान"},
+  "category": "payments",
+  "summary": {
+    "en": "Scanning a QR code is for paying money. You never need to scan a QR to receive money.",
+    "hi": "QR कोड स्कैन करना पैसे देने के लिए होता है। पैसे पाने के लिए QR स्कैन नहीं करना पड़ता।",
+    "chh": "QR कोड स्कैन करना पइसा देय बर होथे। पइसा पाय बर QR स्कैन नइ करे ल पड़य।"},
+  "example": {
+    "en": "A shop's QR sticker was covered with a fraudster's sticker. For a week, customers' payments went to the thief.",
+    "hi": "एक दुकान के QR स्टिकर पर ठग ने अपना स्टिकर चिपका दिया। एक हफ़्ते तक ग्राहकों का पैसा ठग के पास गया।",
+    "chh": "एक दुकान के QR स्टिकर ऊपर ठग ह अपन स्टिकर चिपका दिस। एक हफ्ता ले ग्राहक मन के पइसा ठग करा गिस।"},
+  "signs": [
+    {"en": "Someone sends a QR on WhatsApp 'to send you money'.",
+     "hi": "कोई WhatsApp पर QR भेजता है 'पैसे भेजने के लिए'।",
+     "chh": "कोनो WhatsApp म QR भेजथे 'पइसा भेजे बर'।"},
+    {"en": "After scanning, the app asks for your PIN.",
+     "hi": "स्कैन करने के बाद ऐप PIN माँगता है।",
+     "chh": "स्कैन करे के बाद ऐप PIN माँगथे।"},
+    {"en": "The name shown after scanning is not the shop's name.",
+     "hi": "स्कैन के बाद दिखा नाम दुकान का नाम नहीं है।",
+     "chh": "स्कैन के बाद देखत नाम दुकान के नाम नइ हे।"}
+  ],
+  "steps": [
+    {"en": "Scan only to pay, never to receive.",
+     "hi": "सिर्फ़ पैसे देने के लिए स्कैन करें, पाने के लिए कभी नहीं।",
+     "chh": "सिरिफ पइसा देय बर स्कैन कर, पाय बर कभू नइ।"},
+    {"en": "Check the name on the screen before entering your PIN.",
+     "hi": "PIN डालने से पहले स्क्रीन पर नाम जाँचें।",
+     "chh": "PIN डाले के पहिली स्क्रीन म नाम जाँच।"},
+    {"en": "Shopkeepers: check your QR sticker every day.",
+     "hi": "दुकानदार: अपना QR स्टिकर रोज़ जाँचें।",
+     "chh": "दुकानदार: अपन QR स्टिकर रोज जाँच।"}
+  ],
   "cards": [
     {"icon": "qr_code_2", "text": {
       "en": "A QR code is for PAYING money, not for getting money.",

@@ -1,44 +1,70 @@
 {
-  "version": 1,
-  "note": "risk = sum of weights of distinct matched phrases; high >= levels.high, medium >= levels.medium. Phrases are lowercase; Latin phrases match on word boundaries, Devanagari phrases as substrings.",
+  "version": 2,
+  "note": "Transcript and phrases are normalized the same way (lowercase, punctuation -> space, collapsed spaces, Devanagari nukta removed). Phrases match whole words; a trailing * lets the last word continue (otp bata* = bataiye/batao/batana). 'phrases' maps weight -> list. Each distinct phrase counts once; overlapping phrases count only the longest. Type score = min(cap, sum of matched weights); total = sum of type scores; high >= levels.high, medium >= levels.medium. In negatable rules a phrase right after a negator (never share the otp) is ignored.",
   "levels": {"high": 6, "medium": 3},
+  "negators": ["never", "not", "dont", "don", "doesn", "didn", "won", "cannot", "cant"],
+  "negation_window": 3,
   "rules": [
-    {"type": "otp_request", "weight": 3, "phrases": [
-      "tell me the otp", "share the otp", "read the otp", "otp bata", "otp batao", "otp bataiye", "otp boliye",
-      "code bata", "code bataiye", "6 digit code", "six digit code", "code that came", "read out the code",
-      "ओटीपी बताइए", "ओटीपी बताओ", "otp बताइए", "otp बताओ", "कोड बताइए", "कोड बताओ", "जो नंबर आया", "छह अंकों का"]},
-    {"type": "bank_kyc", "weight": 2, "phrases": [
-      "kyc", "account will be blocked", "account block", "card will be blocked", "card block ho", "pan card link",
-      "account band", "account freeze", "netbanking suspend",
-      "केवाईसी", "खाता बंद", "खाता ब्लॉक", "कार्ड बंद", "खाता फ्रीज़"]},
-    {"type": "remote_access", "weight": 3, "phrases": [
-      "anydesk", "teamviewer", "quicksupport", "screen share", "screen sharing", "download this app",
-      "app download karo", "app install karo", "स्क्रीन शेयर", "ऐप डाउनलोड"]},
-    {"type": "digital_arrest", "weight": 3, "phrases": [
-      "digital arrest", "cbi", "crime branch", "cyber cell", "arrest warrant", "money laundering", "narcotics",
-      "drugs parcel", "fir registered", "video call pe rahiye", "stay on video call", "ed notice",
-      "डिजिटल अरेस्ट", "सीबीआई", "गिरफ्तार", "गिरफ़्तार", "वारंट", "मनी लॉन्ड्रिंग", "क्राइम ब्रांच", "वीडियो कॉल पर रहें"]},
-    {"type": "courier_customs", "weight": 2, "phrases": [
-      "customs", "parcel seized", "illegal items", "fedex", "dhl", "customs duty", "parcel ruka", "parcel pakda",
-      "कस्टम", "पार्सल पकड़ा", "पार्सल रोका", "अवैध सामान"]},
-    {"type": "telecom_threat", "weight": 2, "phrases": [
-      "trai", "press 9", "9 dabaye", "sim will be blocked", "number will be disconnected", "number band ho jayega",
-      "ट्राई", "9 दबाएं", "सिम बंद", "नंबर बंद"]},
-    {"type": "loan_threat", "weight": 2, "phrases": [
-      "loan overdue", "photo viral", "morphed photo", "send to your contacts", "contacts ko bhej", "badnaam",
-      "लोन की किस्त", "फोटो वायरल", "बदनाम", "रिश्तेदारों को भेज"]},
-    {"type": "lottery_prize", "weight": 2, "phrases": [
-      "lottery", "lucky draw", "you have won", "kbc", "prize money", "registration fee", "processing fee",
-      "लॉटरी", "लकी ड्रॉ", "इनाम", "रजिस्ट्रेशन शुल्क", "प्रोसेसिंग फीस"]},
-    {"type": "electricity_bill", "weight": 2, "phrases": [
-      "electricity will be cut", "light kat", "connection will be disconnected", "bijli kat", "bill not updated",
-      "बिजली काट", "कनेक्शन कट", "बिल अपडेट नहीं"]},
-    {"type": "upi_collect", "weight": 3, "phrases": [
-      "enter your pin", "enter upi pin", "pin daalo", "pin daal do", "accept the request", "collect request",
-      "scan the qr", "qr scan karo", "पिन डालें", "पिन डालो", "रिक्वेस्ट स्वीकार", "क्यूआर स्कैन"]},
-    {"type": "pressure", "weight": 1, "phrases": [
-      "urgent", "immediately", "right now", "do not tell anyone", "don't tell anyone", "kisi ko mat batana",
-      "turant", "abhi ke abhi", "do not cut the call", "call mat kaatna", "stay on the line",
-      "तुरंत", "किसी को मत बताना", "किसी को न बताएं", "फोन मत काटना", "कॉल न काटें", "अभी के अभी"]}
+    {"type": "fake_kyc", "cap": 4, "phrases": {
+      "3": ["kyc update*", "kyc expire*", "kyc band*", "account will be blocked", "account block ho*", "account band ho*",
+            "card will be blocked", "card block ho*", "netbanking suspend*", "account suspend ho*",
+            "केवाईसी अपडेट", "खाता बंद", "खाता ब्लॉक", "अकाउंट ब्लॉक", "अकाउंट बंद"],
+      "2": ["kyc", "pan card link*", "account freeze*", "head office se bol*", "aadhaar link nahi",
+            "केवाईसी", "कार्ड बंद", "खाता फ्रीज़", "हेड ऑफिस से"]}},
+
+    {"type": "otp_request", "cap": 6, "negatable": true, "phrases": {
+      "3": ["tell me the otp", "share the otp", "share otp", "read the otp", "read out the code", "otp bata*", "otp bol*",
+            "otp share kar*", "otp de do", "otp dijiye", "code bata*", "code bol*", "ओटीपी बता*", "otp बता*", "कोड बता*",
+            "ओटीपी शेयर", "ओटीपी दे*"],
+      "2": ["6 digit code", "six digit code", "code that came", "code aaya hoga", "jo code aaya", "जो कोड आया", "छह अंकों का कोड"]}},
+
+    {"type": "remote_access", "cap": 6, "negatable": true, "phrases": {
+      "3": ["anydesk", "any desk", "teamviewer", "team viewer", "quicksupport", "quick support app", "rustdesk",
+            "share your screen", "screen share kar*", "screen sharing app", "एनीडेस्क", "टीमव्यूअर", "स्क्रीन शेयर"],
+      "2": ["download this app", "install this app", "app download kar*", "app install kar*", "ऐप डाउनलोड कर*", "ऐप इंस्टॉल कर*"]}},
+
+    {"type": "digital_arrest", "cap": 8, "phrases": {
+      "4": ["digital arrest", "डिजिटल अरेस्ट"],
+      "3": ["arrest warrant", "money laundering", "stay on video call", "video call pe rah*", "video call par rah*",
+            "मनी लॉन्ड्रिंग", "वीडियो कॉल पर रह*"],
+      "2": ["cbi", "crime branch", "narcotics", "drugs parcel", "drugs mile", "drugs found", "fir registered", "fir darj",
+            "ed notice", "supreme court order", "सीबीआई", "गिरफ्तार", "वारंट", "क्राइम ब्रांच", "ड्रग्स मिले"],
+      "1": ["cyber cell", "केस दर्ज"]}},
+
+    {"type": "courier_customs", "cap": 6, "phrases": {
+      "3": ["parcel seized", "parcel has been seized", "seized by customs", "illegal items", "customs clearance fee",
+            "parcel pakda*", "पार्सल पकड़ा", "अवैध सामान"],
+      "2": ["fake passports", "customs duty", "parcel ruk*", "पार्सल रोका", "कस्टम ड्यूटी"],
+      "1": ["customs", "fedex", "dhl", "कस्टम"]}},
+
+    {"type": "lottery_prize", "cap": 6, "phrases": {
+      "3": ["lottery lagi", "lottery laga", "inaam jeet*", "you have won a", "लॉटरी लगी", "इनाम जीत*"],
+      "2": ["lucky draw", "you have won", "kbc", "prize money", "registration fee", "processing fee", "aapne jeet*",
+            "लकी ड्रॉ", "आपने जीत*", "रजिस्ट्रेशन शुल्क", "प्रोसेसिंग फीस"],
+      "1": ["lottery", "लॉटरी"]}},
+
+    {"type": "loan_threat", "cap": 6, "phrases": {
+      "3": ["photo viral", "morphed photo", "send to your contacts", "contacts ko bhej*", "sabko photo bhej*",
+            "फोटो वायरल", "रिश्तेदारों को भेज*", "कॉन्टैक्ट्स को भेज*"],
+      "2": ["badnaam", "contact list", "photo edit kar*", "loan overdue", "बदनाम"],
+      "1": ["loan app", "लोन ऐप"]}},
+
+    {"type": "telecom_threat", "cap": 4, "phrases": {
+      "3": ["sim will be blocked", "number will be disconnected", "number band ho jayega", "सिम बंद", "नंबर बंद"],
+      "2": ["trai", "press 9", "9 dabaye", "ट्राई", "9 दबाएं"]}},
+
+    {"type": "electricity_bill", "cap": 4, "phrases": {
+      "3": ["electricity will be cut", "connection will be disconnected", "bijli kat*", "light kat*", "बिजली काट*", "कनेक्शन कट*"],
+      "2": ["bill not updated", "बिल अपडेट नहीं"]}},
+
+    {"type": "upi_collect", "cap": 6, "negatable": true, "phrases": {
+      "3": ["enter your pin", "enter upi pin", "pin daal*", "accept the request", "collect request", "scan the qr",
+            "qr scan kar*", "पिन डाल*", "रिक्वेस्ट स्वीकार", "क्यूआर स्कैन"],
+      "2": ["army se hu", "army se hoon"]}},
+
+    {"type": "pressure", "cap": 2, "phrases": {
+      "1": ["urgent", "immediately", "right now", "do not tell anyone", "don't tell anyone", "kisi ko mat batana",
+            "turant", "jaldi karo", "abhi ke abhi", "do not cut the call", "call mat kaatna", "stay on the line",
+            "तुरंत", "किसी को मत बताना", "किसी को न बताएं", "फोन मत काटना", "कॉल न काटें", "अभी के अभी"]}}
   ]
 }

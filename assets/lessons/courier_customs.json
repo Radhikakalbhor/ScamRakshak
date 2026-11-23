@@ -1,0 +1,53 @@
+{
+  "id": "courier_customs",
+  "title": {"en": "Fake courier and customs calls", "hi": "नकली कूरियर और कस्टम कॉल", "chh": "नकली कूरियर अउ कस्टम कॉल"},
+  "category": "calls",
+  "summary": {
+    "en": "Callers say a parcel in your name was caught with illegal items, or ask for a small fee to deliver a parcel.",
+    "hi": "फ़ोन करने वाले कहते हैं कि आपके नाम का पार्सल अवैध सामान के साथ पकड़ा गया, या पार्सल देने के लिए छोटी फ़ीस माँगते हैं।",
+    "chh": "फोन करइया मन कहिथें तोर नाम के पार्सल अवैध सामान संग पकड़े गे हे, या पार्सल देय बर छोटे फीस माँगथें।"},
+  "example": {
+    "en": "Kavita got a call from 'FedEx': a parcel with fake passports was booked on her Aadhaar. The call was 'transferred to the police', who asked for ₹85,000 to close the case.",
+    "hi": "कविता को 'FedEx' से फ़ोन आया: उनके आधार पर नकली पासपोर्ट वाला पार्सल बुक हुआ है। कॉल 'पुलिस' को भेजी गई, जिसने केस बंद करने के ₹85,000 माँगे।",
+    "chh": "कविता ल 'FedEx' ले फोन आइस: ओकर आधार म नकली पासपोर्ट वाला पार्सल बुक होय हे। कॉल 'पुलिस' करा भेजिन, जऊन केस बंद करे बर ₹85,000 माँगिस।"},
+  "signs": [
+    {"en": "A parcel you never sent or ordered.",
+     "hi": "ऐसा पार्सल जो आपने कभी भेजा या मँगाया ही नहीं।",
+     "chh": "अइसन पार्सल जऊन तैं कभू भेजे या मँगाय नइ हस।"},
+    {"en": "The call is 'transferred' to the police or customs.",
+     "hi": "कॉल को 'पुलिस' या 'कस्टम' को जोड़ दिया जाता है।",
+     "chh": "कॉल ल 'पुलिस' या 'कस्टम' करा जोड़ देथें।"},
+    {"en": "They ask for 'customs duty' or a 'delivery fee' by UPI.",
+     "hi": "UPI से 'कस्टम ड्यूटी' या 'डिलीवरी फ़ीस' माँगते हैं।",
+     "chh": "UPI ले 'कस्टम ड्यूटी' या 'डिलीवरी फीस' माँगथें।"}
+  ],
+  "steps": [
+    {"en": "Courier companies do not transfer calls to the police.",
+     "hi": "कूरियर कंपनियाँ कॉल पुलिस को नहीं जोड़तीं।",
+     "chh": "कूरियर कंपनी मन कॉल ल पुलिस करा नइ जोड़यँ।"},
+    {"en": "Track parcels only on the company's official website or app.",
+     "hi": "पार्सल सिर्फ़ कंपनी की असली वेबसाइट या ऐप पर ट्रैक करें।",
+     "chh": "पार्सल ल सिरिफ कंपनी के असली वेबसाइट या ऐप म ट्रैक कर।"},
+    {"en": "Do not pay any fee asked for on a phone call.",
+     "hi": "फ़ोन पर माँगी गई कोई फ़ीस न दें।",
+     "chh": "फोन म माँगे गे कोनो फीस झन दे।"}
+  ],
+  "cards": [
+    {"icon": "local_shipping", "text": {
+      "en": "Did not send a parcel? Then no parcel of yours is stuck.",
+      "hi": "पार्सल भेजा ही नहीं? तो आपका कोई पार्सल नहीं अटका।",
+      "chh": "पार्सल भेजे नइ हस? त तोर कोनो पार्सल नइ अटके।"}},
+    {"icon": "warning", "text": {
+      "en": "Drugs or passports in 'your' parcel is a story to scare you.",
+      "hi": "'आपके' पार्सल में ड्रग्स, पासपोर्ट — यह डराने की कहानी है।",
+      "chh": "'तोर' पार्सल म ड्रग्स, पासपोर्ट — ए डरवाय के कहिनी आय।"}},
+    {"icon": "money_off", "text": {
+      "en": "Never pay 'customs duty' or a 'clearance fee' on a call.",
+      "hi": "फ़ोन पर कभी 'कस्टम ड्यूटी' या 'क्लियरेंस फ़ीस' न भरें।",
+      "chh": "फोन म कभू 'कस्टम ड्यूटी' या 'क्लियरेंस फीस' झन भर।"}},
+    {"icon": "phone_disabled", "text": {
+      "en": "Cut the call. Report it on 1930 if they threaten you.",
+      "hi": "फ़ोन काटें। धमकी दें तो 1930 पर शिकायत करें।",
+      "chh": "फोन काट। धमकी देवँय त 1930 म सिकायत कर।"}}
+  ]
+}

@@ -1,6 +1,37 @@
 {
   "id": "atm_pin",
   "title": {"en": "Protect your ATM PIN", "hi": "ATM PIN को सुरक्षित रखें", "chh": "ATM PIN ल बचा के रख"},
+  "category": "payments",
+  "summary": {
+    "en": "Your ATM PIN is the 4-digit secret that opens your bank card. No bank staff ever needs to know it.",
+    "hi": "ATM PIN आपके कार्ड का 4 अंकों का गुप्त नंबर है। किसी बैंक कर्मचारी को इसे जानने की ज़रूरत नहीं।",
+    "chh": "ATM PIN तोर कार्ड के 4 अंक के गुप्त नंबर आय। कोनो बैंक करमचारी ल एला जाने के जरूरत नइ हे।"},
+  "example": {
+    "en": "At an ATM, a 'helpful' man offered to help Lakshmi. He watched her PIN, swapped her card for another, and later withdrew ₹25,000.",
+    "hi": "ATM पर एक 'मददगार' आदमी ने लक्ष्मी की मदद की। उसने PIN देख लिया, कार्ड बदल दिया और बाद में ₹25,000 निकाल लिए।",
+    "chh": "ATM म एक 'मदद करइया' मनखे लक्ष्मी के मदद करिस। ओ PIN देख लिस, कार्ड बदल दिस अउ बाद म ₹25,000 निकाल लिस।"},
+  "signs": [
+    {"en": "A stranger at the ATM offers to help.",
+     "hi": "ATM पर कोई अनजान मदद करने को आगे आता है।",
+     "chh": "ATM म कोनो अनजान मदद करे बर आगू आथे।"},
+    {"en": "Something looks stuck or loose on the card slot or keypad.",
+     "hi": "कार्ड डालने की जगह या बटनों पर कुछ ढीला या चिपका दिखे।",
+     "chh": "कार्ड डारे के जगा या बटन म कुछु ढीला या चिपके दिखय।"},
+    {"en": "A caller asks for your card number, PIN or CVV.",
+     "hi": "फ़ोन करने वाला कार्ड नंबर, PIN या CVV माँगता है।",
+     "chh": "फोन करइया कार्ड नंबर, PIN या CVV माँगथे।"}
+  ],
+  "steps": [
+    {"en": "Cover the keypad with your hand when you type the PIN.",
+     "hi": "PIN डालते समय हाथ से बटन ढकें।",
+     "chh": "PIN डारत बेरा हाथ ले बटन ल ढाँक।"},
+    {"en": "Take help only from bank staff inside the branch.",
+     "hi": "मदद सिर्फ़ शाखा के अंदर बैंक कर्मचारी से लें।",
+     "chh": "मदद सिरिफ साखा भीतर बैंक करमचारी ले ले।"},
+    {"en": "Card lost or swapped? Block it at once from your bank app or helpline.",
+     "hi": "कार्ड खोया या बदला? तुरंत बैंक ऐप या हेल्पलाइन से ब्लॉक करें।",
+     "chh": "कार्ड गँवागे या बदलगे? तुरते बैंक ऐप या हेल्पलाइन ले ब्लॉक कर।"}
+  ],
   "cards": [
     {"icon": "credit_card", "text": {
       "en": "Your ATM PIN is the 4-digit secret number of your card.",

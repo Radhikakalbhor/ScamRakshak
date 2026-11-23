@@ -10,6 +10,7 @@ import '../../core/providers.dart';
 import '../../core/strings.dart';
 import '../../core/theme.dart';
 import '../../engine/models.dart';
+import '../dashboard/detection_history.dart';
 import '../report/report_nav.dart';
 import 'call_highlight.dart';
 import 'call_strings.dart';
@@ -55,13 +56,16 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
     _samples = loadSamplePaths();
   }
 
-  void _analyze(String transcript) {
+  void _analyze(String transcript, {bool sample = false}) {
     final analyzer = ref.read(callAnalyzerProvider).valueOrNull;
+    final result = analyzer?.analyze(transcript);
     setState(() {
       _transcript = transcript;
-      _result = analyzer?.analyze(transcript);
+      _result = result;
       _errorKey = analyzer == null ? 'call_rules_error' : null;
     });
+    // Feeds Scam Trends (risk + scam type only, never the transcript).
+    if (result != null) recordCallCheck(ref, result, sample: sample);
   }
 
   Future<void> _pickAndTranscribe() async {
@@ -104,7 +108,7 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
   Future<void> _useSample(String path) async {
     try {
       final text = await rootBundle.loadString(path);
-      if (mounted) _analyze(text.trim());
+      if (mounted) _analyze(text.trim(), sample: true);
     } catch (_) {
       if (mounted) setState(() => _errorKey = 'call_transcribe_failed');
     }

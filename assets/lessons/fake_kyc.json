@@ -1,0 +1,53 @@
+{
+  "id": "fake_kyc",
+  "title": {"en": "Fake KYC calls and SMS", "hi": "नकली KYC कॉल और SMS", "chh": "नकली KYC कॉल अउ SMS"},
+  "category": "calls",
+  "summary": {
+    "en": "Thieves pretend to be your bank and say your KYC is pending, so that you share your OTP or PIN, or click a link.",
+    "hi": "ठग बैंक वाले बनकर कहते हैं कि आपका KYC बाकी है, ताकि आप OTP, PIN बता दें या लिंक दबा दें।",
+    "chh": "ठग मन बैंक वाले बन के कहिथें तोर KYC बाँचे हे, ताकि तैं OTP, PIN बता दे या लिंक दबा दे।"},
+  "example": {
+    "en": "Ramesh got a call: 'Sir, I am from SBI head office. Your KYC is pending, your account will be blocked tonight. Tell me the code that came on your phone.' He shared it and ₹40,000 was gone.",
+    "hi": "रमेश को कॉल आया: 'सर, मैं SBI हेड ऑफिस से बोल रहा हूँ। आपका KYC बाकी है, आज रात खाता बंद हो जाएगा। फ़ोन पर आया कोड बताइए।' उसने कोड बताया और ₹40,000 कट गए।",
+    "chh": "रमेस ल कॉल आइस: 'सर, मैं SBI हेड ऑफिस ले बोलत हँव। तोर KYC बाँचे हे, आज रात खाता बंद हो जाही। फोन म आय कोड बता।' ओहर कोड बता दिस अउ ₹40,000 कट गे।"},
+  "signs": [
+    {"en": "They say your account or card will be blocked today.",
+     "hi": "कहते हैं आज ही खाता या कार्ड बंद हो जाएगा।",
+     "chh": "कहिथें आजेच खाता या कार्ड बंद हो जाही।"},
+    {"en": "They ask for OTP, PIN or CVV, or ask you to click a link.",
+     "hi": "OTP, PIN, CVV माँगते हैं या लिंक दबाने को कहते हैं।",
+     "chh": "OTP, PIN, CVV माँगथें या लिंक दबाय बर कहिथें।"},
+    {"en": "They call from a normal mobile number and hurry you.",
+     "hi": "साधारण मोबाइल नंबर से फ़ोन करते हैं और जल्दी मचाते हैं।",
+     "chh": "साधारन मोबाइल नंबर ले फोन करथें अउ हड़बड़ी मचाथें।"}
+  ],
+  "steps": [
+    {"en": "KYC is updated only at the branch or in the bank's official app.",
+     "hi": "KYC सिर्फ़ बैंक शाखा या बैंक के असली ऐप में होता है।",
+     "chh": "KYC सिरिफ बैंक साखा या बैंक के असली ऐप म होथे।"},
+    {"en": "Cut the call and call the number printed on your passbook or card.",
+     "hi": "फ़ोन काटें और पासबुक या कार्ड पर छपे नंबर पर खुद फ़ोन करें।",
+     "chh": "फोन काट अउ पासबुक या कार्ड म छपे नंबर म खुद फोन कर।"},
+    {"en": "Never share OTP or PIN with anyone, even a 'bank officer'.",
+     "hi": "OTP या PIN किसी को न बताएँ, चाहे वह 'बैंक अफ़सर' ही क्यों न हो।",
+     "chh": "OTP या PIN काकरो ल झन बता, चाहे ओ 'बैंक अफसर' काबर नइ होय।"}
+  ],
+  "cards": [
+    {"icon": "badge", "text": {
+      "en": "Your bank will never call you to update KYC on the phone.",
+      "hi": "आपका बैंक कभी फ़ोन पर KYC अपडेट करने के लिए नहीं कहता।",
+      "chh": "तोर बैंक कभू फोन म KYC अपडेट करे बर नइ कहय।"}},
+    {"icon": "warning", "text": {
+      "en": "'Your account will be blocked today' is a trick to scare you.",
+      "hi": "'आज खाता बंद हो जाएगा' — यह डराने की चाल है।",
+      "chh": "'आज खाता बंद हो जाही' — ए डरवाय के चाल आय।"}},
+    {"icon": "link_off", "text": {
+      "en": "Do not click KYC links in SMS or WhatsApp.",
+      "hi": "SMS या WhatsApp पर आए KYC लिंक न दबाएँ।",
+      "chh": "SMS या WhatsApp म आय KYC लिंक झन दबा।"}},
+    {"icon": "account_balance", "text": {
+      "en": "For KYC, visit your branch with Aadhaar and PAN.",
+      "hi": "KYC के लिए आधार और पैन लेकर अपनी शाखा जाएँ।",
+      "chh": "KYC बर आधार अउ पैन धर के अपन साखा जा।"}}
+  ]
+}

@@ -1,6 +1,37 @@
 {
   "id": "otp",
   "title": {"en": "Keep your OTP secret", "hi": "OTP किसी को न बताएँ", "chh": "OTP काकरो ल झन बता"},
+  "category": "payments",
+  "summary": {
+    "en": "An OTP is a one-time password sent by SMS. Anyone who gets it can take money from your account.",
+    "hi": "OTP एक बार काम आने वाला पासवर्ड है जो SMS से आता है। जिसे यह मिल जाए, वह आपके खाते से पैसे निकाल सकता है।",
+    "chh": "OTP एक घाँव काम आने वाला पासवर्ड आय जऊन SMS ले आथे। जेला ए मिल जाय, ओ तोर खाता ले पइसा निकाल सकथे।"},
+  "example": {
+    "en": "Geeta got a call: 'Madam, your cashback of ₹2,000 is ready. Just tell me the OTP to receive it.' She did, and ₹18,000 was taken instead.",
+    "hi": "गीता को कॉल आया: 'मैडम, आपका ₹2,000 कैशबैक तैयार है। पाने के लिए बस OTP बताइए।' उसने बताया और उल्टे ₹18,000 कट गए।",
+    "chh": "गीता ल कॉल आइस: 'मैडम, तोर ₹2,000 कैसबैक तियार हे। पाय बर बस OTP बता।' ओ बता दिस अउ उल्टा ₹18,000 कट गे।"},
+  "signs": [
+    {"en": "Someone asks for a code that 'came by mistake'.",
+     "hi": "कोई 'गलती से आया' कोड माँगता है।",
+     "chh": "कोनो 'गलती ले आय' कोड माँगथे।"},
+    {"en": "An OTP arrives when you did not start any payment or login.",
+     "hi": "आपने कोई पेमेंट या लॉगिन नहीं किया, फिर भी OTP आता है।",
+     "chh": "तैं कोनो पेमेंट या लॉगिन नइ करे हस, तभो ले OTP आथे।"},
+    {"en": "The SMS says 'do not share', but the caller still asks for it.",
+     "hi": "SMS में लिखा है 'किसी को न बताएँ', फिर भी फ़ोन करने वाला माँगता है।",
+     "chh": "SMS म लिखाय हे 'काकरो ल झन बता', तभो ले फोन करइया माँगथे।"}
+  ],
+  "steps": [
+    {"en": "Read the whole OTP message: it says what the OTP is for.",
+     "hi": "OTP वाला पूरा मैसेज पढ़ें: उसमें लिखा होता है OTP किस काम का है।",
+     "chh": "OTP वाला पूरा मैसेज पढ़: ओमा लिखाय रहिथे OTP काबर आय हे।"},
+    {"en": "Type an OTP only into an app or website you opened yourself.",
+     "hi": "OTP सिर्फ़ उसी ऐप या वेबसाइट में डालें जो आपने खुद खोली हो।",
+     "chh": "OTP सिरिफ ओही ऐप या वेबसाइट म डाल जऊन तैं खुद खोले हस।"},
+    {"en": "Shared one by mistake? Call your bank and 1930 at once.",
+     "hi": "गलती से बता दिया? तुरंत बैंक और 1930 पर फ़ोन करें।",
+     "chh": "गलती ले बता देस? तुरते बैंक अउ 1930 म फोन कर।"}
+  ],
   "cards": [
     {"icon": "sms", "text": {
       "en": "An OTP is a secret number that comes to your phone by SMS.",

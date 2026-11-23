@@ -1,6 +1,37 @@
 {
   "id": "upi_pin",
   "title": {"en": "UPI PIN safety", "hi": "UPI PIN की सुरक्षा", "chh": "UPI PIN के सुरक्छा"},
+  "category": "payments",
+  "summary": {
+    "en": "Your UPI PIN is needed only to send money, never to receive it.",
+    "hi": "UPI PIN सिर्फ़ पैसे भेजने के लिए लगता है, पैसे पाने के लिए कभी नहीं।",
+    "chh": "UPI PIN सिरिफ पइसा भेजे बर लगथे, पइसा पाय बर कभू नइ।"},
+  "example": {
+    "en": "Suresh was selling a cooler on OLX. The 'buyer' sent a collect request saying 'enter PIN to receive ₹8,000'. Suresh entered his PIN and ₹8,000 left his account.",
+    "hi": "सुरेश OLX पर कूलर बेच रहा था। 'खरीदार' ने कलेक्ट रिक्वेस्ट भेजी: '₹8,000 पाने के लिए PIN डालें।' सुरेश ने PIN डाला और ₹8,000 उसके खाते से चले गए।",
+    "chh": "सुरेस OLX म कूलर बेचत रहिस। 'बिसइया' ह कलेक्ट रिक्वेस्ट भेजिस: '₹8,000 पाय बर PIN डाल।' सुरेस PIN डारिस अउ ₹8,000 ओकर खाता ले चल दिस।"},
+  "signs": [
+    {"en": "A 'collect request' appears when you expect to receive money.",
+     "hi": "पैसे मिलने की बात हो, पर 'कलेक्ट रिक्वेस्ट' आ जाए।",
+     "chh": "पइसा मिले के बात होय, फेर 'कलेक्ट रिक्वेस्ट' आ जाय।"},
+    {"en": "The buyer says he is in the army and is in a hurry.",
+     "hi": "खरीदार कहता है वह फ़ौज में है और जल्दी में है।",
+     "chh": "बिसइया कहिथे ओ फौज म हे अउ हड़बड़ी म हे।"},
+    {"en": "Someone asks you to 'enter your PIN to receive' money.",
+     "hi": "कोई कहता है 'पैसे पाने के लिए PIN डालो'।",
+     "chh": "कोनो कहिथे 'पइसा पाय बर PIN डाल'।"}
+  ],
+  "steps": [
+    {"en": "Never enter your UPI PIN to receive money.",
+     "hi": "पैसे पाने के लिए कभी UPI PIN न डालें।",
+     "chh": "पइसा पाय बर कभू UPI PIN झन डाल।"},
+    {"en": "Read the screen: 'Pay' or 'Debit' means money will leave your account.",
+     "hi": "स्क्रीन पढ़ें: 'Pay' या 'Debit' का मतलब पैसे आपके खाते से जाएँगे।",
+     "chh": "स्क्रीन पढ़: 'Pay' या 'Debit' के मतलब पइसा तोर खाता ले जाही।"},
+    {"en": "Decline requests from people you do not know.",
+     "hi": "अनजान लोगों की रिक्वेस्ट मना कर दें।",
+     "chh": "अनजान मनखे मन के रिक्वेस्ट ल मना कर दे।"}
+  ],
   "cards": [
     {"icon": "pin", "text": {
       "en": "Your UPI PIN is the secret number you type to send money.",

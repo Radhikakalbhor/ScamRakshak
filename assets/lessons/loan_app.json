@@ -1,0 +1,53 @@
+{
+  "id": "loan_app",
+  "title": {"en": "Instant loan app traps", "hi": "तुरंत लोन ऐप का जाल", "chh": "तुरते लोन ऐप के जाल"},
+  "category": "online",
+  "summary": {
+    "en": "Some apps give quick small loans, take access to your contacts and photos, then threaten and shame you to pay much more.",
+    "hi": "कुछ ऐप जल्दी छोटा लोन देते हैं, आपके कॉन्टैक्ट और फ़ोटो ले लेते हैं, फिर धमकाकर और बदनाम करके कई गुना पैसे वसूलते हैं।",
+    "chh": "कुछ ऐप जल्दी छोटे लोन देथें, तोर कॉन्टैक्ट अउ फोटो ले लेथें, फेर धमका के अउ बदनाम कर के कई गुना पइसा वसूलथें।"},
+  "example": {
+    "en": "Anil took a ₹5,000 loan from an app. Within a week they asked for ₹15,000 and sent edited photos of him to his relatives.",
+    "hi": "अनिल ने एक ऐप से ₹5,000 का लोन लिया। एक हफ़्ते में ₹15,000 माँगे और उसकी बदली हुई फ़ोटो रिश्तेदारों को भेज दीं।",
+    "chh": "अनिल ह एक ऐप ले ₹5,000 के लोन लिस। एक हफ्ता म ₹15,000 माँगिन अउ ओकर बदले फोटो ल रिस्तेदार मन ल भेज दिन।"},
+  "signs": [
+    {"en": "A loan in minutes, with no documents, from an unknown app.",
+     "hi": "अनजान ऐप से बिना कागज़ मिनटों में लोन।",
+     "chh": "अनजान ऐप ले बिना कागज मिनट भर म लोन।"},
+    {"en": "The app asks for access to your contacts, photos and gallery.",
+     "hi": "ऐप कॉन्टैक्ट, फ़ोटो और गैलरी की इजाज़त माँगता है।",
+     "chh": "ऐप कॉन्टैक्ट, फोटो अउ गैलरी के इजाजत माँगथे।"},
+    {"en": "Threats to send your photos to your contacts.",
+     "hi": "आपकी फ़ोटो कॉन्टैक्ट्स को भेजने की धमकी।",
+     "chh": "तोर फोटो ल कॉन्टैक्ट मन ल भेजे के धमकी।"}
+  ],
+  "steps": [
+    {"en": "Borrow only from banks or RBI-registered lenders.",
+     "hi": "सिर्फ़ बैंक या RBI में रजिस्टर्ड संस्था से ही लोन लें।",
+     "chh": "सिरिफ बैंक या RBI म रजिस्टर संस्था ले लोन ले।"},
+    {"en": "Never give a loan app access to your contacts or photos.",
+     "hi": "लोन ऐप को कॉन्टैक्ट या फ़ोटो की इजाज़त कभी न दें।",
+     "chh": "लोन ऐप ल कॉन्टैक्ट या फोटो के इजाजत कभू झन दे।"},
+    {"en": "If threatened, do not pay more. Keep screenshots and report on 1930.",
+     "hi": "धमकी मिले तो और पैसे न दें। स्क्रीनशॉट रखें और 1930 पर शिकायत करें।",
+     "chh": "धमकी मिलय त अउ पइसा झन दे। स्क्रीनसॉट रख अउ 1930 म सिकायत कर।"}
+  ],
+  "cards": [
+    {"icon": "money_off", "text": {
+      "en": "Very easy loans from unknown apps often become a trap.",
+      "hi": "अनजान ऐप का बहुत आसान लोन अक्सर जाल बन जाता है।",
+      "chh": "अनजान ऐप के बहुत आसान लोन अक्सर जाल बन जाथे।"}},
+    {"icon": "person_off", "text": {
+      "en": "Do not allow a loan app to read your contacts or photos.",
+      "hi": "लोन ऐप को कॉन्टैक्ट या फ़ोटो पढ़ने की इजाज़त न दें।",
+      "chh": "लोन ऐप ल कॉन्टैक्ट या फोटो पढ़े के इजाजत झन दे।"}},
+    {"icon": "photo", "text": {
+      "en": "Edited photos and threats are a crime. You are not at fault.",
+      "hi": "बदली हुई फ़ोटो और धमकी अपराध है। आपकी गलती नहीं है।",
+      "chh": "बदले फोटो अउ धमकी अपराध आय। तोर गलती नइ हे।"}},
+    {"icon": "support_agent", "text": {
+      "en": "Tell your family, save proof, and call 1930.",
+      "hi": "परिवार को बताएँ, सबूत रखें और 1930 पर फ़ोन करें।",
+      "chh": "परिवार ल बता, सबूत रख अउ 1930 म फोन कर।"}}
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "id": "phishing",
+  "title": {"en": "Fake links and messages", "hi": "नकली लिंक और मैसेज", "chh": "नकली लिंक अउ मैसेज"},
+  "category": "online",
+  "summary": {
+    "en": "Scam SMS and WhatsApp messages carry links to fake websites that steal your bank details.",
+    "hi": "ठगी वाले SMS और WhatsApp मैसेज में नकली वेबसाइट के लिंक होते हैं, जो आपकी बैंक जानकारी चुरा लेते हैं।",
+    "chh": "ठगी वाले SMS अउ WhatsApp मैसेज म नकली वेबसाइट के लिंक रहिथे, जऊन तोर बैंक जानकारी ल चोरा लेथे।"},
+  "example": {
+    "en": "Sunita got an SMS: 'Your electricity will be cut tonight. Update your bill at bit.ly/...'. The page looked real and asked for her card number and OTP.",
+    "hi": "सुनीता को SMS आया: 'आज रात बिजली कट जाएगी। bit.ly/... पर बिल अपडेट करें।' पेज असली जैसा था और कार्ड नंबर व OTP माँग रहा था।",
+    "chh": "सुनीता ल SMS आइस: 'आज रात बिजली कट जाही। bit.ly/... म बिल अपडेट कर।' पेज असली जइसे दिखत रहिस अउ कार्ड नंबर अउ OTP माँगत रहिस।"},
+  "signs": [
+    {"en": "Short or strange links like bit.ly or sbi-kyc-update.xyz.",
+     "hi": "bit.ly या sbi-kyc-update.xyz जैसे छोटे या अजीब लिंक।",
+     "chh": "bit.ly या sbi-kyc-update.xyz जइसे छोटे या अजीब लिंक।"},
+    {"en": "Spelling mistakes and threats like 'last warning'.",
+     "hi": "गलत स्पेलिंग और 'आखिरी चेतावनी' जैसी धमकी।",
+     "chh": "गलत स्पेलिंग अउ 'आखिरी चेतावनी' जइसे धमकी।"},
+    {"en": "The page asks for your card number, PIN or OTP.",
+     "hi": "पेज कार्ड नंबर, PIN या OTP माँगता है।",
+     "chh": "पेज कार्ड नंबर, PIN या OTP माँगथे।"}
+  ],
+  "steps": [
+    {"en": "Do not open links from unknown numbers.",
+     "hi": "अनजान नंबर से आए लिंक न खोलें।",
+     "chh": "अनजान नंबर ले आय लिंक झन खोल।"},
+    {"en": "Check the message in ScamRakshak before you act.",
+     "hi": "कुछ भी करने से पहले मैसेज को ScamRakshak में जाँचें।",
+     "chh": "कुछु करे के पहिली मैसेज ल ScamRakshak म जाँच।"},
+    {"en": "Open bank or bill websites only by typing the address yourself, or use the official app.",
+     "hi": "बैंक या बिल की वेबसाइट खुद पता लिखकर या असली ऐप से ही खोलें।",
+     "chh": "बैंक या बिल के वेबसाइट खुद पता लिख के या असली ऐप ले खोल।"}
+  ],
+  "cards": [
+    {"icon": "link", "text": {
+      "en": "A link can look real but take you to a fake page.",
+      "hi": "लिंक असली दिख सकता है पर नकली पेज पर ले जाता है।",
+      "chh": "लिंक असली दिख सकथे फेर नकली पेज म ले जाथे।"}},
+    {"icon": "warning", "text": {
+      "en": "Messages that scare you or rush you are often scams.",
+      "hi": "जो मैसेज डराए या जल्दी करवाए, वह अक्सर ठगी होता है।",
+      "chh": "जऊन मैसेज डरवाथे या हड़बड़ी करवाथे, ओ अक्सर ठगी होथे।"}},
+    {"icon": "pin", "text": {
+      "en": "No real website asks for your UPI PIN or OTP to give you money.",
+      "hi": "कोई असली वेबसाइट पैसे देने के लिए UPI PIN या OTP नहीं माँगती।",
+      "chh": "कोनो असली वेबसाइट पइसा देय बर UPI PIN या OTP नइ माँगय।"}},
+    {"icon": "verified_user", "text": {
+      "en": "Not sure? Check the message in ScamRakshak first.",
+      "hi": "पक्का नहीं? पहले मैसेज को ScamRakshak में जाँचें।",
+      "chh": "पक्का नइ हे? पहिली मैसेज ल ScamRakshak म जाँच।"}}
+  ]
+}
