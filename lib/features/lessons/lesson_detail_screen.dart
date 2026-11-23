@@ -236,7 +236,7 @@ class _LessonDetailScreenState extends State<LessonDetailScreen> {
                 child: Icon(icon, color: color, size: 22),
               ),
               const SizedBox(width: DsSpace.m),
-              Expanded(child: Text(pickLang(item, lang), style: DsType.body.copyWith(fontSize: 16))),
+              Expanded(child: Text(pickLang(item, lang), style: DsType.bodyLarge)),
             ],
           ),
         ),

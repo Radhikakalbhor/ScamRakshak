@@ -356,7 +356,7 @@ class _AutoAnalyzeScreenState extends ConsumerState<AutoAnalyzeScreen> with Widg
               const SizedBox(width: DsSpace.s),
               Expanded(
                 child: Text.rich(TextSpan(children: [
-                  TextSpan(text: d.name, style: DsType.title.copyWith(fontSize: 15)),
+                  TextSpan(text: d.name, style: DsType.label),
                   TextSpan(
                       text: '\n${two(d.at.hour)}:${two(d.at.minute)}:${two(d.at.second)} · '
                           '${s.t(d.accepted ? 'auto_diag_accepted' : 'auto_diag_rejected')}: ${d.reason}',

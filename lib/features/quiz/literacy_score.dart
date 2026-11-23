@@ -251,7 +251,7 @@ class _LiteracyScoreCardState extends State<LiteracyScoreCard> {
             ),
             const SizedBox(width: DsSpace.s),
             Column(children: [
-              Text('$score', key: const Key('dfl_score'), style: DsType.number.copyWith(fontSize: 36)),
+              Text('$score', key: const Key('dfl_score'), style: DsType.numberSmall),
               Text('/100', style: DsType.small),
             ]),
           ]),

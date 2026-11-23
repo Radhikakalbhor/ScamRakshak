@@ -464,13 +464,13 @@ class _LiveCallScreenState extends ConsumerState<LiveCallScreen> {
                   Text(
                     s.t('live_alert_title'),
                     textAlign: TextAlign.center,
-                    style: DsType.display.copyWith(color: DsColors.onDark, fontSize: 36),
+                    style: DsType.displaySmall.copyWith(color: DsColors.onDark),
                   ),
                   const SizedBox(height: DsSpace.m),
                   Text(
                     s.t('live_alert_body'),
                     textAlign: TextAlign.center,
-                    style: DsType.body.copyWith(color: DsColors.onDark, fontSize: 22),
+                    style: DsType.cardTitle.copyWith(color: DsColors.onDark),
                   ),
                   const SizedBox(height: DsSpace.section),
                   PrimaryButton(
@@ -599,7 +599,7 @@ class _LiveCallScreenState extends ConsumerState<LiveCallScreen> {
         const SizedBox(height: DsSpace.l),
         Text(s.t('live_consent_title'), textAlign: TextAlign.center, style: DsType.cardTitle),
         const SizedBox(height: DsSpace.m),
-        Text(s.t('live_consent_body'), style: DsType.body.copyWith(fontSize: 17)),
+        Text(s.t('live_consent_body'), style: DsType.bodyLarge),
         const SizedBox(height: DsSpace.xl),
         PrimaryButton(key: const Key('live_agree'), label: s.t('live_agree'), onPressed: _agree),
       ],

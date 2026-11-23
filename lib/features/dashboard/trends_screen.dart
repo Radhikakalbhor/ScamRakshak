@@ -319,7 +319,7 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
       children: [
         IconBadge(t.icon, size: 40),
         const SizedBox(height: DsSpace.s),
-        Text(t.value, style: DsType.number.copyWith(fontSize: 30, height: 1.1)),
+        Text(t.value, style: DsType.numberSmall),
         Text(t.label, style: DsType.label),
         if (t.extra != null) Text(t.extra!, style: DsType.caption.copyWith(color: DsColors.ink)),
       ],
@@ -345,7 +345,7 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
     ),
   );
 
-  static final _axis = DsType.caption.copyWith(fontSize: 11);
+  static final _axis = DsType.chartTick;
 
   Widget _chartCard(S s, TrendStats st) {
     final maxTotal = st.daily.fold<int>(0, (m, d) => math.max(m, d.total));
@@ -707,7 +707,7 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: DsSpace.xxs),
                 child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
                   Text(w.count == null ? '<$minCount' : '${w.count}',
-                      style: DsType.caption.copyWith(fontSize: 9, color: DsColors.ink),
+                      style: DsType.chartMicro,
                       maxLines: 1,
                       overflow: TextOverflow.clip),
                   Container(
@@ -717,7 +717,7 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
                       borderRadius: const BorderRadius.vertical(top: Radius.circular(DsSpace.xs)),
                     ),
                   ),
-                  Text('${w.weekStart.day}/${w.weekStart.month}', style: DsType.caption.copyWith(fontSize: 8), maxLines: 1),
+                  Text('${w.weekStart.day}/${w.weekStart.month}', style: DsType.chartMicro.copyWith(color: DsColors.muted), maxLines: 1),
                 ]),
               ),
             ),

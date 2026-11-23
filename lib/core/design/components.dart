@@ -155,7 +155,7 @@ class FeatureCard extends StatelessWidget {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [IconBadge(icon), const Spacer(), const ArrowButton()]),
             const SizedBox(height: DsSpace.xxl),
-            Text(title, style: DsType.cardTitle.copyWith(fontSize: 20)),
+            Text(title, style: DsType.featureTitle),
             const SizedBox(height: DsSpace.xs),
             Text(subtitle, style: DsType.small),
           ]),
@@ -301,7 +301,7 @@ class ScreenHeader extends StatelessWidget {
         Row(children: [
           if (leading != null) ...[leading!, const SizedBox(width: DsSpace.m)],
           if (brand != null)
-            Expanded(child: Text(brand!, style: DsType.title.copyWith(fontSize: 18), maxLines: 1))
+            Expanded(child: Text(brand!, style: DsType.titleLarge, maxLines: 1))
           else
             const Spacer(),
           for (final a in actions) Padding(padding: const EdgeInsets.only(left: DsSpace.s), child: a),
@@ -434,7 +434,7 @@ class AppTextField extends TextField {
     super.textInputAction,
     super.autocorrect,
   }) : super(
-          style: DsType.body.copyWith(fontSize: 16),
+          style: DsType.bodyLarge,
           decoration: InputDecoration(
             hintText: hint,
             labelText: label,
@@ -501,7 +501,7 @@ class DsTabs extends StatelessWidget {
         child: Row(children: [
           for (var i = 0; i < labels.length; i++)
             Padding(
-              padding: EdgeInsets.only(right: i == labels.length - 1 ? 0 : DsSpace.s),
+              padding: EdgeInsets.only(right: i == labels.length - 1 ? 0 : DsSpace.s), // ds-ignore: index, not spacing
               child: PillChip(label: labels[i], selected: i == selected, onTap: () => onSelect(i)),
             ),
         ]),

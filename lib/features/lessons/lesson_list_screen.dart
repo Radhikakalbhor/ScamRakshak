@@ -233,7 +233,7 @@ class _LessonListScreenState extends State<LessonListScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(pickLang(l.title, lang), style: DsType.title.copyWith(fontSize: 18)),
+                Text(pickLang(l.title, lang), style: DsType.titleLarge),
                 if (summary.isNotEmpty) ...[
                   const SizedBox(height: DsSpace.xs),
                   Text(summary, maxLines: 2, overflow: TextOverflow.ellipsis, style: DsType.small),

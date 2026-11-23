@@ -157,7 +157,7 @@ class _LessonViewerScreenState extends State<LessonViewerScreen> {
                       Text(
                         pickLang(c.text, lang),
                         textAlign: TextAlign.center,
-                        style: DsType.headline.copyWith(fontSize: 26, height: 1.3),
+                        style: DsType.headlineSmall,
                       ),
                     ],
                   ),

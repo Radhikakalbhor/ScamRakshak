@@ -112,4 +112,14 @@ abstract final class DsType {
   static final caption = _s(12, DsWeight.semibold, 1.3, 0, DsColors.muted); // tiny labels
   static final label = _s(15, DsWeight.semibold, 1.2, -0.1, DsColors.ink); // buttons, chips
   static final number = _s(48, DsWeight.bold, 1.0, -2, DsColors.ink); // score numbers
+
+  // Named variants for screens that need one more step; use these instead of copyWith(fontSize:).
+  static final displaySmall = _s(36, DsWeight.medium, 1.1, -1.0, DsColors.ink); // full-screen alert heading
+  static final headlineSmall = _s(26, DsWeight.medium, 1.3, -0.6, DsColors.ink); // flash-card text
+  static final featureTitle = _s(20, DsWeight.semibold, 1.12, -0.4, DsColors.ink); // FeatureCard title
+  static final titleLarge =_s(18, DsWeight.semibold, 1.25, -0.2, DsColors.ink); // tappable card title
+  static final bodyLarge = _s(17, DsWeight.medium, 1.45, 0, DsColors.ink); // quiz options, consent, big body
+  static final numberSmall = _s(34, DsWeight.bold, 1.1, -1.2, DsColors.ink); // stat tiles, small scores
+  static final chartTick = _s(11, DsWeight.medium, 1.2, 0, DsColors.muted); // chart axis labels
+  static final chartMicro = _s(9, DsWeight.semibold, 1.1, 0, DsColors.ink); // tiny weekly bar labels
 }

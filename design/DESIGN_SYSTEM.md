@@ -69,6 +69,12 @@ emphasis (score numbers). Nothing heavier.
 | `label` | 15 / 600 | Buttons, chips |
 | `number` | 48 / 700 / -2 | Scores |
 
+Named variants (use these instead of `copyWith(fontSize: …)`, which the token check rejects):
+`displaySmall` 36/500 (full-screen alert heading) · `headlineSmall` 26/500 (flash cards) ·
+`featureTitle` 20/600 (FeatureCard) · `titleLarge` 18/600 (tappable card titles) · `bodyLarge` 17/500
+(quiz options, consent, inputs) · `numberSmall` 34/700 (stat tiles, small scores) · `chartTick` 11/500
+and `chartMicro` 9/600 (chart labels only).
+
 Why Inter Tight: the reference is a neo-grotesk with tight tracking at display sizes; Inter Tight is
 Inter with tighter default spacing for display use, free (OFL) and available in every weight above.
 
@@ -92,11 +98,24 @@ Surfaces: `PastelCard`, `SurfacePanel`, `FeatureCard`, `PairRow`. Parts: `IconBa
 ## Screen-specific decisions
 - Full-screen scam warning stays solid `alert` (HIGH) / `amber` (MEDIUM): it must alarm; type, radii and buttons follow the system.
 - QR camera page stays on `camera` black around the preview; controls use the system.
-- Scam Trends charts use `DsColors.chart` (deep pastels) for series.
+- Scam Trends: stat tiles are the four pastels; the 7-day chart keeps `alert` / `safe` for risky /
+  safe (meaning, not decoration); district, scam-type and weekly bars use the deep chart pastels.
+- Quiz: the right / wrong answer uses `safe` / `alert` borders on `safeSoft` / `alertSoft`.
+- Lesson topics map to the four pastels (`lessonTopicColor`).
+
+## Token check (lint)
+`dart run tool/check_design_tokens.dart` scans `lib/` and fails on raw `Color(0x…)`, `Colors.*`
+(except `transparent`), `FontWeight.*`, `fontFamily:`, `fontSize:`, numeric `BorderRadius.circular`,
+numeric `EdgeInsets` and legacy `AppTheme.*`. Only `tokens.dart` and `theme.dart` hold raw values.
+`test/core/design_lint_test.dart` runs the same check, so `flutter test` fails on a violation. A line
+that truly needs a raw value ends with `// ds-ignore: <reason>`.
 
 ## Accessibility
 Icon-only controls have a `semanticLabel`; tappable cards expose one merged label; selected chips are
-marked `selected`. Tests check tap targets, labels and text contrast (`test/core/`).
+marked `selected`. Tests check tap targets (48 dp), labels and AA text contrast on the main screens in
+English, Hindi and Chhattisgarhi (`test/core/accessibility_test.dart`, `components_test.dart`).
+Devanagari uses bundled Noto Sans Devanagari at 400/500/600/700 so Hindi matches the Latin weights.
+Text on soft tints (`alertSoft`, `safeSoft`, `cautionSoft`) is `ink`, never the semantic colour.
 
 ## Sources
 - `design/reference-style.png` — style reference. `design/SPEC.md` — home content and order.

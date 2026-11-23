@@ -151,7 +151,7 @@ class _RecordingWarningScreenState extends ConsumerState<RecordingWarningScreen>
     final fg = high ? DsColors.onDark : DsColors.ink;
     final type = r.scriptType;
     final phrases = [for (final m in r.result.matches) m.phrase].take(5).toList();
-    final body = DsType.body.copyWith(color: fg, fontSize: 18);
+    final body = DsType.bodyLarge.copyWith(color: fg);
     final small = DsType.body.copyWith(color: fg);
     final label = DsType.section.copyWith(color: fg);
 
@@ -167,7 +167,7 @@ class _RecordingWarningScreenState extends ConsumerState<RecordingWarningScreen>
               padding: const EdgeInsets.symmetric(vertical: DsSpace.s, horizontal: DsSpace.m),
               decoration: BoxDecoration(color: DsColors.ink, borderRadius: BorderRadius.circular(DsRadius.tile)),
               child: Text(s.t('warn_demo_banner'),
-                  textAlign: TextAlign.center, style: DsType.label.copyWith(color: DsColors.onDark, fontSize: 17)),
+                  textAlign: TextAlign.center, style: DsType.title.copyWith(color: DsColors.onDark)),
             ),
           Center(
             child: IconBadge(high ? Icons.gpp_bad_outlined : Icons.warning_amber_rounded,
@@ -182,7 +182,7 @@ class _RecordingWarningScreenState extends ConsumerState<RecordingWarningScreen>
           Text(s.t('warn_subtitle'), textAlign: TextAlign.center, style: body),
           const SizedBox(height: DsSpace.xl),
           Text('${s.t('warn_score')}: ${(r.score * 100).round()}%',
-              key: const Key('warn_score'), textAlign: TextAlign.center, style: DsType.number.copyWith(color: fg, fontSize: 36)),
+              key: const Key('warn_score'), textAlign: TextAlign.center, style: DsType.numberSmall.copyWith(color: fg)),
           if (type != null) ...[
             const SizedBox(height: DsSpace.s),
             Text('${s.t('warn_type')}: ${s.t('script_$type')}',

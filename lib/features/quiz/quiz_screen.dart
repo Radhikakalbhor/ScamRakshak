@@ -152,7 +152,7 @@ class _QuizScreenState extends State<QuizScreen> {
           child: Column(children: [
             const IconBadge(Icons.quiz_outlined, size: 72),
             const SizedBox(height: DsSpace.l),
-            Text(s.t('quiz_intro'), textAlign: TextAlign.center, style: DsType.body.copyWith(fontSize: 17)),
+            Text(s.t('quiz_intro'), textAlign: TextAlign.center, style: DsType.bodyLarge),
             if (_latest != null) ...[
               const SizedBox(height: DsSpace.m),
               Text(
@@ -229,7 +229,7 @@ class _QuizScreenState extends State<QuizScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: DsType.title.copyWith(fontSize: 18)),
+                  Text(title, style: DsType.titleLarge),
                   const SizedBox(height: DsSpace.xxs),
                   Text(subtitle, style: DsType.small),
                 ],
@@ -294,7 +294,7 @@ class _QuizScreenState extends State<QuizScreen> {
           ),
         ),
         const SizedBox(height: DsSpace.m),
-        Text(pickLang(q.q, lang), style: DsType.cardTitle.copyWith(fontSize: 21, height: 1.3)),
+        Text(pickLang(q.q, lang), style: DsType.cardTitle.copyWith(height: 1.3)),
         const SizedBox(height: DsSpace.xl),
         for (var i = 0; i < opts.length; i++) _option(opts[i], i, session),
         if (answered) ...[
@@ -325,7 +325,7 @@ class _QuizScreenState extends State<QuizScreen> {
                       if (q.explain.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(top: DsSpace.xs),
-                          child: Text(pickLang(q.explain, lang), style: DsType.body.copyWith(fontSize: 16)),
+                          child: Text(pickLang(q.explain, lang), style: DsType.bodyLarge),
                         ),
                     ],
                   ),
@@ -380,7 +380,7 @@ class _QuizScreenState extends State<QuizScreen> {
           child: ExcludeSemantics(
             child: Row(
               children: [
-                Expanded(child: Text(text, style: DsType.body.copyWith(fontSize: 17))),
+                Expanded(child: Text(text, style: DsType.bodyLarge)),
                 if (icon != null) Icon(icon, color: border, size: 28),
               ],
             ),
@@ -442,7 +442,7 @@ class _QuizScreenState extends State<QuizScreen> {
           s.t('quiz_feedback_${r.levelKey}'),
           key: const Key('quiz_level_feedback'),
           textAlign: TextAlign.center,
-          style: DsType.body.copyWith(fontSize: 17),
+          style: DsType.bodyLarge,
         ),
         const SizedBox(height: DsSpace.xl),
         Text(s.t('quiz_breakdown'), style: DsType.section),

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../design/components.dart';
+import '../design/tokens.dart';
 import '../strings.dart';
-import '../theme.dart';
 
 /// Reusable placeholder scaffold for feature routes during scaffolding.
 class PlaceholderFeatureScreen extends StatelessWidget {
@@ -20,6 +21,13 @@ class PlaceholderFeatureScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
+    void back() {
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/');
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -27,79 +35,29 @@ class PlaceholderFeatureScreen extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           tooltip: s.t('btn_back'),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/');
-            }
-          },
+          onPressed: back,
         ),
       ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: const BoxDecoration(
-                        color: AppTheme.primaryLightTeal,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        icon,
-                        size: 56,
-                        color: AppTheme.primaryTeal,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      s.t(titleKey),
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      s.t('placeholder_body'),
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: AppTheme.secondaryLightBlue,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        'Assigned Owner: $moduleOwner (per AGENTS.md)',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.secondaryNavy,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        if (context.canPop()) {
-                          context.pop();
-                        } else {
-                          context.go('/');
-                        }
-                      },
-                      icon: const Icon(Icons.home, size: 22),
-                      label: Text(s.t('btn_home')),
-                    ),
-                  ],
-                ),
+            padding: const EdgeInsets.all(DsSpace.xl),
+            child: PastelCard(
+              color: DsColors.powder,
+              padding: const EdgeInsets.symmetric(horizontal: DsSpace.xl, vertical: DsSpace.section),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconBadge(icon, size: 96),
+                  const SizedBox(height: DsSpace.xl),
+                  Text(s.t(titleKey), textAlign: TextAlign.center, style: DsType.cardTitle),
+                  const SizedBox(height: DsSpace.m),
+                  Text(s.t('placeholder_body'), textAlign: TextAlign.center, style: DsType.body),
+                  const SizedBox(height: DsSpace.l),
+                  PillChip(label: 'Assigned Owner: $moduleOwner (per AGENTS.md)', background: DsColors.surface),
+                  const SizedBox(height: DsSpace.xxl),
+                  PrimaryButton(label: s.t('btn_home'), icon: Icons.home_rounded, onPressed: back),
+                ],
               ),
             ),
           ),
