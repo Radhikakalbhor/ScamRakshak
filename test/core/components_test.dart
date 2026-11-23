@@ -39,7 +39,7 @@ void main() {
     var tapped = 0;
     await tester.pumpWidget(_app(StatefulBuilder(
       builder: (context, setState) => Column(children: [
-        const AppTextField(key: Key('field'), hint: 'Type here'),
+        AppTextField(key: const Key('field'), hint: 'Type here'),
         const SizedBox(height: DsSpace.m),
         DsListTile(
           key: const Key('tile'),

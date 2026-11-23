@@ -413,47 +413,30 @@ class ProgressBar extends StatelessWidget {
 // Inputs, lists, tabs
 // ---------------------------------------------------------------------------------------------
 
-/// Rounded text input (white fill, hairline border, brand focus ring).
-class AppTextField extends StatelessWidget {
-  final TextEditingController? controller;
-  final String? hint;
-  final String? label;
-  final int minLines;
-  final int maxLines;
-  final TextInputType? keyboardType;
-  final ValueChanged<String>? onChanged;
-  final ValueChanged<String>? onSubmitted;
-  final bool autofocus;
-  const AppTextField({
+/// Rounded text input (white fill, hairline border, brand focus ring). It IS a [TextField]
+/// (only the style and decoration are fixed), so it works anywhere a TextField is expected.
+class AppTextField extends TextField {
+  AppTextField({
     super.key,
-    this.controller,
-    this.hint,
-    this.label,
-    this.minLines = 1,
-    this.maxLines = 1,
-    this.keyboardType,
-    this.onChanged,
-    this.onSubmitted,
-    this.autofocus = false,
-  });
-
-  @override
-  Widget build(BuildContext context) => TextField(
-        controller: controller,
-        minLines: minLines,
-        maxLines: maxLines,
-        keyboardType: keyboardType,
-        onChanged: onChanged,
-        onSubmitted: onSubmitted,
-        autofocus: autofocus,
-        style: DsType.body.copyWith(fontSize: 16),
-        decoration: InputDecoration(
-          hintText: hint,
-          labelText: label,
-          hintStyle: DsType.body.copyWith(color: DsColors.muted),
-          contentPadding: const EdgeInsets.symmetric(horizontal: DsSpace.l, vertical: DsSpace.m),
-        ),
-      );
+    super.controller,
+    String? hint,
+    String? label,
+    super.minLines,
+    super.maxLines = 1,
+    super.keyboardType,
+    super.onChanged,
+    super.onSubmitted,
+    super.autofocus,
+    super.textInputAction,
+  }) : super(
+          style: DsType.body.copyWith(fontSize: 16),
+          decoration: InputDecoration(
+            hintText: hint,
+            labelText: label,
+            hintStyle: DsType.body.copyWith(color: DsColors.muted),
+            contentPadding: const EdgeInsets.symmetric(horizontal: DsSpace.l, vertical: DsSpace.m),
+          ),
+        );
 }
 
 /// List row: optional leading badge, title, subtitle, optional trailing widget; 48 dp minimum.

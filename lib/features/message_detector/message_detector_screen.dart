@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/design/components.dart';
+import '../../core/design/tokens.dart';
 import '../../core/providers.dart';
 import '../../core/strings.dart';
-import '../../core/theme.dart';
 import '../../engine/models.dart';
 import '../dashboard/detection_history.dart';
 import '../report/report_nav.dart';
@@ -70,8 +71,7 @@ class _MessageDetectorScreenState extends ConsumerState<MessageDetectorScreen> {
     super.dispose();
   }
 
-  void _snack(String key) =>
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(S.of(context).t(key))));
+  void _snack(String key) => showDsToast(context, S.of(context).t(key));
 
   Future<void> _paste() async {
     final data = await Clipboard.getData(Clipboard.kTextPlain);
@@ -119,89 +119,79 @@ class _MessageDetectorScreenState extends ConsumerState<MessageDetectorScreen> {
       appBar: AppBar(title: Text(s.t('msg_title'))),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(DsSpace.xl, DsSpace.s, DsSpace.xl, DsSpace.section),
           children: [
-            Text(s.t('msg_intro'), style: const TextStyle(fontSize: 16)),
-            const SizedBox(height: 12),
-            TextField(
+            Text(s.t('msg_intro'), style: DsType.body),
+            const SizedBox(height: DsSpace.l),
+            AppTextField(
               key: const Key('msg_input'),
               controller: _controller,
               minLines: 5,
               maxLines: 10,
               keyboardType: TextInputType.multiline,
-              style: const TextStyle(fontSize: 17),
+              hint: s.t('msg_hint'),
               onChanged: (_) {
                 if (_result != null) setState(() => _result = null);
               },
-              decoration: InputDecoration(
-                hintText: s.t('msg_hint'),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-              ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: DsSpace.m),
             // Wrap + full-width Check: on a 360dp phone (or large system font) a single Row pushed
             // the Check button off-screen, leaving only Paste visible.
-            Wrap(spacing: 8, runSpacing: 4, children: [
-              OutlinedButton.icon(
+            Wrap(spacing: DsSpace.s, runSpacing: DsSpace.s, children: [
+              PillChip(
                 key: const Key('msg_paste'),
-                onPressed: _paste,
-                icon: const Icon(Icons.content_paste_rounded),
-                label: Text(s.t('msg_paste')),
+                icon: Icons.content_paste_rounded,
+                label: s.t('msg_paste'),
+                onTap: _paste,
               ),
-              TextButton.icon(
+              PillChip(
                 key: const Key('msg_clear'),
-                onPressed: () => setState(() {
+                icon: Icons.clear_rounded,
+                label: s.t('msg_clear'),
+                onTap: () => setState(() {
                   _controller.clear();
                   _result = null;
                 }),
-                icon: const Icon(Icons.clear_rounded),
-                label: Text(s.t('msg_clear')),
               ),
             ]),
-            const SizedBox(height: 8),
-            FilledButton.icon(
+            const SizedBox(height: DsSpace.m),
+            PrimaryButton(
               key: const Key('msg_check'),
+              label: s.t('msg_check'),
+              icon: Icons.shield_outlined,
               onPressed: ready ? _check : null,
-              icon: const Icon(Icons.shield_rounded),
-              label: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                child: Text(s.t('msg_check'), style: const TextStyle(fontSize: 18)),
-              ),
             ),
             if (model.isLoading)
               Padding(
-                padding: const EdgeInsets.only(top: 8),
+                padding: const EdgeInsets.only(top: DsSpace.s),
                 child: Row(children: [
                   const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(s.t('msg_loading_model'))),
+                  const SizedBox(width: DsSpace.s),
+                  Expanded(child: Text(s.t('msg_loading_model'), style: DsType.small)),
                 ]),
               ),
             if (model.hasError)
               Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text(s.t('msg_model_error'), style: const TextStyle(color: AppTheme.errorRed)),
+                padding: const EdgeInsets.only(top: DsSpace.s),
+                child: Text(s.t('msg_model_error'), style: DsType.body.copyWith(color: DsColors.alert)),
               ),
-            const SizedBox(height: 16),
-            Text(s.t('msg_examples'), style: const TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 6),
-            Wrap(spacing: 8, runSpacing: 4, children: [
+            const SizedBox(height: DsSpace.xl),
+            Text(s.t('msg_examples'), style: DsType.greeting),
+            const SizedBox(height: DsSpace.s),
+            Wrap(spacing: DsSpace.s, runSpacing: DsSpace.s, children: [
               for (final e in kMessageExamples.entries)
-                ActionChip(
+                PillChip(
                   key: Key(e.key),
-                  avatar: Icon(e.key == 'msg_ex_genuine' ? Icons.account_balance_rounded : Icons.sms_failed_rounded,
-                      size: 18),
-                  label: Text(s.t(e.key)),
-                  onPressed: () => setState(() {
+                  icon: e.key == 'msg_ex_genuine' ? Icons.account_balance_outlined : Icons.sms_failed_outlined,
+                  label: s.t(e.key),
+                  onTap: () => setState(() {
                     _controller.text = e.value;
                     _result = null;
                   }),
                 ),
             ]),
             if (_result != null) ...[
-              const SizedBox(height: 20),
+              const SizedBox(height: DsSpace.xxl),
               _resultView(s, _result!),
             ],
           ],
@@ -215,85 +205,72 @@ class _MessageDetectorScreenState extends ConsumerState<MessageDetectorScreen> {
 
   Widget _resultView(S s, ScamResult r) {
     final scam = r.label == 'scam';
-    final color = scam ? AppTheme.errorRed : AppTheme.successGreen;
     final confidence = ((scam ? r.score : 1 - r.score) * 100).round();
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Container(
+      VerdictBanner(
         key: const Key('msg_verdict'),
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(18)),
-        child: Row(children: [
-          Icon(scam ? Icons.gpp_bad_rounded : Icons.verified_user_rounded, color: Colors.white, size: 52),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(scam ? s.t('msg_verdict_scam') : s.t('msg_verdict_genuine'),
-                  style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold)),
-              Text('${s.t('msg_confidence')}: $confidence%',
-                  style: const TextStyle(color: Colors.white, fontSize: 17)),
-            ]),
-          ),
-        ]),
+        verdict: scam ? DsVerdict.danger : DsVerdict.safe,
+        icon: scam ? Icons.gpp_bad_outlined : Icons.verified_user_outlined,
+        title: scam ? s.t('msg_verdict_scam') : s.t('msg_verdict_genuine'),
+        lines: ['${s.t('msg_confidence')}: $confidence%'],
       ),
       if (scam && r.reasons.isNotEmpty) ...[
-        const SizedBox(height: 14),
-        Text(s.t('msg_reasons'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        const SizedBox(height: 6),
-        Wrap(spacing: 8, runSpacing: 6, children: [
+        const SizedBox(height: DsSpace.l),
+        Text(s.t('msg_reasons'), style: DsType.section),
+        const SizedBox(height: DsSpace.s),
+        Wrap(spacing: DsSpace.s, runSpacing: DsSpace.s, children: [
           for (final reason in r.reasons)
             Chip(
-              avatar: const Icon(Icons.warning_amber_rounded, size: 18, color: AppTheme.errorRed),
-              label: Text(_phrase(s, reason.phrase),
-                  style: const TextStyle(color: AppTheme.errorRed, fontWeight: FontWeight.bold)),
-              backgroundColor: const Color(0xFFFFEBEE),
-              side: const BorderSide(color: AppTheme.errorRed),
+              avatar: const Icon(Icons.warning_amber_rounded, size: 18, color: DsColors.alert),
+              label: Text(_phrase(s, reason.phrase), style: DsType.label),
+              backgroundColor: DsColors.alertSoft,
+              side: const BorderSide(color: DsColors.alert),
             ),
         ]),
       ],
-      const SizedBox(height: 14),
+      const SizedBox(height: DsSpace.l),
       if (scam)
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(s.t('msg_advice_title'), style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 6),
-              for (var i = 1; i <= 4; i++)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Icon(Icons.check_circle_rounded, color: AppTheme.primaryTeal, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(s.t('msg_advice_$i'), style: const TextStyle(fontSize: 16))),
-                  ]),
-                ),
-            ]),
-          ),
+        SurfacePanel(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(s.t('msg_advice_title'), style: DsType.section),
+            const SizedBox(height: DsSpace.s),
+            for (var i = 1; i <= 4; i++)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: DsSpace.xs),
+                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const Icon(Icons.check_circle_outline_rounded, color: DsColors.brand, size: 20),
+                  const SizedBox(width: DsSpace.s),
+                  Expanded(child: Text(s.t('msg_advice_$i'), style: DsType.body)),
+                ]),
+              ),
+          ]),
         )
       else
-        Text(s.t('msg_genuine_note'), style: const TextStyle(fontSize: 16)),
-      if (scam)
-        Card(
-          margin: const EdgeInsets.only(top: 12),
-          child: SwitchListTile(
-            key: const Key('msg_fp_optin'),
-            value: _fpOptIn,
-            onChanged: _setOptIn,
-            title: Text(s.t('msg_fp_title'), style: const TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: Text(s.t('msg_fp_sub')),
+        Text(s.t('msg_genuine_note'), style: DsType.body),
+      if (scam) ...[
+        const SizedBox(height: DsSpace.m),
+        SurfacePanel(
+          padding: const EdgeInsets.symmetric(vertical: DsSpace.xs, horizontal: DsSpace.xs),
+          child: Material(
+            type: MaterialType.transparency,
+            child: SwitchListTile(
+              key: const Key('msg_fp_optin'),
+              value: _fpOptIn,
+              onChanged: _setOptIn,
+              title: Text(s.t('msg_fp_title'), style: DsType.title),
+              subtitle: Text(s.t('msg_fp_sub'), style: DsType.small),
+            ),
           ),
         ),
+      ],
       if (scam) ...[
-        const SizedBox(height: 12),
-        FilledButton.icon(
+        const SizedBox(height: DsSpace.m),
+        PrimaryButton(
           key: const Key('msg_report'),
-          style: FilledButton.styleFrom(backgroundColor: AppTheme.errorRed),
+          label: s.t('msg_report'),
+          icon: Icons.report_outlined,
+          color: DsColors.alert,
           onPressed: () => openReport(context, type: guessReportType(_checkedText)),
-          icon: const Icon(Icons.report_rounded),
-          label: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Text(s.t('msg_report'), style: const TextStyle(fontSize: 18)),
-          ),
         ),
       ],
     ]);
