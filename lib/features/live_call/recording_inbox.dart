@@ -5,11 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/strings.dart';
-import '../../core/theme.dart';
+import '../../core/design/components.dart';
+import '../../core/design/tokens.dart';
 import '../call_detector/auto_analyze_core.dart';
 import '../call_detector/auto_analyze_screen.dart';
 import '../call_detector/auto_analyze_service.dart';
 import '../call_detector/auto_analyze_strings.dart';
+import '../call_detector/call_triggers.dart';
 import '../call_detector/recording_result_screen.dart';
 import 'live_call_strings.dart';
 
@@ -58,12 +60,6 @@ final recordingInboxProvider = StreamProvider.autoDispose<RecordingInbox>((ref) 
 String _two(int v) => v.toString().padLeft(2, '0');
 String inboxTime(DateTime t) => '${_two(t.day)}/${_two(t.month)}/${t.year} ${_two(t.hour)}:${_two(t.minute)}';
 
-Color _riskColor(String risk) => switch (risk) {
-      'high' => AppTheme.errorRed,
-      'medium' => AppTheme.warningOrange,
-      _ => AppTheme.successGreen,
-    };
-
 void _push(BuildContext context, String route, Widget fallback, {Object? extra}) {
   final router = GoRouter.maybeOf(context);
   if (router != null) {
@@ -86,6 +82,13 @@ Future<void> openInboxEntry(BuildContext context, WidgetRef ref, String payload)
 
 void openInbox(BuildContext context) => _push(context, '/live/inbox', const RecordingInboxScreen());
 
+/// Small alert-red pill ("NEW", "2 new").
+Widget _newTag(String text, {Key? key}) => Container(
+      padding: const EdgeInsets.symmetric(horizontal: DsSpace.s, vertical: DsSpace.xxs),
+      decoration: BoxDecoration(color: DsColors.alert, borderRadius: BorderRadius.circular(DsRadius.pill)),
+      child: Text(text, key: key, style: DsType.caption.copyWith(color: DsColors.onDark)),
+    );
+
 /// Bell button with the number of unread recording results.
 class RecordingInboxButton extends ConsumerWidget {
   const RecordingInboxButton({super.key});
@@ -100,8 +103,10 @@ class RecordingInboxButton extends ConsumerWidget {
       onPressed: () => openInbox(context),
       icon: Badge(
         isLabelVisible: unread > 0,
+        backgroundColor: DsColors.alert,
+        textStyle: DsType.caption,
         label: Text('$unread', key: const Key('inbox_badge')),
-        child: const Icon(Icons.notifications_rounded),
+        child: const Icon(Icons.notifications_none_rounded),
       ),
     );
   }
@@ -125,47 +130,33 @@ class RecordingInboxTile extends ConsumerWidget {
     final s = S.of(context);
     final r = result;
     if (r == null) {
-      return Card(
-        child: ListTile(
-          leading: const CircleAvatar(
-            backgroundColor: Color(0xFFFFF3E0),
-            child: Icon(Icons.cloud_off_rounded, color: AppTheme.warningOrange),
-          ),
-          title: Text(fileNameOf(pendingPath!), maxLines: 1, overflow: TextOverflow.ellipsis),
-          subtitle: Text(s.t('inbox_waiting')),
-          trailing: const Icon(Icons.chevron_right_rounded),
+      return Padding(
+        padding: const EdgeInsets.only(bottom: DsSpace.s),
+        child: DsListTile(
+          leading: const IconBadge(Icons.cloud_off_rounded, background: DsColors.cautionSoft, foreground: DsColors.caution),
+          title: fileNameOf(pendingPath!),
+          subtitle: s.t('inbox_waiting'),
+          trailing: const Icon(Icons.chevron_right_rounded, color: DsColors.ink),
           onTap: () => openInboxEntry(context, ref, pendingPayload(pendingPath!)),
         ),
       );
     }
     final res = r.result;
-    final color = _riskColor(res.risk);
+    final color = verdictColor(riskVerdict(res.risk));
     final type = res.scriptType;
     final title = type == null ? s.t('risk_${res.risk}') : '${s.t('risk_${res.risk}')} · ${s.t('script_$type')}';
-    return Card(
-      color: unread ? const Color(0xFFFFFBF0) : null,
-      child: ListTile(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: DsSpace.s),
+      child: DsListTile(
         key: Key('inbox_item_${r.id}'),
-        leading: CircleAvatar(
-          backgroundColor: color,
-          child: Icon(res.risk == 'low' ? Icons.verified_user_rounded : Icons.phone_locked_rounded, color: Colors.white),
-        ),
-        title: Text(title,
-            style: TextStyle(fontWeight: unread ? FontWeight.bold : FontWeight.w600, color: color)),
-        subtitle: Text(
-          '${s.t('inbox_score').replaceAll('{p}', '${(res.score * 100).round()}')}\n'
-          '${r.fileName}\n${inboxTime(r.at)}',
-        ),
-        isThreeLine: true,
+        color: unread ? DsColors.peach : null,
+        leading: IconBadge(res.risk == 'low' ? Icons.verified_user_outlined : Icons.phone_locked_outlined, background: color),
+        title: title,
+        subtitle: '${s.t('inbox_score').replaceAll('{p}', '${(res.score * 100).round()}')}\n'
+            '${r.fileName}\n${inboxTime(r.at)}',
         trailing: unread
-            ? Container(
-                key: Key('inbox_new_${r.id}'),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(color: AppTheme.errorRed, borderRadius: BorderRadius.circular(10)),
-                child: Text(s.t('inbox_new'),
-                    style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-              )
-            : const Icon(Icons.chevron_right_rounded),
+            ? _newTag(s.t('inbox_new'), key: Key('inbox_new_${r.id}'))
+            : const Icon(Icons.chevron_right_rounded, color: DsColors.ink),
         onTap: () => openInboxEntry(context, ref, resultPayload(r.id)),
       ),
     );
@@ -181,13 +172,14 @@ List<Widget> _tiles(RecordingInbox inbox, {int? limit}) {
 }
 
 Widget _emptyView(BuildContext context, S s) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      Text(s.t('inbox_empty'), key: const Key('inbox_empty'), style: const TextStyle(fontSize: 15)),
-      const SizedBox(height: 6),
-      OutlinedButton.icon(
+      Text(s.t('inbox_empty'), key: const Key('inbox_empty'), style: DsType.body),
+      const SizedBox(height: DsSpace.m),
+      PrimaryButton(
         key: const Key('inbox_setup'),
+        label: s.t('inbox_setup'),
+        icon: Icons.auto_mode_rounded,
+        filled: false,
         onPressed: () => _push(context, '/call/auto', const AutoAnalyzeScreen()),
-        icon: const Icon(Icons.auto_mode_rounded),
-        label: Text(s.t('inbox_setup')),
       ),
     ]);
 
@@ -201,36 +193,31 @@ class RecordingInboxSection extends ConsumerWidget {
     LiveCallStrings.ensure();
     final s = S.of(context);
     final inbox = ref.watch(recordingInboxProvider).valueOrNull ?? RecordingInbox.empty;
-    return Card(
+    return SurfacePanel(
       key: const Key('inbox_section'),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Row(children: [
-            const Icon(Icons.notifications_active_rounded, color: AppTheme.primaryTeal),
-            const SizedBox(width: 8),
-            Expanded(child: Text(s.t('inbox_title'), style: Theme.of(context).textTheme.titleLarge)),
-            if (inbox.unread > 0)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(color: AppTheme.errorRed, borderRadius: BorderRadius.circular(10)),
-                child: Text(s.t('inbox_unread').replaceAll('{n}', '${inbox.unread}'),
-                    key: const Key('inbox_section_unread'),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              ),
-          ]),
-          const SizedBox(height: 4),
-          Text(s.t('inbox_section_sub'), style: const TextStyle(color: AppTheme.textSecondary)),
-          const SizedBox(height: 8),
-          if (inbox.isEmpty) _emptyView(context, s) else ..._tiles(inbox, limit: preview),
-          if (inbox.total > preview)
-            TextButton(
-              key: const Key('inbox_see_all'),
-              onPressed: () => openInbox(context),
-              child: Text(s.t('inbox_see_all').replaceAll('{n}', '${inbox.total}')),
-            ),
+      padding: const EdgeInsets.all(DsSpace.l),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Row(children: [
+          const IconBadge(Icons.notifications_none_rounded, background: DsColors.brand),
+          const SizedBox(width: DsSpace.m),
+          Expanded(child: Text(s.t('inbox_title'), style: DsType.section)),
+          if (inbox.unread > 0)
+            _newTag(s.t('inbox_unread').replaceAll('{n}', '${inbox.unread}'), key: const Key('inbox_section_unread')),
         ]),
-      ),
+        const SizedBox(height: DsSpace.s),
+        Text(s.t('inbox_section_sub'), style: DsType.small),
+        const SizedBox(height: DsSpace.m),
+        if (inbox.isEmpty) _emptyView(context, s) else ..._tiles(inbox, limit: preview),
+        if (inbox.total > preview)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: PillChip(
+              key: const Key('inbox_see_all'),
+              label: s.t('inbox_see_all').replaceAll('{n}', '${inbox.total}'),
+              onTap: () => openInbox(context),
+            ),
+          ),
+      ]),
     );
   }
 }
@@ -265,10 +252,10 @@ class RecordingInboxScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: data == null
-            ? const Center(child: CircularProgressIndicator())
+            ? const LoadingState()
             : ListView(
                 key: const Key('inbox_list'),
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(DsSpace.xl, DsSpace.s, DsSpace.xl, DsSpace.section),
                 children: data.isEmpty ? [_emptyView(context, s)] : _tiles(data),
               ),
       ),
