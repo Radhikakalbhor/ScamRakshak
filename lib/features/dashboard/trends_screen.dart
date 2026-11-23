@@ -6,9 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/api_client.dart';
+import '../../core/design/components.dart';
+import '../../core/design/tokens.dart';
 import '../../core/providers.dart';
 import '../../core/strings.dart';
-import '../../core/theme.dart';
 import '../call_detector/call_detector_screen.dart';
 import '../call_detector/call_strings.dart';
 import '../lessons/lesson_detail_screen.dart';
@@ -90,26 +91,26 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
 
   Future<void> _clear() async {
     final s = S.of(context);
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        content: Text(s.t('trends_clear_confirm')),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(s.t('trends_cancel'))),
-          FilledButton(
-            key: const Key('trends_clear_ok'),
-            style: FilledButton.styleFrom(backgroundColor: AppTheme.errorRed),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(s.t('trends_delete')),
-          ),
-        ],
-      ),
+    final ok = await showDsDialog<bool>(
+      context,
+      title: s.t('trends_clear'),
+      content: Text(s.t('trends_clear_confirm'), style: DsType.body),
+      actions: (ctx) => [
+        PrimaryButton(
+          key: const Key('trends_clear_ok'),
+          label: s.t('trends_delete'),
+          icon: Icons.delete_sweep_rounded,
+          color: DsColors.alert,
+          onPressed: () => Navigator.pop(ctx, true),
+        ),
+        PrimaryButton(label: s.t('trends_cancel'), filled: false, onPressed: () => Navigator.pop(ctx, false)),
+      ],
     );
     if (ok != true || !mounted) return;
     await ref.read(detectionHistoryProvider).clear();
     if (!mounted) return;
     _reload();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(s.t('trends_cleared'))));
+    showDsToast(context, s.t('trends_cleared'));
   }
 
   Future<void> _loadServer() async {
@@ -172,95 +173,98 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
   Widget _body(S s, AsyncSnapshot<List<DetectionRecord>> snap) {
     if (snap.hasError) {
       return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(s.t('trends_load_error'), style: const TextStyle(fontSize: 18)),
-            const SizedBox(height: 12),
-            FilledButton(onPressed: _reload, child: Text(s.t('trends_retry'))),
-          ],
+        child: EmptyState(
+          icon: Icons.error_outline_rounded,
+          color: DsColors.alertSoft,
+          title: s.t('trends_load_error'),
+          action: PrimaryButton(label: s.t('trends_retry'), onPressed: _reload),
         ),
       );
     }
-    if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+    if (!snap.hasData) return const LoadingState();
     final records = snap.data!;
     final stats = TrendStats.from(records, now: widget.clock(), includePractice: _includePractice);
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(DsSpace.xl, DsSpace.s, DsSpace.xl, DsSpace.section),
       children: [
         Row(
           children: [
-            const Icon(Icons.phone_android_rounded, color: AppTheme.primaryTeal),
-            const SizedBox(width: 8),
-            Expanded(child: Text(s.t('trends_local_title'), style: Theme.of(context).textTheme.headlineSmall)),
+            const IconBadge(Icons.phone_android_rounded, size: kDsTouch, background: DsColors.powder),
+            const SizedBox(width: DsSpace.m),
+            Expanded(child: Text(s.t('trends_local_title'), style: DsType.cardTitle)),
           ],
         ),
-        const SizedBox(height: 4),
-        Text(s.t('trends_local_note'), style: Theme.of(context).textTheme.bodyMedium),
-        const SizedBox(height: 12),
+        const SizedBox(height: DsSpace.s),
+        Text(s.t('trends_local_note'), style: DsType.small),
+        const SizedBox(height: DsSpace.l),
         if (stats.practiceExcluded > 0 || _includePractice) _practiceToggle(s, stats),
         if (stats.isEmpty) _empty(s) else ..._localStats(s, stats),
-        const SizedBox(height: 20),
+        const SizedBox(height: DsSpace.xl),
         _serverSection(s),
       ],
     );
   }
 
-  Widget _practiceToggle(S s, TrendStats stats) => Card(
-    margin: const EdgeInsets.only(bottom: 12),
-    color: AppTheme.secondaryLightBlue,
-    child: Column(
-      children: [
-        if (stats.practiceExcluded > 0)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-            child: Row(
-              children: [
-                const Icon(Icons.school_rounded, color: AppTheme.secondaryNavy),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    '${stats.practiceExcluded} ${s.t('trends_practice_note')}',
-                    key: const Key('trends_practice_note'),
+  Widget _practiceToggle(S s, TrendStats stats) => Padding(
+    padding: const EdgeInsets.only(bottom: DsSpace.m),
+    child: SurfacePanel(
+      color: DsColors.powder,
+      padding: const EdgeInsets.symmetric(vertical: DsSpace.s, horizontal: DsSpace.xs),
+      child: Column(
+        children: [
+          if (stats.practiceExcluded > 0)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(DsSpace.l, DsSpace.s, DsSpace.l, 0),
+              child: Row(
+                children: [
+                  const Icon(Icons.school_rounded, color: DsColors.ink),
+                  const SizedBox(width: DsSpace.s),
+                  Expanded(
+                    child: Text(
+                      '${stats.practiceExcluded} ${s.t('trends_practice_note')}',
+                      key: const Key('trends_practice_note'),
+                      style: DsType.body,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
+            ),
+          Material(
+            type: MaterialType.transparency,
+            child: SwitchListTile(
+              key: const Key('trends_include_practice'),
+              title: Text(s.t('trends_include_practice'), style: DsType.title),
+              value: _includePractice,
+              onChanged: (v) => setState(() => _includePractice = v),
             ),
           ),
-        SwitchListTile(
-          key: const Key('trends_include_practice'),
-          title: Text(s.t('trends_include_practice')),
-          value: _includePractice,
-          onChanged: (v) => setState(() => _includePractice = v),
-        ),
-      ],
+        ],
+      ),
     ),
   );
 
-  Widget _empty(S s) => Card(
+  Widget _empty(S s) => SurfacePanel(
     key: const Key('trends_empty'),
-    child: Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
+    child: EmptyState(
+      icon: Icons.insights_rounded,
+      title: s.t('trends_empty_title'),
+      message: s.t('trends_empty_body'),
+      action: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Icon(Icons.insights_rounded, size: 64, color: AppTheme.primaryTeal),
-          const SizedBox(height: 8),
-          Text(s.t('trends_empty_title'), style: Theme.of(context).textTheme.headlineSmall),
-          const SizedBox(height: 6),
-          Text(s.t('trends_empty_body'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 16)),
-          const SizedBox(height: 16),
-          FilledButton.icon(
+          PrimaryButton(
             key: const Key('trends_go_message'),
+            label: s.t('trends_check_message'),
+            icon: Icons.mark_chat_unread_rounded,
             onPressed: () => _push('/message', () => const MessageDetectorScreen()),
-            icon: const Icon(Icons.mark_chat_unread_rounded),
-            label: Text(s.t('trends_check_message')),
           ),
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
+          const SizedBox(height: DsSpace.s),
+          PrimaryButton(
             key: const Key('trends_go_call'),
+            label: s.t('trends_check_call'),
+            icon: Icons.phone_in_talk_rounded,
+            filled: false,
             onPressed: () => _push('/call', () => const CallDetectorScreen()),
-            icon: const Icon(Icons.phone_in_talk_rounded),
-            label: Text(s.t('trends_check_call')),
           ),
         ],
       ),
@@ -269,51 +273,33 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
 
   List<Widget> _localStats(S s, TrendStats st) => [
     _tiles(s, st),
-    const SizedBox(height: 12),
+    const SizedBox(height: DsSpace.m),
     _chartCard(s, st),
-    const SizedBox(height: 12),
+    const SizedBox(height: DsSpace.m),
     _categoriesCard(s, st),
-    const SizedBox(height: 12),
+    const SizedBox(height: DsSpace.m),
     _recentCard(s, st),
   ];
 
   Widget _tiles(S s, TrendStats st) {
     final risky = st.scams + st.suspicious;
     final tiles = [
-      _Tile(
-        const Key('trends_tile_messages'),
-        Icons.sms_rounded,
-        AppTheme.primaryTeal,
-        '${st.messages}',
-        s.t('trends_messages'),
-      ),
-      _Tile(
-        const Key('trends_tile_calls'),
-        Icons.call_rounded,
-        AppTheme.secondaryNavy,
-        '${st.calls}',
-        s.t('trends_calls'),
-      ),
+      _Tile(const Key('trends_tile_messages'), Icons.sms_rounded, DsColors.powder, '${st.messages}', s.t('trends_messages')),
+      _Tile(const Key('trends_tile_calls'), Icons.call_rounded, DsColors.lavender, '${st.calls}', s.t('trends_calls')),
       _Tile(
         const Key('trends_tile_scams'),
         Icons.gpp_bad_rounded,
-        AppTheme.errorRed,
+        DsColors.peach,
         '$risky',
         s.t('trends_scams'),
         extra: st.suspicious > 0 ? '${st.scams} + ${st.suspicious} ${s.t('trends_suspicious_n')}' : null,
       ),
-      _Tile(
-        const Key('trends_tile_safe'),
-        Icons.verified_user_rounded,
-        AppTheme.successGreen,
-        '${st.safe}',
-        s.t('trends_safe'),
-      ),
+      _Tile(const Key('trends_tile_safe'), Icons.verified_user_rounded, DsColors.mint, '${st.safe}', s.t('trends_safe')),
     ];
     return LayoutBuilder(
       builder: (context, c) {
         final cols = c.maxWidth >= 600 ? 4 : 2;
-        const gap = 10.0;
+        const gap = DsSpace.m;
         final w = (c.maxWidth - gap * (cols - 1)) / cols;
         return Wrap(
           spacing: gap,
@@ -324,50 +310,42 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
     );
   }
 
-  Widget _tile(_Tile t) => Container(
+  Widget _tile(_Tile t) => PastelCard(
     key: t.key,
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      color: t.color.withValues(alpha: 0.08),
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: t.color.withValues(alpha: 0.35)),
-    ),
+    color: t.color,
+    padding: const EdgeInsets.all(DsSpace.l),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(t.icon, color: t.color),
-        const SizedBox(height: 6),
-        Text(
-          t.value,
-          style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: t.color),
-        ),
-        Text(t.label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-        if (t.extra != null) Text(t.extra!, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+        IconBadge(t.icon, size: 40),
+        const SizedBox(height: DsSpace.s),
+        Text(t.value, style: DsType.number.copyWith(fontSize: 30, height: 1.1)),
+        Text(t.label, style: DsType.label),
+        if (t.extra != null) Text(t.extra!, style: DsType.caption.copyWith(color: DsColors.ink)),
       ],
     ),
   );
 
-  Widget _card({Key? key, required String title, required IconData icon, required Widget child}) => Card(
+  Widget _card({Key? key, required String title, required IconData icon, required Widget child}) => SurfacePanel(
     key: key,
-    margin: EdgeInsets.zero,
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: AppTheme.primaryTeal),
-              const SizedBox(width: 8),
-              Expanded(child: Text(title, style: Theme.of(context).textTheme.titleLarge)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          child,
-        ],
-      ),
+    padding: const EdgeInsets.all(DsSpace.l),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, color: DsColors.ink),
+            const SizedBox(width: DsSpace.s),
+            Expanded(child: Text(title, style: DsType.section)),
+          ],
+        ),
+        const SizedBox(height: DsSpace.m),
+        child,
+      ],
     ),
   );
+
+  static final _axis = DsType.caption.copyWith(fontSize: 11);
 
   Widget _chartCard(S s, TrendStats st) {
     final maxTotal = st.daily.fold<int>(0, (m, d) => math.max(m, d.total));
@@ -387,7 +365,11 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
                 alignment: BarChartAlignment.spaceAround,
                 barTouchData: BarTouchData(enabled: false),
                 borderData: FlBorderData(show: false),
-                gridData: FlGridData(drawVerticalLine: false, horizontalInterval: step),
+                gridData: FlGridData(
+                  drawVerticalLine: false,
+                  horizontalInterval: step,
+                  getDrawingHorizontalLine: (_) => const FlLine(color: DsColors.line, strokeWidth: 1),
+                ),
                 titlesData: FlTitlesData(
                   topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -396,7 +378,7 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
                       showTitles: true,
                       reservedSize: 28,
                       interval: step,
-                      getTitlesWidget: (v, meta) => Text(v.toInt().toString(), style: const TextStyle(fontSize: 11)),
+                      getTitlesWidget: (v, meta) => Text(v.toInt().toString(), style: _axis),
                     ),
                   ),
                   bottomTitles: AxisTitles(
@@ -408,8 +390,8 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
                         if (i < 0 || i >= st.daily.length) return const SizedBox.shrink();
                         final d = st.daily[i].day;
                         return Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text('${d.day}/${d.month}', style: const TextStyle(fontSize: 11)),
+                          padding: const EdgeInsets.only(top: DsSpace.xs),
+                          child: Text('${d.day}/${d.month}', style: _axis),
                         );
                       },
                     ),
@@ -424,13 +406,13 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
                           toY: st.daily[i].total.toDouble(),
                           width: 16,
                           color: Colors.transparent,
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(DsRadius.small / 2),
                           rodStackItems: [
-                            BarChartRodStackItem(0, st.daily[i].risky.toDouble(), AppTheme.errorRed),
+                            BarChartRodStackItem(0, st.daily[i].risky.toDouble(), DsColors.alert),
                             BarChartRodStackItem(
                               st.daily[i].risky.toDouble(),
                               st.daily[i].total.toDouble(),
-                              AppTheme.successGreen,
+                              DsColors.safe,
                             ),
                           ],
                         ),
@@ -440,12 +422,12 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: DsSpace.s),
           Wrap(
-            spacing: 16,
+            spacing: DsSpace.l,
             children: [
-              _legend(AppTheme.errorRed, s.t('trends_legend_risky')),
-              _legend(AppTheme.successGreen, s.t('trends_legend_safe')),
+              _legend(DsColors.alert, s.t('trends_legend_risky')),
+              _legend(DsColors.safe, s.t('trends_legend_safe')),
             ],
           ),
         ],
@@ -459,10 +441,10 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
       Container(
         width: 12,
         height: 12,
-        decoration: BoxDecoration(color: c, borderRadius: BorderRadius.circular(3)),
+        decoration: BoxDecoration(color: c, borderRadius: BorderRadius.circular(DsRadius.small / 3)),
       ),
-      const SizedBox(width: 6),
-      Flexible(child: Text(label, style: const TextStyle(fontSize: 13))),
+      const SizedBox(width: DsSpace.s),
+      Flexible(child: Text(label, style: DsType.small.copyWith(color: DsColors.ink))),
     ],
   );
 
@@ -475,67 +457,53 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
       title: s.t('trends_categories'),
       icon: Icons.category_rounded,
       child: st.categories.isEmpty
-          ? Text(s.t('trends_no_scams'), style: const TextStyle(fontSize: 16))
+          ? Text(s.t('trends_no_scams'), style: DsType.body)
           : Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Container(
                   key: const Key('trends_top_category'),
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(color: const Color(0xFFFFEBEE), borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.all(DsSpace.m),
+                  margin: const EdgeInsets.only(bottom: DsSpace.m),
+                  decoration: BoxDecoration(color: DsColors.alertSoft, borderRadius: BorderRadius.circular(DsRadius.tile)),
                   child: Row(
                     children: [
-                      const Icon(Icons.local_fire_department_rounded, color: AppTheme.errorRed),
-                      const SizedBox(width: 8),
+                      const Icon(Icons.local_fire_department_rounded, color: DsColors.alert),
+                      const SizedBox(width: DsSpace.s),
                       Expanded(
-                        child: Text(
-                          '${s.t('trends_most_common')}: ${categoryLabel(s, top!)}',
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
+                        child: Text('${s.t('trends_most_common')}: ${categoryLabel(s, top!)}', style: DsType.title),
                       ),
                     ],
                   ),
                 ),
                 for (final e in st.categories)
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.only(bottom: DsSpace.m),
                     child: Row(
                       children: [
-                        SizedBox(
-                          width: 130,
-                          child: Text(categoryLabel(s, e.key), style: const TextStyle(fontSize: 14)),
-                        ),
-                        Expanded(
-                          child: LinearProgressIndicator(
-                            value: e.value / maxCount,
-                            minHeight: 12,
-                            borderRadius: BorderRadius.circular(6),
-                            color: AppTheme.errorRed,
-                            backgroundColor: const Color(0xFFFFEBEE),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 130, child: Text(categoryLabel(s, e.key), style: DsType.small.copyWith(color: DsColors.ink))),
+                        Expanded(child: ProgressBar(value: e.value / maxCount, color: DsColors.alert)),
+                        const SizedBox(width: DsSpace.s),
                         SizedBox(
                           width: 28,
                           child: Text(
                             '${e.value}',
                             key: Key('trends_cat_count_${e.key}'),
                             textAlign: TextAlign.end,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            style: DsType.label,
                           ),
                         ),
                       ],
                     ),
                   ),
                 if (lesson != null)
-                  OutlinedButton.icon(
+                  PrimaryButton(
                     key: const Key('trends_learn'),
-                    onPressed: () =>
-                        Navigator.of(context)
-                            .push(MaterialPageRoute<void>(builder: (_) => LessonDetailScreen(lessonId: lesson))),
-                    icon: const Icon(Icons.school_rounded),
-                    label: Text(s.t('trends_learn')),
+                    label: s.t('trends_learn'),
+                    icon: Icons.school_rounded,
+                    filled: false,
+                    onPressed: () => Navigator.of(context)
+                        .push(MaterialPageRoute<void>(builder: (_) => LessonDetailScreen(lessonId: lesson))),
                   ),
               ],
             ),
@@ -558,14 +526,19 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
     key: const Key('trends_recent'),
     title: s.t('trends_recent'),
     icon: Icons.history_rounded,
-    child: Column(children: [for (final r in st.recent) _recentRow(s, r)]),
+    child: Column(
+      children: [
+        for (final r in st.recent)
+          Padding(padding: const EdgeInsets.only(bottom: DsSpace.s), child: _recentRow(s, r)),
+      ],
+    ),
   );
 
   Widget _recentRow(S s, DetectionRecord r) {
-    final color = switch (r.verdict) {
-      'scam' => AppTheme.errorRed,
-      'suspicious' => AppTheme.warningOrange,
-      _ => AppTheme.successGreen,
+    final (color, soft) = switch (r.verdict) {
+      'scam' => (DsColors.alert, DsColors.alertSoft),
+      'suspicious' => (DsColors.caution, DsColors.cautionSoft),
+      _ => (DsColors.safe, DsColors.safeSoft),
     };
     final title = r.isRisky ? categoryLabel(s, r.category.isEmpty ? 'other' : r.category) : s.t('trends_verdict_safe');
     final sub = [
@@ -574,24 +547,25 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
       _when(s, r.time),
       if (r.sample) s.t('trends_practice_tag'),
     ].join(' · ');
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: CircleAvatar(
-        backgroundColor: color.withValues(alpha: 0.12),
-        child: Icon(r.kind == 'call' ? Icons.call_rounded : Icons.sms_rounded, color: color),
+    return DsListTile(
+      leading: IconBadge(
+        r.kind == 'call' ? Icons.call_rounded : Icons.sms_rounded,
+        size: 40,
+        background: soft,
+        foreground: color,
       ),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-      subtitle: Text(sub),
-      trailing: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(12)),
-        child: Text(
-          s.t('trends_verdict_${r.verdict}'),
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
-        ),
-      ),
+      title: title,
+      subtitle: sub,
+      trailing: _pill(s.t('trends_verdict_${r.verdict}'), color),
     );
   }
+
+  Widget _pill(String text, Color color, {Key? key}) => Container(
+    key: key,
+    padding: const EdgeInsets.symmetric(horizontal: DsSpace.m, vertical: DsSpace.xs),
+    decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(DsRadius.pill)),
+    child: Text(text, style: DsType.caption.copyWith(color: DsColors.onDark)),
+  );
 
   // ------------------------------------------------------------------ server
 
@@ -602,28 +576,29 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(s.t('trends_server_note'), style: Theme.of(context).textTheme.bodyMedium),
-        const SizedBox(height: 12),
+        Text(s.t('trends_server_note'), style: DsType.small),
+        const SizedBox(height: DsSpace.m),
         ..._serverBody(s),
       ],
     ),
   );
 
   List<Widget> _serverBody(S s) {
-    Widget loadButton() => OutlinedButton.icon(
+    Widget loadButton() => PrimaryButton(
       key: const Key('trends_server_load'),
+      label: s.t('trends_server_load'),
+      icon: Icons.cloud_download_rounded,
+      filled: false,
       onPressed: _loadServer,
-      icon: const Icon(Icons.cloud_download_rounded),
-      label: Text(s.t('trends_server_load')),
     );
     Widget message(String key, IconData icon, Color color) => Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.only(bottom: DsSpace.m),
       child: Row(
         key: Key('trends_server_$key'),
         children: [
           Icon(icon, color: color),
-          const SizedBox(width: 8),
-          Expanded(child: Text(s.t('trends_server_$key'))),
+          const SizedBox(width: DsSpace.s),
+          Expanded(child: Text(s.t('trends_server_$key'), style: DsType.body)),
         ],
       ),
     );
@@ -631,107 +606,87 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
       case _ServerState.idle:
         return [loadButton()];
       case _ServerState.loading:
-        return [
-          Row(
-            children: [
-              const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
-              const SizedBox(width: 10),
-              Expanded(child: Text(s.t('trends_server_loading'))),
-            ],
-          ),
-        ];
+        return [LoadingState(message: s.t('trends_server_loading'))];
       case _ServerState.offline:
-        return [message('offline', Icons.wifi_off_rounded, AppTheme.warningOrange), loadButton()];
+        return [message('offline', Icons.wifi_off_rounded, DsColors.caution), loadButton()];
       case _ServerState.error:
-        return [message('error', Icons.error_outline_rounded, AppTheme.errorRed), loadButton()];
+        return [message('error', Icons.error_outline_rounded, DsColors.alert), loadButton()];
       case _ServerState.data:
         final sum = _summary;
         if (sum != null) {
           return [
             _alertsCard(s),
-            _sourceBlock(s, 'live', sum.live, sum.minCount, AppTheme.primaryTeal),
-            const SizedBox(height: 12),
-            _sourceBlock(s, 'synthetic', sum.synthetic, sum.minCount, AppTheme.textSecondary),
-            const SizedBox(height: 8),
+            _sourceBlock(s, 'live', sum.live, sum.minCount, DsColors.brand),
+            const SizedBox(height: DsSpace.m),
+            _sourceBlock(s, 'synthetic', sum.synthetic, sum.minCount, DsColors.muted),
+            const SizedBox(height: DsSpace.s),
             loadButton(),
           ];
         }
         final d = _serverData!;
-        if (d.total == 0) return [message('empty', Icons.inbox_rounded, AppTheme.textSecondary)];
+        if (d.total == 0) return [message('empty', Icons.inbox_rounded, DsColors.muted)];
         return [
-          _sourceChip(s, 'mixed', AppTheme.warningOrange),
-          const SizedBox(height: 6),
-          Text(
-            '${d.total} ${s.t('trends_server_total')}',
-            key: const Key('trends_server_total'),
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
-          Text(s.t('trends_server_districts'), style: const TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 6),
-          ..._bars(d.byDistrict.take(5).toList(), (k) => k, AppTheme.secondaryNavy),
-          const SizedBox(height: 10),
-          Text(s.t('trends_server_types'), style: const TextStyle(fontWeight: FontWeight.bold)),
-          const SizedBox(height: 6),
-          ..._bars(d.byType, (k) => s.t('report_type_$k'), AppTheme.warningOrange),
+          _sourceChip(s, 'mixed', DsColors.caution),
+          const SizedBox(height: DsSpace.s),
+          Text('${d.total} ${s.t('trends_server_total')}', key: const Key('trends_server_total'), style: DsType.cardTitle),
+          const SizedBox(height: DsSpace.m),
+          Text(s.t('trends_server_districts'), style: DsType.title),
+          const SizedBox(height: DsSpace.s),
+          ..._bars(d.byDistrict.take(5).toList(), (k) => k, DsColors.powderDeep),
+          const SizedBox(height: DsSpace.m),
+          Text(s.t('trends_server_types'), style: DsType.title),
+          const SizedBox(height: DsSpace.s),
+          ..._bars(d.byType, (k) => s.t('report_type_$k'), DsColors.peachDeep),
         ];
     }
   }
 
-  Widget _sourceChip(S s, String source, Color color) => Align(
-        alignment: Alignment.centerLeft,
-        child: Container(
-          key: Key('trends_src_$source'),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(12)),
-          child: Text(s.t('trends_src_$source'),
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        ),
-      );
+  Widget _sourceChip(S s, String source, Color color) =>
+      Align(alignment: Alignment.centerLeft, child: _pill(s.t('trends_src_$source'), color, key: Key('trends_src_$source')));
 
   /// One labelled data source: total, districts, scam types, weekly trend, privacy note.
   Widget _sourceBlock(S s, String source, SourceTrends d, int minCount, Color color) => Container(
         key: Key('trends_block_$source'),
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(DsSpace.m),
         decoration: BoxDecoration(
-          border: Border.all(color: color.withValues(alpha: 0.5)),
-          borderRadius: BorderRadius.circular(14),
+          color: DsColors.page,
+          border: Border.all(color: DsColors.line),
+          borderRadius: BorderRadius.circular(DsRadius.tile),
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           _sourceChip(s, source, color),
-          const SizedBox(height: 4),
-          Text(s.t('trends_src_${source}_note'), style: Theme.of(context).textTheme.bodyMedium),
-          const SizedBox(height: 8),
-          Text('${d.total} ${s.t('trends_server_total')}',
-              key: Key('trends_total_$source'), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          const SizedBox(height: DsSpace.xs),
+          Text(s.t('trends_src_${source}_note'), style: DsType.small),
+          const SizedBox(height: DsSpace.s),
+          Text('${d.total} ${s.t('trends_server_total')}', key: Key('trends_total_$source'), style: DsType.cardTitle),
           if (d.total == 0)
-            Text(s.t('trends_src_none'))
+            Text(s.t('trends_src_none'), style: DsType.body)
           else ...[
             if (d.byDistrict.isNotEmpty) ...[
-              const SizedBox(height: 10),
-              Text(s.t('trends_server_districts'), style: const TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 6),
-              ..._bars(d.byDistrict.take(5).toList(), (k) => k, AppTheme.secondaryNavy),
+              const SizedBox(height: DsSpace.m),
+              Text(s.t('trends_server_districts'), style: DsType.title),
+              const SizedBox(height: DsSpace.s),
+              ..._bars(d.byDistrict.take(5).toList(), (k) => k, DsColors.powderDeep),
             ],
             if (d.byType.isNotEmpty) ...[
-              const SizedBox(height: 10),
-              Text(s.t('trends_server_types'), style: const TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 6),
-              ..._bars(d.byType, (k) => s.t('report_type_$k'), AppTheme.warningOrange),
+              const SizedBox(height: DsSpace.m),
+              Text(s.t('trends_server_types'), style: DsType.title),
+              const SizedBox(height: DsSpace.s),
+              ..._bars(d.byType, (k) => s.t('report_type_$k'), DsColors.peachDeep),
             ],
             if (d.weekly.isNotEmpty) ...[
-              const SizedBox(height: 10),
-              Text(s.t('trends_weekly'), style: const TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 6),
-              _weekly(s, d.weekly, minCount, color, source),
+              const SizedBox(height: DsSpace.m),
+              Text(s.t('trends_weekly'), style: DsType.title),
+              const SizedBox(height: DsSpace.s),
+              _weekly(s, d.weekly, minCount, source == 'live' ? DsColors.lavenderDeep : DsColors.muted, source),
             ],
           ],
           if (d.suppressed > 0) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: DsSpace.s),
             Text(
               s.t('trends_suppressed').replaceAll('{n}', '$minCount').replaceAll('{k}', '${d.suppressed}'),
               key: Key('trends_suppressed_$source'),
-              style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary),
+              style: DsType.caption,
             ),
           ],
         ]),
@@ -749,15 +704,20 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
           for (final w in weeks)
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 1.5),
+                padding: const EdgeInsets.symmetric(horizontal: DsSpace.xxs),
                 child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
                   Text(w.count == null ? '<$minCount' : '${w.count}',
-                      style: const TextStyle(fontSize: 9), maxLines: 1, overflow: TextOverflow.clip),
+                      style: DsType.caption.copyWith(fontSize: 9, color: DsColors.ink),
+                      maxLines: 1,
+                      overflow: TextOverflow.clip),
                   Container(
                     height: w.count == null ? 2 : 56.0 * (w.count! / maxV),
-                    color: w.count == null ? AppTheme.textSecondary.withValues(alpha: 0.3) : color,
+                    decoration: BoxDecoration(
+                      color: w.count == null ? DsColors.track : color,
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(DsSpace.xs)),
+                    ),
                   ),
-                  Text('${w.weekStart.day}/${w.weekStart.month}', style: const TextStyle(fontSize: 8), maxLines: 1),
+                  Text('${w.weekStart.day}/${w.weekStart.month}', style: DsType.caption.copyWith(fontSize: 8), maxLines: 1),
                 ]),
               ),
             ),
@@ -766,43 +726,46 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
     );
   }
 
-  Widget _alertsCard(S s) => Card(
+  Widget _alertsCard(S s) => Container(
         key: const Key('trends_alerts'),
-        color: _alerts.isEmpty ? null : const Color(0xFFFFEBEE),
-        margin: const EdgeInsets.only(bottom: 12),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Row(children: [
-              Icon(_alerts.isEmpty ? Icons.notifications_none_rounded : Icons.campaign_rounded,
-                  color: _alerts.isEmpty ? AppTheme.textSecondary : AppTheme.errorRed),
-              const SizedBox(width: 8),
-              Expanded(child: Text(s.t('trends_alerts_title'), style: const TextStyle(fontWeight: FontWeight.bold))),
-            ]),
-            const SizedBox(height: 6),
-            if (_alerts.isEmpty)
-              Text(s.t('trends_alerts_none'))
-            else
-              for (final a in _alerts)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Text(
-                    a.kind == 'spike'
-                        ? s
-                            .t('trends_alert_spike')
-                            .replaceAll('{type}', s.t('report_type_${a.type}'))
-                            .replaceAll('{district}', a.district)
-                            .replaceAll('{recent}', '${a.count}')
-                            .replaceAll('{base}', a.baseline.toStringAsFixed(1))
-                        : s
-                            .t('trends_alert_cluster')
-                            .replaceAll('{cat}', categoryLabel(s, a.category))
-                            .replaceAll('{size}', '${a.count}'),
-                    key: Key('trends_alert_${a.kind}_${a.district}${a.type}${a.category}'),
-                  ),
-                ),
-          ]),
+        margin: const EdgeInsets.only(bottom: DsSpace.m),
+        padding: const EdgeInsets.all(DsSpace.m),
+        decoration: BoxDecoration(
+          color: _alerts.isEmpty ? DsColors.page : DsColors.alertSoft,
+          border: Border.all(color: _alerts.isEmpty ? DsColors.line : DsColors.alertSoft),
+          borderRadius: BorderRadius.circular(DsRadius.tile),
         ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Row(children: [
+            Icon(_alerts.isEmpty ? Icons.notifications_none_rounded : Icons.campaign_rounded,
+                color: _alerts.isEmpty ? DsColors.muted : DsColors.alert),
+            const SizedBox(width: DsSpace.s),
+            Expanded(child: Text(s.t('trends_alerts_title'), style: DsType.title)),
+          ]),
+          const SizedBox(height: DsSpace.s),
+          if (_alerts.isEmpty)
+            Text(s.t('trends_alerts_none'), style: DsType.body)
+          else
+            for (final a in _alerts)
+              Padding(
+                padding: const EdgeInsets.only(bottom: DsSpace.s),
+                child: Text(
+                  a.kind == 'spike'
+                      ? s
+                          .t('trends_alert_spike')
+                          .replaceAll('{type}', s.t('report_type_${a.type}'))
+                          .replaceAll('{district}', a.district)
+                          .replaceAll('{recent}', '${a.count}')
+                          .replaceAll('{base}', a.baseline.toStringAsFixed(1))
+                      : s
+                          .t('trends_alert_cluster')
+                          .replaceAll('{cat}', categoryLabel(s, a.category))
+                          .replaceAll('{size}', '${a.count}'),
+                  key: Key('trends_alert_${a.kind}_${a.district}${a.type}${a.category}'),
+                  style: DsType.body,
+                ),
+              ),
+        ]),
       );
 
   List<Widget> _bars(List<MapEntry<String, int>> rows, String Function(String) label, Color color) {
@@ -810,21 +773,16 @@ class _TrendsScreenState extends ConsumerState<TrendsScreen> {
     return [
       for (final e in rows)
         Padding(
-          padding: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.only(bottom: DsSpace.s),
           child: Row(
             children: [
-              SizedBox(width: 120, child: Text(label(e.key), overflow: TextOverflow.ellipsis)),
-              Expanded(
-                child: LinearProgressIndicator(
-                  value: e.value / maxV,
-                  minHeight: 10,
-                  borderRadius: BorderRadius.circular(5),
-                  color: color,
-                  backgroundColor: color.withValues(alpha: 0.12),
-                ),
+              SizedBox(
+                width: 120,
+                child: Text(label(e.key), overflow: TextOverflow.ellipsis, style: DsType.small.copyWith(color: DsColors.ink)),
               ),
-              const SizedBox(width: 8),
-              SizedBox(width: 36, child: Text('${e.value}', textAlign: TextAlign.end)),
+              Expanded(child: ProgressBar(value: e.value / maxV, color: color)),
+              const SizedBox(width: DsSpace.s),
+              SizedBox(width: 36, child: Text('${e.value}', textAlign: TextAlign.end, style: DsType.label)),
             ],
           ),
         ),
