@@ -11,12 +11,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/api_client.dart';
 import '../../core/providers.dart';
 import '../../core/strings.dart';
-import '../../core/theme.dart';
+import '../../core/design/components.dart';
+import '../../core/design/tokens.dart';
 import '../../engine/live_call_analyzer.dart';
 import '../../engine/models.dart';
 import '../../engine/scam_classifier.dart';
 import '../call_detector/call_highlight.dart';
 import '../call_detector/call_strings.dart';
+import '../call_detector/call_triggers.dart';
 import '../report/report_screen.dart';
 import 'live_call_io.dart';
 import 'live_call_strings.dart';
@@ -443,52 +445,49 @@ class _LiveCallScreenState extends ConsumerState<LiveCallScreen> {
     final report = await showGeneralDialog<bool>(
       context: context,
       barrierDismissible: false,
-      barrierColor: AppTheme.errorRed,
+      barrierColor: DsColors.alert,
       pageBuilder: (ctx, _, _) => Material(
         key: const Key('live_alert'),
-        color: AppTheme.errorRed,
+        color: DsColors.alert,
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(DsSpace.xxl),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(Icons.warning_rounded, color: Colors.white, size: 110),
-                  const SizedBox(height: 16),
+                  const Center(
+                    child: IconBadge(Icons.warning_amber_rounded,
+                        size: 96, background: DsColors.onDark, foreground: DsColors.alert),
+                  ),
+                  const SizedBox(height: DsSpace.l),
                   Text(
                     s.t('live_alert_title'),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white, fontSize: 34, fontWeight: FontWeight.bold),
+                    style: DsType.display.copyWith(color: DsColors.onDark, fontSize: 36),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: DsSpace.m),
                   Text(
                     s.t('live_alert_body'),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white, fontSize: 24, height: 1.4),
+                    style: DsType.body.copyWith(color: DsColors.onDark, fontSize: 22),
                   ),
-                  const SizedBox(height: 36),
-                  FilledButton.icon(
+                  const SizedBox(height: DsSpace.section),
+                  PrimaryButton(
                     key: const Key('live_alert_report'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: AppTheme.errorRed,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
+                    label: s.t('live_report'),
+                    icon: Icons.report_outlined,
+                    color: DsColors.onDark,
+                    foreground: DsColors.alert,
                     onPressed: () => Navigator.of(ctx).pop(true),
-                    icon: const Icon(Icons.report_rounded),
-                    label: Text(s.t('live_report'), style: const TextStyle(fontSize: 20)),
                   ),
-                  const SizedBox(height: 12),
-                  OutlinedButton(
+                  const SizedBox(height: DsSpace.m),
+                  PrimaryButton(
                     key: const Key('live_alert_dismiss'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white, width: 2),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
+                    label: s.t('live_dismiss'),
+                    filled: false,
+                    color: DsColors.onDark,
                     onPressed: () => Navigator.of(ctx).pop(false),
-                    child: Text(s.t('live_dismiss'), style: const TextStyle(fontSize: 18)),
                   ),
                 ],
               ),
@@ -531,34 +530,32 @@ class _LiveCallScreenState extends ConsumerState<LiveCallScreen> {
   Future<void> _editServer() async {
     final s = S.of(context);
     final ctrl = TextEditingController(text: _serverUrl);
-    final url = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(s.t('live_server_title')),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(s.t('live_server_help'), style: const TextStyle(fontSize: 14, height: 1.4)),
-            const SizedBox(height: 12),
-            TextField(
-              key: const Key('live_server_field'),
-              controller: ctrl,
-              keyboardType: TextInputType.url,
-              autocorrect: false,
-              decoration: const InputDecoration(hintText: 'http://192.168.1.5:8000', border: OutlineInputBorder()),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(s.t('btn_cancel'))),
-          FilledButton(
-            key: const Key('live_server_save'),
-            onPressed: () => Navigator.of(ctx).pop(ctrl.text),
-            child: Text(s.t('live_server_save')),
+    final url = await showDsDialog<String>(
+      context,
+      title: s.t('live_server_title'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(s.t('live_server_help'), style: DsType.body),
+          const SizedBox(height: DsSpace.m),
+          AppTextField(
+            key: const Key('live_server_field'),
+            controller: ctrl,
+            keyboardType: TextInputType.url,
+            autocorrect: false,
+            hint: 'http://192.168.1.5:8000',
           ),
         ],
       ),
+      actions: (ctx) => [
+        PrimaryButton(
+          key: const Key('live_server_save'),
+          label: s.t('live_server_save'),
+          onPressed: () => Navigator.of(ctx).pop(ctrl.text),
+        ),
+        PrimaryButton(label: s.t('btn_cancel'), filled: false, onPressed: () => Navigator.of(ctx).pop()),
+      ],
     );
     if (url == null || !mounted) return;
     var clean = url.trim();
@@ -583,104 +580,97 @@ class _LiveCallScreenState extends ConsumerState<LiveCallScreen> {
       appBar: AppBar(title: Text(s.t('live_title')), actions: const [RecordingInboxButton()]),
       body: SafeArea(
         child: _consent == null
-            ? const Center(child: CircularProgressIndicator())
-            : ListView(padding: const EdgeInsets.all(16), children: _consent! ? _main(s) : [_consentCard(s)]),
+            ? const LoadingState()
+            : ListView(
+                padding: const EdgeInsets.fromLTRB(DsSpace.xl, DsSpace.s, DsSpace.xl, DsSpace.section),
+                children: _consent! ? _main(s) : [_consentCard(s)],
+              ),
       ),
     );
   }
 
-  Widget _consentCard(S s) => Card(
+  Widget _consentCard(S s) => PastelCard(
     key: const Key('live_consent'),
-    child: Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Icon(Icons.volume_up_rounded, size: 56, color: AppTheme.primaryTeal),
-          const SizedBox(height: 12),
-          Text(
-            s.t('live_consent_title'),
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          Text(s.t('live_consent_body'), style: const TextStyle(fontSize: 18, height: 1.45)),
-          const SizedBox(height: 20),
-          FilledButton(
-            key: const Key('live_agree'),
-            onPressed: _agree,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Text(s.t('live_agree'), style: const TextStyle(fontSize: 18)),
-            ),
-          ),
-        ],
-      ),
+    color: DsColors.lavender,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Center(child: IconBadge(Icons.volume_up_outlined, size: 64)),
+        const SizedBox(height: DsSpace.l),
+        Text(s.t('live_consent_title'), textAlign: TextAlign.center, style: DsType.cardTitle),
+        const SizedBox(height: DsSpace.m),
+        Text(s.t('live_consent_body'), style: DsType.body.copyWith(fontSize: 17)),
+        const SizedBox(height: DsSpace.xl),
+        PrimaryButton(key: const Key('live_agree'), label: s.t('live_agree'), onPressed: _agree),
+      ],
     ),
   );
 
   List<Widget> _main(S s) => [
     const RecordingInboxSection(),
-    const SizedBox(height: 8),
+    const SizedBox(height: DsSpace.m),
     _modeCard(s),
-    const SizedBox(height: 8),
-    if (!_demo) _serverCard(s),
-    const SizedBox(height: 8),
+    const SizedBox(height: DsSpace.m),
+    if (!_demo) ...[_serverCard(s), const SizedBox(height: DsSpace.m)],
     _controls(s),
-    const SizedBox(height: 8),
+    const SizedBox(height: DsSpace.m),
     _statusCard(s),
     if (_phase == LivePhase.error && _errorKey != null) _errorCard(s),
-    const SizedBox(height: 12),
+    const SizedBox(height: DsSpace.m),
     _meter(s),
-    const SizedBox(height: 12),
+    const SizedBox(height: DsSpace.m),
     _transcriptCard(s),
   ];
 
-  Widget _modeCard(S s) => Card(
-    child: Column(
-      children: [
-        SwitchListTile(
-          key: const Key('live_demo_switch'),
-          value: _demo,
-          onChanged: _busy
-              ? null
-              : (v) {
-                  setState(() => _demo = v);
-                  _resetToIdle();
-                },
-          title: Text(s.t('live_demo'), style: const TextStyle(fontSize: 16)),
-          subtitle: Text(s.t(_demo ? 'live_demo_sub' : 'live_mic_sub')),
-          secondary: Icon(_demo ? Icons.play_lesson_rounded : Icons.mic_rounded),
-        ),
-        if (_demo)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(s.t('live_demo_pick'), style: const TextStyle(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 6,
-                  children: [
-                    for (final id in kLiveDemoScripts)
-                      ChoiceChip(
-                        key: Key('live_demo_$id'),
-                        label: Text(s.t('live_demo_$id')),
-                        selected: _script == id,
-                        onSelected: (_) {
-                          if (_script == id) return;
-                          setState(() => _script = id);
-                          _resetToIdle(); // switching sample stops the current one and clears the screen
-                        },
-                      ),
-                  ],
-                ),
-              ],
-            ),
+  Widget _modeCard(S s) => SurfacePanel(
+    padding: const EdgeInsets.symmetric(vertical: DsSpace.s, horizontal: DsSpace.xs),
+    child: Material(
+      type: MaterialType.transparency,
+      child: Column(
+        children: [
+          SwitchListTile(
+            key: const Key('live_demo_switch'),
+            value: _demo,
+            onChanged: _busy
+                ? null
+                : (v) {
+                    setState(() => _demo = v);
+                    _resetToIdle();
+                  },
+            title: Text(s.t('live_demo'), style: DsType.title),
+            subtitle: Text(s.t(_demo ? 'live_demo_sub' : 'live_mic_sub'), style: DsType.small),
+            secondary: Icon(_demo ? Icons.play_lesson_outlined : Icons.mic_none_rounded, color: DsColors.ink),
           ),
-      ],
+          if (_demo)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(DsSpace.l, 0, DsSpace.l, DsSpace.m),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(s.t('live_demo_pick'), style: DsType.greeting),
+                  const SizedBox(height: DsSpace.s),
+                  Wrap(
+                    spacing: DsSpace.s,
+                    runSpacing: DsSpace.s,
+                    children: [
+                      for (final id in kLiveDemoScripts)
+                        PillChip(
+                          key: Key('live_demo_$id'),
+                          label: s.t('live_demo_$id'),
+                          selected: _script == id,
+                          onTap: () {
+                            if (_script == id) return;
+                            setState(() => _script = id);
+                            _resetToIdle(); // switching sample stops the current one and clears the screen
+                          },
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
     ),
   );
 
@@ -688,83 +678,73 @@ class _LiveCallScreenState extends ConsumerState<LiveCallScreen> {
     final emulatorOnly =
         _serverUrl.contains('10.0.2.2') || _serverUrl.contains('localhost') || _serverUrl.contains('127.0.0.1');
     final (icon, color, text) = _serverChecking
-        ? (Icons.sync_rounded, AppTheme.textSecondary, s.t('live_server_checking'))
+        ? (Icons.sync_rounded, DsColors.muted, s.t('live_server_checking'))
         : switch (_serverOk) {
-            true => (Icons.cloud_done_rounded, AppTheme.successGreen, s.t('live_server_ok')),
-            false => (Icons.cloud_off_rounded, AppTheme.errorRed, s.t('live_server_bad')),
-            null => (Icons.cloud_queue_rounded, AppTheme.textSecondary, s.t('live_server_unknown')),
+            true => (Icons.cloud_done_outlined, DsColors.safe, s.t('live_server_ok')),
+            false => (Icons.cloud_off_rounded, DsColors.alert, s.t('live_server_bad')),
+            null => (Icons.cloud_queue_rounded, DsColors.muted, s.t('live_server_unknown')),
           };
-    return Card(
+    return SurfacePanel(
       key: const Key('live_server'),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: color),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(text, key: const Key('live_server_status'), style: TextStyle(color: color, fontWeight: FontWeight.w600)),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(_serverUrl, key: const Key('live_server_url'), style: const TextStyle(fontFamily: 'monospace')),
-            if (emulatorOnly) ...[
-              const SizedBox(height: 6),
-              Text(s.t('live_server_emulator_hint'), style: const TextStyle(color: AppTheme.warningOrange, height: 1.35)),
+      padding: const EdgeInsets.all(DsSpace.l),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color),
+              const SizedBox(width: DsSpace.s),
+              Expanded(
+                child: Text(text, key: const Key('live_server_status'), style: DsType.title.copyWith(color: color)),
+              ),
             ],
-            const SizedBox(height: 6),
-            Wrap(
-              spacing: 8,
-              children: [
-                OutlinedButton.icon(
-                  key: const Key('live_server_test'),
-                  onPressed: _serverChecking || _busy ? null : _testServer,
-                  icon: const Icon(Icons.network_check_rounded),
-                  label: Text(s.t('live_server_test')),
-                ),
-                TextButton.icon(
-                  key: const Key('live_server_edit'),
-                  onPressed: _busy ? null : _editServer,
-                  icon: const Icon(Icons.edit_rounded),
-                  label: Text(s.t('live_server_change')),
-                ),
-              ],
-            ),
+          ),
+          const SizedBox(height: DsSpace.xs),
+          Text(_serverUrl, key: const Key('live_server_url'), style: DsType.body),
+          if (emulatorOnly) ...[
+            const SizedBox(height: DsSpace.s),
+            Text(s.t('live_server_emulator_hint'), style: DsType.body.copyWith(color: DsColors.caution)),
           ],
-        ),
+          const SizedBox(height: DsSpace.m),
+          Wrap(
+            spacing: DsSpace.s,
+            runSpacing: DsSpace.s,
+            children: [
+              PillChip(
+                key: const Key('live_server_test'),
+                icon: Icons.network_check_rounded,
+                label: s.t('live_server_test'),
+                onTap: _serverChecking || _busy ? null : _testServer,
+              ),
+              PillChip(
+                key: const Key('live_server_edit'),
+                icon: Icons.edit_outlined,
+                label: s.t('live_server_change'),
+                onTap: _busy ? null : _editServer,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
   Widget _controls(S s) {
     if (_busy) {
-      return FilledButton.icon(
+      return PrimaryButton(
         key: const Key('live_stop'),
-        style: FilledButton.styleFrom(backgroundColor: AppTheme.errorRed),
+        label: s.t('live_stop'),
+        icon: Icons.stop_rounded,
+        color: DsColors.alert,
         onPressed: _phase == LivePhase.finishing ? null : _stop,
-        icon: const Icon(Icons.stop_rounded, size: 30),
-        label: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          child: Text(s.t('live_stop'), style: const TextStyle(fontSize: 20)),
-        ),
       );
     }
     final again = _phase == LivePhase.done || _phase == LivePhase.error;
-    return FilledButton.icon(
+    return PrimaryButton(
       key: const Key('live_start'),
+      label: s.t(again ? (_demo ? 'live_replay' : 'live_start_again') : (_demo ? 'live_play' : 'live_start')),
+      icon: again ? Icons.replay_rounded : (_demo ? Icons.play_arrow_rounded : Icons.mic_none_rounded),
       onPressed: _start,
-      icon: Icon(again ? Icons.replay_rounded : (_demo ? Icons.play_arrow_rounded : Icons.mic_rounded), size: 30),
-      label: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        child: Text(
-          s.t(again ? (_demo ? 'live_replay' : 'live_start_again') : (_demo ? 'live_play' : 'live_start')),
-          style: const TextStyle(fontSize: 20),
-        ),
-      ),
     );
   }
 
@@ -781,95 +761,72 @@ class _LiveCallScreenState extends ConsumerState<LiveCallScreen> {
 
   Widget _statusCard(S s) {
     final icon = switch (_phase) {
-      LivePhase.recording => Icons.mic_rounded,
-      LivePhase.playing => _speaking ? Icons.volume_up_rounded : Icons.graphic_eq_rounded,
+      LivePhase.recording => Icons.mic_none_rounded,
+      LivePhase.playing => _speaking ? Icons.volume_up_outlined : Icons.graphic_eq_rounded,
       LivePhase.checking || LivePhase.finishing => Icons.hourglass_top_rounded,
-      LivePhase.done => Icons.check_circle_rounded,
-      LivePhase.error => Icons.error_rounded,
+      LivePhase.done => Icons.check_circle_outline_rounded,
+      LivePhase.error => Icons.error_outline_rounded,
       LivePhase.idle => Icons.info_outline_rounded,
     };
-    return Card(
+    return SurfacePanel(
       key: const Key('live_status_card'),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      padding: const EdgeInsets.all(DsSpace.l),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: _phase == LivePhase.error ? DsColors.alert : DsColors.brand),
+              const SizedBox(width: DsSpace.s),
+              Expanded(child: Text(_statusText(s), key: const Key('live_status'), style: DsType.title)),
+              if (_busy && _phase != LivePhase.recording)
+                const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+            ],
+          ),
+          if (_phase == LivePhase.recording) ...[
+            const SizedBox(height: DsSpace.s),
             Row(
               children: [
-                Icon(icon, color: _phase == LivePhase.error ? AppTheme.errorRed : AppTheme.primaryTeal),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    _statusText(s),
-                    key: const Key('live_status'),
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                ),
-                if (_busy && _phase != LivePhase.recording)
-                  const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)),
+                Text(s.t('live_mic_level'), style: DsType.small),
+                const SizedBox(width: DsSpace.s),
+                Expanded(child: ProgressBar(key: const Key('live_level'), value: _level, color: DsColors.brand)),
               ],
             ),
-            if (_phase == LivePhase.recording) ...[
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Text(s.t('live_mic_level')),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: LinearProgressIndicator(key: const Key('live_level'), value: _level, minHeight: 8),
-                  ),
-                ],
-              ),
-            ],
-            if (_pending > 0) ...[
-              const SizedBox(height: 6),
-              Text(
-                s.t('live_processing').replaceAll('{n}', '$_pending'),
-                key: const Key('live_pending'),
-                style: const TextStyle(color: AppTheme.textSecondary),
-              ),
-            ],
-            if (_silentRun >= 2 && (_phase == LivePhase.recording || _phase == LivePhase.done)) ...[
-              const SizedBox(height: 6),
-              Text(
-                s.t('live_silent_hint'),
-                key: const Key('live_silent_hint'),
-                style: const TextStyle(color: AppTheme.warningOrange, height: 1.35),
-              ),
-            ],
-            if (_phase != LivePhase.error && _errorDetail != null && !_demo) ...[
-              const SizedBox(height: 6),
-              Text(
-                '${s.t('live_chunk_failed')} ($_errorDetail)',
-                key: const Key('live_chunk_failed'),
-                style: const TextStyle(color: AppTheme.warningOrange),
-              ),
-            ],
-            if (_demo && _audioFailed) ...[
-              const SizedBox(height: 6),
-              Text(
-                s.t('live_audio_failed'),
-                key: const Key('live_audio_failed'),
-                style: const TextStyle(color: AppTheme.warningOrange),
-              ),
-            ],
-            const SizedBox(height: 4),
-            Text(s.t('live_not_saved'), style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
           ],
-        ),
+          if (_pending > 0) ...[
+            const SizedBox(height: DsSpace.s),
+            Text(s.t('live_processing').replaceAll('{n}', '$_pending'), key: const Key('live_pending'), style: DsType.small),
+          ],
+          if (_silentRun >= 2 && (_phase == LivePhase.recording || _phase == LivePhase.done)) ...[
+            const SizedBox(height: DsSpace.s),
+            Text(s.t('live_silent_hint'),
+                key: const Key('live_silent_hint'), style: DsType.body.copyWith(color: DsColors.caution)),
+          ],
+          if (_phase != LivePhase.error && _errorDetail != null && !_demo) ...[
+            const SizedBox(height: DsSpace.s),
+            Text('${s.t('live_chunk_failed')} ($_errorDetail)',
+                key: const Key('live_chunk_failed'), style: DsType.body.copyWith(color: DsColors.caution)),
+          ],
+          if (_demo && _audioFailed) ...[
+            const SizedBox(height: DsSpace.s),
+            Text(s.t('live_audio_failed'),
+                key: const Key('live_audio_failed'), style: DsType.body.copyWith(color: DsColors.caution)),
+          ],
+          const SizedBox(height: DsSpace.xs),
+          Text(s.t('live_not_saved'), style: DsType.small),
+        ],
       ),
     );
   }
 
   Widget _errorCard(S s) {
     final offerDemo = !_demo;
-    return Card(
-      key: Key('live_error_$_errorKey'),
-      color: const Color(0xFFFFF8E1),
-      margin: const EdgeInsets.only(top: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+    return Padding(
+      padding: const EdgeInsets.only(top: DsSpace.m),
+      child: SurfacePanel(
+        key: Key('live_error_$_errorKey'),
+        color: DsColors.cautionSoft,
+        padding: const EdgeInsets.all(DsSpace.l),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -878,27 +835,28 @@ class _LiveCallScreenState extends ConsumerState<LiveCallScreen> {
               children: [
                 Icon(
                   _errorKey == 'live_offline' ? Icons.wifi_off_rounded : Icons.error_outline_rounded,
-                  color: AppTheme.warningOrange,
+                  color: DsColors.caution,
                 ),
-                const SizedBox(width: 10),
-                Expanded(child: Text(s.t(_errorKey!), style: const TextStyle(fontSize: 16, height: 1.4))),
+                const SizedBox(width: DsSpace.s),
+                Expanded(child: Text(s.t(_errorKey!), style: DsType.body)),
               ],
             ),
             if (_errorDetail != null) ...[
-              const SizedBox(height: 6),
-              Text(_errorDetail!, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+              const SizedBox(height: DsSpace.s),
+              Text(_errorDetail!, style: DsType.caption),
             ],
             if (offerDemo) ...[
-              const SizedBox(height: 10),
-              OutlinedButton.icon(
+              const SizedBox(height: DsSpace.m),
+              PrimaryButton(
                 key: const Key('live_use_demo'),
+                label: s.t('live_use_demo'),
+                icon: Icons.play_arrow_rounded,
+                filled: false,
                 onPressed: () async {
                   setState(() => _demo = true);
                   await _resetToIdle();
                   await _start();
                 },
-                icon: const Icon(Icons.play_arrow_rounded),
-                label: Text(s.t('live_use_demo')),
               ),
             ],
           ],
@@ -908,110 +866,81 @@ class _LiveCallScreenState extends ConsumerState<LiveCallScreen> {
   }
 
   Widget _meter(S s) {
-    final color = switch (_risk) {
-      'high' => AppTheme.errorRed,
-      'medium' => AppTheme.warningOrange,
-      _ => AppTheme.successGreen,
+    final verdict = riskVerdict(_risk);
+    final color = verdictColor(verdict);
+    final tint = switch (verdict) {
+      DsVerdict.danger => DsColors.alertSoft,
+      DsVerdict.caution => DsColors.cautionSoft,
+      DsVerdict.safe => DsColors.safeSoft,
     };
     final type = mainScriptType(CallResult(_state.risk, _state.matches));
     final score = _risk == 'high' ? 1.0 : _state.score;
-    return Card(
+    return AnimatedContainer(
       key: const Key('live_meter'),
-      color: color.withValues(alpha: 0.1),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: color, width: 2)),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(s.t('live_risk'), style: const TextStyle(fontSize: 16, color: AppTheme.textSecondary)),
-            const SizedBox(height: 4),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                s.t('risk_$_risk'),
-                key: const Key('live_risk'),
-                style: TextStyle(fontSize: 34, fontWeight: FontWeight.w900, color: color),
-              ),
+      duration: DsMotion.normal,
+      curve: DsMotion.curve,
+      padding: const EdgeInsets.all(DsSpace.xl),
+      decoration: BoxDecoration(
+        color: tint,
+        borderRadius: BorderRadius.circular(DsRadius.card),
+        border: Border.all(color: color, width: 2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(s.t('live_risk'), style: DsType.greeting),
+          const SizedBox(height: DsSpace.xs),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              s.t('risk_$_risk'),
+              key: const Key('live_risk'),
+              style: DsType.headline.copyWith(color: color, fontWeight: DsWeight.semibold),
             ),
-            const SizedBox(height: 10),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: LinearProgressIndicator(
-                key: const Key('live_score'),
-                value: score.clamp(0.04, 1.0),
-                minHeight: 22,
-                color: color,
-                backgroundColor: color.withValues(alpha: 0.2),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              type == null ? s.t('live_no_type') : '${s.t('call_detected_type')}: ${s.t('script_$type')}',
-              key: const Key('live_type'),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-            ),
-            // The SMS-trained text model scores any bank/OTP talk high, so it is only shown (and only
-            // used, see combinedRisk) once the call-phrase rules have found something.
-            if (_ml != null && _state.risk != 'low') ...[
-              const SizedBox(height: 6),
-              Text(
-                s.t('live_ml_score').replaceAll('{p}', '${(_ml! * 100).round()}'),
-                key: const Key('live_ml'),
-                style: const TextStyle(color: AppTheme.textSecondary),
-              ),
-            ],
-            if (_risk == 'high') ...[
-              const SizedBox(height: 8),
-              Text(s.t('call_advice_high'), style: const TextStyle(fontSize: 15, height: 1.4)),
-            ],
+          ),
+          const SizedBox(height: DsSpace.m),
+          ProgressBar(key: const Key('live_score'), value: score.clamp(0.04, 1.0).toDouble(), color: color),
+          const SizedBox(height: DsSpace.m),
+          Text(
+            type == null ? s.t('live_no_type') : '${s.t('call_detected_type')}: ${s.t('script_$type')}',
+            key: const Key('live_type'),
+            style: DsType.title,
+          ),
+          // The SMS-trained text model scores any bank/OTP talk high, so it is only shown (and only
+          // used, see combinedRisk) once the call-phrase rules have found something.
+          if (_ml != null && _state.risk != 'low') ...[
+            const SizedBox(height: DsSpace.s),
+            Text(s.t('live_ml_score').replaceAll('{p}', '${(_ml! * 100).round()}'), key: const Key('live_ml'), style: DsType.small),
           ],
-        ),
+          if (_risk == 'high') ...[
+            const SizedBox(height: DsSpace.s),
+            Text(s.t('call_advice_high'), style: DsType.body),
+          ],
+        ],
       ),
     );
   }
 
   Widget _transcriptCard(S s) {
     final t = _state.transcript;
-    final pieces = splitHighlights(t, _state.matches.map((m) => m.phrase));
-    return Card(
+    return SurfacePanel(
       key: const Key('live_transcript'),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(s.t('live_transcript'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            if (t.isEmpty)
-              Text(
-                s.t(_busy ? 'live_transcript_waiting' : 'live_transcript_empty'),
-                key: const Key('live_transcript_empty'),
-                style: const TextStyle(color: AppTheme.textSecondary),
-              )
-            else
-              Text.rich(
-                key: const Key('live_transcript_text'),
-                TextSpan(
-                  style: const TextStyle(fontSize: 17, height: 1.5, color: AppTheme.textPrimary),
-                  children: [
-                    for (final p in pieces)
-                      TextSpan(
-                        text: p.text,
-                        style: p.highlighted
-                            ? const TextStyle(
-                                backgroundColor: Color(0xFFFFCDD2),
-                                color: AppTheme.errorRed,
-                                fontWeight: FontWeight.bold,
-                              )
-                            : null,
-                      ),
-                  ],
-                ),
-              ),
-          ],
-        ),
+      padding: const EdgeInsets.all(DsSpace.l),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(s.t('live_transcript'), style: DsType.section),
+          const SizedBox(height: DsSpace.s),
+          if (t.isEmpty)
+            Text(
+              s.t(_busy ? 'live_transcript_waiting' : 'live_transcript_empty'),
+              key: const Key('live_transcript_empty'),
+              style: DsType.small,
+            )
+          else
+            Text.rich(key: const Key('live_transcript_text'), callTranscriptSpan(t, _state.matches), style: DsType.reading),
+        ],
       ),
     );
   }

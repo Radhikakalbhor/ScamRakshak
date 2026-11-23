@@ -432,6 +432,7 @@ class AppTextField extends TextField {
     super.onSubmitted,
     super.autofocus,
     super.textInputAction,
+    super.autocorrect,
   }) : super(
           style: DsType.body.copyWith(fontSize: 16),
           decoration: InputDecoration(
