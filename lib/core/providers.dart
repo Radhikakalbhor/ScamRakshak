@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../engine/call_analyzer.dart';
+import '../engine/scam_classifier.dart';
 import 'api_client.dart';
 import 'strings.dart';
 
@@ -49,30 +51,11 @@ final localeProvider = StateNotifierProvider<LocaleNotifier, String>((ref) {
 });
 
 // ============================================================================
-// ENGINE PLACEHOLDER PROVIDERS (LOCKED CONTRACTS FROM AGENTS.md)
-//
-// These providers are temporarily typed with Object? to allow compilation
-// without referencing nonexistent engine files until Radhika implements:
-//
-// 1. lib/engine/scam_classifier.dart:
-//      static Future<ScamClassifier> ScamClassifier.load();
-//      ScamResult classify(String text);
-//
-// 2. lib/engine/call_analyzer.dart:
-//      static Future<CallAnalyzer> CallAnalyzer.load();
-//      CallResult analyze(String transcript);
-//
-// CONTRACTS LOCKED IN AGENTS.md. DO NOT CHANGE SIGNATURES.
+// ENGINE PROVIDERS (LOCKED CONTRACTS FROM AGENTS.md). DO NOT CHANGE SIGNATURES.
 // ============================================================================
 
-/// TODO: Replace Object? with ScamClassifier when lib/engine/scam_classifier.dart is ready.
-final scamClassifierProvider = FutureProvider<Object?>((ref) async {
-  // Placeholder implementation allowing app scaffolding and analysis to pass
-  return null;
-});
+/// Offline scam message classifier (assets/models/scam_model.json), loaded once.
+final scamClassifierProvider = FutureProvider<ScamClassifier>((ref) => ScamClassifier.load());
 
-/// TODO: Replace Object? with CallAnalyzer when lib/engine/call_analyzer.dart is ready.
-final callAnalyzerProvider = FutureProvider<Object?>((ref) async {
-  // Placeholder implementation allowing app scaffolding and analysis to pass
-  return null;
-});
+/// Offline scam call transcript analyzer (assets/rules/call_rules.json), loaded once.
+final callAnalyzerProvider = FutureProvider<CallAnalyzer>((ref) => CallAnalyzer.load());

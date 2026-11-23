@@ -1,0 +1,65 @@
+{
+  "topic": "atm_pin",
+  "questions": [
+    {
+      "q": {"en": "How should you type your ATM PIN?",
+            "hi": "ATM PIN कैसे डालना चाहिए?",
+            "chh": "ATM PIN ल कइसे डारना चाही?"},
+      "options": {"en": ["Cover the keypad with your hand", "Ask the guard to type it", "Say it out loud"],
+                  "hi": ["हाथ से कीपैड ढककर", "गार्ड से डलवाकर", "ज़ोर से बोलकर"],
+                  "chh": ["हाथ ले कीपैड ढाँक के", "गार्ड ले डरवा के", "जोर से बोल के"]},
+      "answer": 0,
+      "explain": {"en": "Covering the keypad stops people and hidden cameras from seeing your PIN.",
+                  "hi": "कीपैड ढकने से कोई आदमी या छिपा कैमरा PIN नहीं देख पाता।",
+                  "chh": "कीपैड ढाँके ले कोनो मनखे या लुकाए कैमरा PIN नइ देख पावय।"}
+    },
+    {
+      "q": {"en": "A stranger at the ATM offers to help you. What do you do?",
+            "hi": "ATM पर एक अनजान आदमी मदद करने को कहता है। आप क्या करेंगे?",
+            "chh": "ATM म एक अनजान मनखे मदद करे बर कहिथे। तैं का करबे?"},
+      "options": {"en": ["Give him your card", "Tell him your PIN", "Say no and ask at the bank"],
+                  "hi": ["उसे कार्ड दे देंगे", "उसे PIN बता देंगे", "मना करेंगे और बैंक में पूछेंगे"],
+                  "chh": ["ओला कार्ड दे देहूँ", "ओला PIN बता देहूँ", "मना करहूँ अउ बैंक म पूछहूँ"]},
+      "answer": 2,
+      "explain": {"en": "Strangers may swap your card or watch your PIN.",
+                  "hi": "अनजान लोग कार्ड बदल सकते हैं या PIN देख सकते हैं।",
+                  "chh": "अनजान मनखे कार्ड बदल सकथे या PIN देख सकथे।"}
+    },
+    {
+      "q": {"en": "Where is the safest place to keep your PIN?",
+            "hi": "PIN रखने की सबसे सुरक्षित जगह कौन सी है?",
+            "chh": "PIN रखे के सबले सुरक्छित जगह कोन आय?"},
+      "options": {"en": ["Written on the card", "Only in your memory", "On a paper in the wallet"],
+                  "hi": ["कार्ड पर लिखकर", "सिर्फ़ अपने दिमाग में", "बटुए में कागज़ पर"],
+                  "chh": ["कार्ड म लिख के", "सिरिफ अपन दिमाग म", "बटुआ म कागज म"]},
+      "answer": 1,
+      "explain": {"en": "If the PIN is written down, a thief who gets your card gets your money.",
+                  "hi": "PIN लिखा हो तो कार्ड चुराने वाला पैसे भी निकाल लेगा।",
+                  "chh": "PIN लिखाय रहिही त कार्ड चोरइया पइसा घलो निकाल लिही।"}
+    },
+    {
+      "q": {"en": "Your card is stuck in the ATM. What do you do?",
+            "hi": "आपका कार्ड ATM में फँस गया। आप क्या करेंगे?",
+            "chh": "तोर कार्ड ATM म फँस गे। तैं का करबे?"},
+      "options": {"en": ["Call the bank's official number to block it", "Call a number stuck on the machine", "Leave and come back tomorrow"],
+                  "hi": ["बैंक के असली नंबर पर फ़ोन करके बंद कराएँगे", "मशीन पर चिपके नंबर पर फ़ोन करेंगे", "छोड़कर कल आएँगे"],
+                  "chh": ["बैंक के असली नंबर म फोन करके बंद करवाहूँ", "मसीन म चिपके नंबर म फोन करहूँ", "छोड़ के काली आहूँ"]},
+      "answer": 0,
+      "explain": {"en": "Numbers stuck on ATMs can be fake. Use the number from the bank passbook or website.",
+                  "hi": "ATM पर चिपके नंबर नकली हो सकते हैं। पासबुक या बैंक की वेबसाइट वाला नंबर लें।",
+                  "chh": "ATM म चिपके नंबर नकली हो सकथे। पासबुक या बैंक के वेबसाइट वाले नंबर ले।"}
+    },
+    {
+      "q": {"en": "A caller says your ATM card will be blocked and asks for the card number and PIN. This is:",
+            "hi": "फ़ोन पर कोई कहता है कि आपका ATM कार्ड बंद होगा और कार्ड नंबर व PIN माँगता है। यह क्या है?",
+            "chh": "फोन म कोनो कहिथे तोर ATM कार्ड बंद होही अउ कार्ड नंबर अउ PIN माँगथे। ए का आय?"},
+      "options": {"en": ["A bank check", "A scam", "A KYC update"],
+                  "hi": ["बैंक की जाँच", "ठगी", "KYC अपडेट"],
+                  "chh": ["बैंक के जाँच", "ठगी", "KYC अपडेट"]},
+      "answer": 1,
+      "explain": {"en": "Banks never ask for your PIN or full card number on a call.",
+                  "hi": "बैंक कभी फ़ोन पर PIN या पूरा कार्ड नंबर नहीं माँगता।",
+                  "chh": "बैंक कभू फोन म PIN या पूरा कार्ड नंबर नइ माँगय।"}
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "otp",
+  "title": {"en": "Keep your OTP secret", "hi": "OTP किसी को न बताएँ", "chh": "OTP काकरो ल झन बता"},
+  "cards": [
+    {"icon": "sms", "text": {
+      "en": "An OTP is a secret number that comes to your phone by SMS.",
+      "hi": "OTP एक गुप्त नंबर है जो SMS से आपके फ़ोन पर आता है।",
+      "chh": "OTP एक गुप्त नंबर आय, जऊन SMS ले तोर फोन म आथे।"}},
+    {"icon": "lock", "text": {
+      "en": "Your OTP is like the key to your bank account. Keep it only with you.",
+      "hi": "OTP आपके बैंक खाते की चाबी जैसा है। इसे सिर्फ़ अपने पास रखें।",
+      "chh": "OTP तोर बैंक खाता के चाबी जइसे आय। एला अपन करा रख।"}},
+    {"icon": "phone_disabled", "text": {
+      "en": "Bank staff never ask for your OTP on a call. Anyone who asks is a thief.",
+      "hi": "बैंक वाले कभी फ़ोन पर OTP नहीं माँगते। जो माँगे, वह ठग है।",
+      "chh": "बैंक वाले कभू फोन म OTP नइ माँगय। जऊन माँगथे, ओ ठग आय।"}},
+    {"icon": "block", "text": {
+      "en": "Got an OTP you did not ask for? Someone may be trying to use your account. Tell no one.",
+      "hi": "बिना माँगे OTP आया? कोई आपका खाता खोलने की कोशिश कर रहा है। किसी को न बताएँ।",
+      "chh": "बिना माँगे OTP आइस? कोनो तोर खाता खोले के कोसिस करत हे। काकरो ल झन बता।"}},
+    {"icon": "support_agent", "text": {
+      "en": "Shared an OTP by mistake? Call your bank and 1930 right away.",
+      "hi": "गलती से OTP बता दिया? तुरंत अपने बैंक और 1930 पर फ़ोन करें।",
+      "chh": "गलती ले OTP बता देस? तुरते अपन बैंक अउ 1930 म फोन कर।"}}
+  ]
+}

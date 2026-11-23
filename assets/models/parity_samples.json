@@ -1,0 +1,305 @@
+{
+ "tolerance": 0.0001,
+ "samples": [
+  {
+   "text": "Your SBI YONO account has been suspended today. Kindly upload your PAN here to restore access: sbi-yono-pan.in/verify",
+   "lang": "en",
+   "label": "scam",
+   "scam_prob": 0.97663531
+  },
+  {
+   "text": "Hi, I am calling from HDFC credit card desk. A code has come on your phone just now, please read it out so we can stop the annual charge",
+   "lang": "en",
+   "label": "scam",
+   "scam_prob": 0.47392958
+  },
+  {
+   "text": "FedEx: A package addressed to you from Taiwan contains 5 passports and MDMA. Press 1 to speak to Mumbai cyber cell",
+   "lang": "en",
+   "label": "scam",
+   "scam_prob": 0.77360936
+  },
+  {
+   "text": "Mom I lost my phone, this is my new number. Need 8000 urgently for exam fees, send to this UPI pls dont call",
+   "lang": "en",
+   "label": "scam",
+   "scam_prob": 0.86246384
+  },
+  {
+   "text": "Dear Customer, Electricity will be cut off tonight 9.30pm as your last month bill is not updated. Call our officer Mr Devesh 9123456780",
+   "lang": "en",
+   "label": "scam",
+   "scam_prob": 0.9710273
+  },
+  {
+   "text": "Congrats! You are selected for part time job. Earn 3000 daily by liking YouTube videos. Join telegram t.me/earnfast now",
+   "lang": "en",
+   "label": "scam",
+   "scam_prob": 0.99482758
+  },
+  {
+   "text": "Your Paytm wallet KYC expires in 2 hrs. Download AnyDesk and call 7008123456 to complete video KYC",
+   "lang": "en",
+   "label": "scam",
+   "scam_prob": 0.99788195
+  },
+  {
+   "text": "Income Tax Dept: You are eligible for refund of Rs 15,490. Submit your card details at incometax-refund.co to receive it",
+   "lang": "en",
+   "label": "scam",
+   "scam_prob": 0.97121082
+  },
+  {
+   "text": "INR 2,340.00 debited from A/c XX7781 on 14-Oct-25 to VPA dmart@icici. Avl Bal INR 18,212.40. If not done by you, call 18002586161 - Axis Bank",
+   "lang": "en",
+   "label": "genuine",
+   "scam_prob": 0.00946416
+  },
+  {
+   "text": "482913 is OTP to complete your purchase of Rs 1,299 at Myntra. OTPs are SECRET. DO NOT disclose it to anyone. -HDFC Bank",
+   "lang": "en",
+   "label": "genuine",
+   "scam_prob": 0.15322133
+  },
+  {
+   "text": "Your Swiggy order is on its way! Ramesh will reach you in about 12 minutes.",
+   "lang": "en",
+   "label": "genuine",
+   "scam_prob": 0.00312997
+  },
+  {
+   "text": "Reminder: Your CSPDCL bill of Rs 845 for BP no 1002345678 is due on 20 Nov. Pay on the Mor Bijli app to avoid late fee.",
+   "lang": "en",
+   "label": "genuine",
+   "scam_prob": 0.46063427
+  },
+  {
+   "text": "Are we still meeting at the bus stand at 5? I'll bring the documents.",
+   "lang": "en",
+   "label": "genuine",
+   "scam_prob": 0.00025478
+  },
+  {
+   "text": "Your Jio number recharge of Rs 299 was successful. Plan valid till 21-Dec-2025.",
+   "lang": "en",
+   "label": "genuine",
+   "scam_prob": 0.02515869
+  },
+  {
+   "text": "Dear parent, PTM is scheduled on Saturday 10 am. Please bring your ward's diary. - Principal",
+   "lang": "en",
+   "label": "genuine",
+   "scam_prob": 0.19816977
+  },
+  {
+   "text": "Delhivery: Your shipment from Meesho is out for delivery today. Share the code 5521 with the agent only after you receive the package.",
+   "lang": "en",
+   "label": "genuine",
+   "scam_prob": 0.32149306
+  },
+  {
+   "text": "आपका बैंक खाता संदिग्ध पाया गया है। खाता चालू रखने के लिए नीचे दिए लिंक पर आधार और पैन नंबर डालें bank-kyc-seva.in",
+   "lang": "hi",
+   "label": "scam",
+   "scam_prob": 0.99919946
+  },
+  {
+   "text": "नमस्ते मैं दिल्ली क्राइम ब्रांच से बोल रहा हूँ। आपके नाम से एक पार्सल में नशीला सामान मिला है, वीडियो कॉल पर बयान दीजिए वरना गिरफ़्तारी होगी",
+   "lang": "hi",
+   "label": "scam",
+   "scam_prob": 0.97441994
+  },
+  {
+   "text": "मम्मी मेरा फ़ोन खराब हो गया, यह दोस्त का नंबर है। तुरंत 5000 रुपये इस नंबर पर भेज दो, बाद में बताता हूँ",
+   "lang": "hi",
+   "label": "scam",
+   "scam_prob": 0.99413798
+  },
+  {
+   "text": "आपका बिजली कनेक्शन आज रात 10 बजे काट दिया जाएगा क्योंकि बिल अपडेट नहीं है। तुरंत 8770012345 पर संपर्क करें",
+   "lang": "hi",
+   "label": "scam",
+   "scam_prob": 0.98635288
+  },
+  {
+   "text": "आपको कौन बनेगा करोड़पति की ओर से 25 लाख रुपये का इनाम मिला है। रजिस्ट्रेशन के लिए 12500 रुपये जमा करें",
+   "lang": "hi",
+   "label": "scam",
+   "scam_prob": 0.99614043
+  },
+  {
+   "text": "लोन की किस्त जमा नहीं की तो तेरे सब रिश्तेदारों को तेरी गंदी फोटो भेज दूँगा, आज रात तक पैसा डाल",
+   "lang": "hi",
+   "label": "scam",
+   "scam_prob": 0.71118987
+  },
+  {
+   "text": "आपके फोन पर अभी जो छह अंकों का नंबर आया है वह बता दीजिए, आपकी पेंशन चालू कर दी जाएगी",
+   "lang": "hi",
+   "label": "scam",
+   "scam_prob": 0.98448169
+  },
+  {
+   "text": "सरकार की नई योजना में हर महिला को 6000 रुपये मिलेंगे। फॉर्म भरने के लिए यह लिंक खोलें और 100 रुपये फीस दें",
+   "lang": "hi",
+   "label": "scam",
+   "scam_prob": 0.99068305
+  },
+  {
+   "text": "आपके खाते XX4410 से 1,500.00 रुपये UPI द्वारा डेबिट किए गए। यदि आपने यह लेनदेन नहीं किया है तो 1800-1234 पर कॉल करें। -एसबीआई",
+   "lang": "hi",
+   "label": "genuine",
+   "scam_prob": 0.22089092
+  },
+  {
+   "text": "ओटीपी 734190 है। यह 3 मिनट में समाप्त हो जाएगा। बैंक कभी भी ओटीपी नहीं मांगता, इसे किसी को न बताएं।",
+   "lang": "hi",
+   "label": "genuine",
+   "scam_prob": 0.00436448
+  },
+  {
+   "text": "बेटा, आज मंदिर में भंडारा है, शाम को जल्दी घर आ जाना",
+   "lang": "hi",
+   "label": "genuine",
+   "scam_prob": 0.07215229
+  },
+  {
+   "text": "आपकी गैस बुकिंग हो गई है, सिलेंडर दो दिन में घर पहुंच जाएगा।",
+   "lang": "hi",
+   "label": "genuine",
+   "scam_prob": 0.01947939
+  },
+  {
+   "text": "दीदी, कल की ट्रेन का टिकट कन्फर्म हो गया है, सुबह 6 बजे स्टेशन पहुंचना है",
+   "lang": "hi",
+   "label": "genuine",
+   "scam_prob": 0.00468874
+  },
+  {
+   "text": "आपका पार्सल आज शाम तक पहुंचेगा, डिलीवरी बॉय आपको फोन करेगा।",
+   "lang": "hi",
+   "label": "genuine",
+   "scam_prob": 0.20071121
+  },
+  {
+   "text": "पापा ने पूछा है खेत का बिल जमा हुआ या नहीं, शाम को फोन कर लेना",
+   "lang": "hi",
+   "label": "genuine",
+   "scam_prob": 0.08038114
+  },
+  {
+   "text": "आपका राशन कार्ड नवीनीकरण का आवेदन स्वीकार हो गया है। नजदीकी केंद्र से कार्ड ले लें।",
+   "lang": "hi",
+   "label": "genuine",
+   "scam_prob": 0.32200602
+  },
+  {
+   "text": "Sir aapka ATM card kal se block ho jayega, card ke peeche wala number aur expiry bata dijiye abhi renew kar dete hai",
+   "lang": "hinglish",
+   "label": "scam",
+   "scam_prob": 0.99618287
+  },
+  {
+   "text": "Bhai OLX pe tera phone dekha, paise bhej raha hu GPay pe, request aayegi usme PIN daal dena bas",
+   "lang": "hinglish",
+   "label": "scam",
+   "scam_prob": 0.99534568
+  },
+  {
+   "text": "Aapka number 2 ghante me band ho jayega kyuki aapke Aadhaar se fraud hua hai. Mumbai police se baat karne ke liye 9 dabaye",
+   "lang": "hinglish",
+   "label": "scam",
+   "scam_prob": 0.9997719
+  },
+  {
+   "text": "Mujhe galti se aapke number pe 6 digit code chala gaya, please forward kar do, bahut urgent hai",
+   "lang": "hinglish",
+   "label": "scam",
+   "scam_prob": 0.996674
+  },
+  {
+   "text": "Ghar baithe 5000 roz kamao, sirf hotel ko review dena hai. Pehle 1000 joining fee bharo",
+   "lang": "hinglish",
+   "label": "scam",
+   "scam_prob": 0.82331563
+  },
+  {
+   "text": "Aapke electricity bill ka payment fail hua hai, aaj raat light kat jayegi. Turant is number pe whatsapp karo 9001122334",
+   "lang": "hinglish",
+   "label": "scam",
+   "scam_prob": 0.99000985
+  },
+  {
+   "text": "Tumhara loan overdue hai, aaj paise nahi diye to tumhare office me sabko bata denge aur photo viral karenge",
+   "lang": "hinglish",
+   "label": "scam",
+   "scam_prob": 0.94989287
+  },
+  {
+   "text": "Aapke naam ka international courier customs me pakda gaya hai, clearance ke liye 9500 abhi pay karo",
+   "lang": "hinglish",
+   "label": "scam",
+   "scam_prob": 0.99667041
+  },
+  {
+   "text": "Rs 760 debit hua aapke a/c XX2290 se Zomato ke liye. Aapne nahi kiya to bank ko call kare",
+   "lang": "hinglish",
+   "label": "genuine",
+   "scam_prob": 0.24387893
+  },
+  {
+   "text": "Bhai kal college late aaunga, attendance laga dena please",
+   "lang": "hinglish",
+   "label": "genuine",
+   "scam_prob": 0.00846707
+  },
+  {
+   "text": "Mummy maine bijli ka bill app se bhar diya, receipt WhatsApp pe bhej di hai",
+   "lang": "hinglish",
+   "label": "genuine",
+   "scam_prob": 0.28944812
+  },
+  {
+   "text": "Aapka OTP 552190 hai, ise kisi ke sath share na kare. Bank kabhi call karke OTP nahi maangta",
+   "lang": "hinglish",
+   "label": "genuine",
+   "scam_prob": 0.0056271
+  },
+  {
+   "text": "Tera parcel aa gaya hai, main neeche guard ke paas rakh diya",
+   "lang": "hinglish",
+   "label": "genuine",
+   "scam_prob": 0.47156192
+  },
+  {
+   "text": "Kal shaam 7 baje Sharma ji ke ghar pooja hai, sab log aana",
+   "lang": "hinglish",
+   "label": "genuine",
+   "scam_prob": 0.08631787
+  },
+  {
+   "text": "Aapka Airtel bill Rs 499 ka 25 tareekh ko due hai, app se pay kar sakte hai",
+   "lang": "hinglish",
+   "label": "genuine",
+   "scam_prob": 0.43150576
+  },
+  {
+   "text": "Beta fees jama ho gayi, school se receipt le lena",
+   "lang": "hinglish",
+   "label": "genuine",
+   "scam_prob": 0.01396523
+  },
+  {
+   "text": "Your mobile plan expires on 06-02-2025. Recharge via the Meesho app",
+   "lang": "en",
+   "label": "genuine",
+   "scam_prob": 0.0055084
+  },
+  {
+   "text": "\"Hi darlin did youPhone me? Im atHome if youwanna chat.\"",
+   "lang": "en",
+   "label": "genuine",
+   "scam_prob": 0.01536719
+  }
+ ]
+}

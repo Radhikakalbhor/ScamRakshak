@@ -1,0 +1,176 @@
+text,label
+"Good afternoon, this is Neha from the ICICI fraud prevention team. We have blocked a suspicious payment. Please confirm the verification number that just reached your mobile.",scam
+"Sir I am from Kotak card services, your reward upgrade is ready. A six digit number has been delivered to you, kindly tell me the digits to finish.",scam
+"Madam stay on the call, SBI head office here. To cancel the wrong transaction just read me the code you received a few seconds ago.",scam
+"Bank of Baroda customer support: your debit card renewal is pending. Our executive will call, share the one time password with him to complete renewal.",scam
+"Hello, card insurance department here. Your policy is auto renewing for Rs 4,999. To stop it, say the PIN code sent on SMS right now.",scam
+"नमस्ते, मैं आपके बैंक के कार्ड विभाग से बात कर रहा हूँ। अभी जो मैसेज में नंबर आया है, वह पढ़कर सुना दीजिए ताकि कार्ड चालू रहे।",scam
+"मैडम, आपकी क्रेडिट कार्ड लिमिट बढ़ाई जा रही है। मोबाइल पर आया कोड बोल दीजिए, दो मिनट में काम हो जाएगा।",scam
+"बैंक मैनेजर बोल रहा हूँ, आपके खाते में गलत एंट्री हो गई है। फोन पर आया वन टाइम पासवर्ड बताइए, सुधार कर देंगे।",scam
+"आपका डेबिट कार्ड आज रात बंद होगा। हमारे अधिकारी आपको कॉल करेंगे, उन्हें अभी आया सत्यापन अंक बता देना।",scam
+"मैं एक्सिस बैंक हेल्पडेस्क से हूँ, आपके नाम पर नया कार्ड जारी हुआ है। मैसेज में आए छह अंक बोलिए, डिलीवरी रोकी जाएगी।",scam
+"Sir HDFC se bol raha hu, aapke card pe international transaction block karna hai, abhi jo code aaya wo padh ke sunaiye",scam
+"Madam ji bank verification chal raha hai, line pe rahiye aur SMS me aaye 6 number bata dijiye bas",scam
+"Main card department se Ravi bol raha hu, aapka cashback reverse ho jayega agar abhi wala code nahi bataya",scam
+"Aapke credit card pe 2 lakh ka loan offer hai, activate karne ke liye phone pe aaya OTP turant boliye",scam
+"Bhaiya bank wala hu, KYC ke liye bas ek code chahiye jo abhi aapke mobile pe aaya hoga, jaldi bataiye",scam
+"This is your bank calling regarding a duplicate card request. If it was not you, read the confirmation code aloud so we can cancel it.",scam
+"Hi this is Visa security desk. Someone in Delhi tried to use your card. Quote the six digit code we just sent to verify you are the real owner.",scam
+"Canara Bank calling: to merge your old account with the new one, tell us the numeric password that arrived by text.",scam
+"आपका क्रेडिट कार्ड रिवॉर्ड पॉइंट गिफ्ट में बदला जा रहा है, इसके लिए फोन पर आया कोड हमारे प्रतिनिधि को बताएं।",scam
+"PNB customer care: aapka ATM card upgrade ho raha hai, abhi aaye 4 digit code ko call pe confirm kare",scam
+"Ma'am RBI guidelines ke according aapka card verify karna hai, jo number SMS me aaya hai please dictate kariye",scam
+"Your card has been flagged for misuse. Our officer is on the line, please give him the secure code you got on your phone.",scam
+"बैंक की तरफ से कॉल है, आपकी पेंशन वाले खाते में दिक्कत है। अभी आया पासकोड बताइए वरना पैसा रुक जाएगा।",scam
+"Sir aapke phone pe ek code gaya hai galti se, wo bank ka internal number hai, please wapas bata dijiye",scam
+"We are calling from the credit card annual fee waiver team. Read out the authorisation code sent to you and the charges will be reversed.",scam
+"Hi dad, this is me on a friend's phone, mine fell in the river. Please transfer 6500 to the UPI id I am sending, very urgent, will explain later.",scam
+"Aunty main Rohit, mera phone chori ho gaya, ye naya number save kar lo. Hospital me hu, abhi 10000 bhej do is UPI pe",scam
+"Didi mera mobile toot gaya hai, ye temporary number hai. Rent dena hai aaj hi, 4000 GPay kar do please, kisi ko mat batana",scam
+"Bro new number, old sim band ho gayi. Stuck at the station, need 2500 for ticket, send to this PhonePe number fast",scam
+"मामा जी, मेरा फोन गुम हो गया है, यह नया नंबर है। कॉलेज की फीस आज भरनी है, इस यूपीआई पर 15000 तुरंत डाल दीजिए।",scam
+"पापा, नया नंबर है, पुराना फोन खो गया। एक्सीडेंट हो गया है, दवाई के लिए अभी 7000 इस नंबर पर भेजो, कॉल मत करना।",scam
+"भाभी, मैं सुमित हूँ, फोन चोरी हो गया। दोस्त के फोन से लिख रहा हूँ, 3000 जल्दी भेज दो, शाम को लौटा दूंगा।",scam
+"Hello it is your nephew, I changed my number. My bank app is locked and I have to pay the landlord today, can you send 9000 to this UPI?",scam
+"Mom don't call, I can't talk. Lost my phone, using a new SIM. Please send 5000 to this id for my hostel fine.",scam
+"Beta main tumhara chacha, ye mera naya number hai, purana kharab ho gaya. Ek emergency hai, 20000 is UPI pe abhi daal do",scam
+"यार, मेरा पुराना नंबर बंद हो गया, यह नया है। बहन की शादी में पैसे कम पड़ गए, 12000 इस यूपीआई आईडी पर भेज दे।",scam
+"Hey it's Priya, phone screen broke so texting from this number. Can you send 1800 for a cab? My UPI is not working.",scam
+"Bhai ye mera naya whatsapp hai, purana hack ho gaya. Turant 3500 bhej, baad me sab samjhata hu, call mat karna abhi",scam
+"दादी, मैं आपका पोता हूँ, नया फोन लिया है। परीक्षा का फॉर्म भरना है, 2500 रुपये इस यूपीआई पर भेज दो।",scam
+"Uncle namaste, main Anu, mera phone kho gaya. Mummy ko mat batana, mujhe 6000 chahiye fees ke liye, ye UPI id hai",scam
+"It's your son, new number. Wallet and phone stolen in Pune. Please send money to my friend's UPI now, I'll repay tonight.",scam
+"Sis, this is my new number, save it. Need 4000 quickly for a medical bill, send to the UPI below and don't call, I'm in a meeting.",scam
+"बेटी बोल रही हूँ, पुराना सिम टूट गया। हॉस्टल वाले पैसे माँग रहे हैं, 8000 इस नंबर पर फोनपे कर दो जल्दी।",scam
+"Hi grandma, my phone is dead, using a shop phone. Urgent, please send 3000 via UPI to this number, I'll call you tomorrow.",scam
+"Jiju new number hai mera, purana kahin gir gaya. Abhi 5000 chahiye, ye UPI pe bhej do, shaam ko de dunga",scam
+"Arre main Vikram, phone pani me gir gaya. Ye dost ka number hai, petrol ke paise nahi hai, 1500 bhej is id pe",scam
+"मौसी, मेरा फोन खराब है इसलिए नए नंबर से मैसेज कर रहा हूँ। ऑनलाइन क्लास की फीस 4500 अभी चाहिए, इस यूपीआई पर भेजें।",scam
+"Hey buddy, lost my phone at the airport, new temp number. Can you lend 7000 to this UPI, flight rebooking, urgent.",scam
+"Mummy ye naya number hai, purana chori. Kisi ko kuch mat bolna, bas abhi 2000 is GPay number pe bhej do",scam
+"चाचा जी, फोन बस में छूट गया, यह मेरा नया नंबर है। किताबें खरीदनी हैं, 2200 इस यूपीआई पर अभी भेज दो।",scam
+"Dear customer, your mobile number will be disconnected by TRAI within 2 hours due to illegal use. Press 9 to talk to the officer.",scam
+"Your Aadhaar is linked to a SIM used in a fraud case in Mumbai. Stay on the line to connect with the police inspector, do not hang up.",scam
+"Notice from Telecom Regulatory Authority: all numbers on your Aadhaar will be suspended today. Press 9 for more details.",scam
+"CBI cyber cell: your Aadhaar was used to open a SIM that sent threatening messages. Remain on this call for the video statement.",scam
+"This is an automated call from the Department of Telecom. Your SIM is involved in criminal activity. Press 9 to avoid blocking.",scam
+"आपके आधार नंबर से जारी सिम गैरकानूनी कामों में इस्तेमाल हुई है। ट्राई आज आपका नंबर बंद करेगा, बात करने के लिए 9 दबाएं।",scam
+"यह दूरसंचार विभाग की ओर से सूचना है, आपके नाम की सिम से धोखाधड़ी हुई है। लाइन पर बने रहें, पुलिस अधिकारी से जोड़ा जा रहा है।",scam
+"आपके आधार कार्ड का गलत उपयोग हुआ है और आपके खिलाफ केस दर्ज है। सीबीआई से बात करने के लिए कॉल न काटें।",scam
+"ट्राई चेतावनी: आपका मोबाइल नंबर दो घंटे में बंद हो जाएगा क्योंकि इससे अवैध विज्ञापन भेजे गए। अधिक जानकारी के लिए 9 दबाइए।",scam
+"आपकी आधार से जुड़ी एक और सिम दिल्ली में अपराध में पकड़ी गई है। जांच अधिकारी से बात करने के लिए लाइन पर रहें।",scam
+"Aapke Aadhaar pe ek dusri SIM issue hui hai jo fraud me use hui. TRAI aapka number band kar raha hai, 9 dabaiye",scam
+"Telecom department se call hai, aapke number se galat messages gaye hai. Police se connect kar rahe hai, call mat kaatna",scam
+"Aapka Aadhaar money laundering case me aaya hai, CBI officer line pe aa rahe hai, phone hold pe rakhiye",scam
+"TRAI notice: aapka mobile number 2 ghante me deactivate hoga. Customer officer se baat ke liye 9 press kare",scam
+"Aapke naam ki SIM se bomb threat call gaya hai, Delhi police ne case kiya hai, video call pe bane rahiye",scam
+"Your number has been reported for sending spam. Under TRAI rules it will be blocked. Press 9 now to raise an objection.",scam
+"Important: a SIM card issued on your Aadhaar is under investigation by Mumbai crime branch. Keep this line open for the officer.",scam
+"Final warning from telecom authority. Press 9 to speak with an executive or all services on your Aadhaar will stop today.",scam
+"आधार दुरुपयोग की शिकायत मिली है, आपकी सभी सिम बंद होंगी। अपना पक्ष रखने के लिए 9 दबाएं और लाइन पर रहें।",scam
+"Aadhaar misuse alert: aapke naam pe 3 SIM chal rahi hai jo crime me use hui. Stay on line, inspector se connect ho raha hai",scam
+"This is Delhi police cyber unit. Your Aadhaar linked SIM was found in a drug case. Do not disconnect, you are being transferred to the CBI officer.",scam
+"आपका नंबर ब्लैकलिस्ट हो गया है क्योंकि इससे फर्जी कॉल किए गए। ट्राई अधिकारी से जुड़ने के लिए 9 दबाएं।",scam
+"Sir aapki SIM ka KYC Aadhaar se misuse hua hai, abhi police verification hoga, line pe rahiye warna arrest warrant",scam
+"Automated message: your mobile services will be suspended. Your Aadhaar is linked to unlawful activity. Press 9 to continue.",scam
+"Aapke Aadhaar se juda number hawala case me mila hai, TRAI aur CBI ki joint team line pe hai, 9 dabake officer se baat kare",scam
+"Earn Rs 2000 to 8000 per day from home by liking hotel reviews on Google. Registration fee only Rs 499, message us on WhatsApp.",scam
+"Part time job offer: complete simple online tasks and get paid daily. First pay Rs 999 security deposit to activate your account.",scam
+"We are hiring data entry operators, work from home, Rs 25000 per month. Send Rs 1500 joining kit charges to start today.",scam
+"घर बैठे रोज़ 3000 रुपये कमाएं, बस वीडियो लाइक करने हैं। शुरू करने के लिए 750 रुपये रजिस्ट्रेशन फीस जमा करें।",scam
+"मोबाइल से पार्ट टाइम काम करें, हर टास्क पर 150 रुपये। पहले 1000 रुपये देकर अपना वर्क आईडी बनवाएं।",scam
+"महिलाओं के लिए घर से पैकिंग का काम, महीने के 30000 कमाएं। सामान भेजने से पहले 2000 सिक्योरिटी जमा करनी होगी।",scam
+"Ghar se kaam karo, rozana 4000 tak kamai. Bas product rating deni hai. Joining fee sirf 599 hai, abhi pay karo",scam
+"Telegram task job: har review pe 200 milega. Pehle VIP level ke liye 2000 recharge karna padega",scam
+"Online typing job, din ke 2 ghante, mahine ke 35000. Registration ke liye 1200 is UPI pe bhejo",scam
+"Congratulations you are shortlisted for Amazon work from home role. Pay Rs 850 for training material and start earning tomorrow.",scam
+"Earn daily by rating movies online. Deposit Rs 3000 to unlock higher commission tasks, withdraw profit every evening.",scam
+"YouTube subscribe karo aur roz 1500 kamao. Pehle 300 activation charge dena hoga, paisa turant wapas milega",scam
+"पेन से पन्ने लिखने का काम, प्रति पेज 50 रुपये। काम शुरू करने के लिए 1100 रुपये पंजीकरण शुल्क भेजें।",scam
+"Simple copy paste job, salary paid every day at 9 pm. Activation charge of Rs 450 is required before you get the first task.",scam
+"Hotel review task: 50 reviews daily, Rs 5000 per day. Joining amount Rs 1999 is refundable after the first week.",scam
+"ऑनलाइन सर्वे भरकर कमाई करें, रोज़ 2500 पक्के। अपना खाता खोलने के लिए 500 रुपये जमा कीजिए।",scam
+"Work from home offer: 30 minutes daily, earn up to 10000 weekly. Buy the starter pack for Rs 1299 to register.",scam
+"Kaam ghar baithe: mobile me ads dekho aur paisa kamao. Membership fee 699 dene ke baad hi withdrawal hoga",scam
+"Earn money by giving 5 star ratings to restaurants. Complete the prepaid task of Rs 1000 to receive Rs 1500 back.",scam
+"रोज़ाना कमाई का मौका! इंस्टाग्राम पोस्ट लाइक करें और 200 रुपये प्रति टास्क पाएं। पहले 800 रुपये का प्लान लेना होगा।",scam
+"Student part time job, daily payout, no experience needed. Pay Rs 350 registration to get your login id.",scam
+"Weekend job from mobile, Rs 1000 per hour. Just transfer Rs 2500 for the verification deposit to the HR UPI.",scam
+"Aapka resume select hua hai, work from home typing job. Rs 1800 ka ID card aur training charge abhi bhejiye",scam
+"घर से मेहंदी डिज़ाइन का काम, अच्छी कमाई। सैंपल किट के लिए पहले 999 रुपये ऑनलाइन भुगतान करें।",scam
+"Crypto trading task job: invest 1500 in your task wallet today and earn 600 commission daily from home.",scam
+"Rs 12,000.00 credited to A/c XX5523 on 03-Feb via NEFT from SHARMA TRADERS. Avl Bal Rs 34,210.50 -SBI",genuine
+"IMPS of Rs 3,500 received in your account XX0187 from MEENA DEVI. Ref 509812345671. -Bank of Baroda",genuine
+"Dear Customer, A/c XX9034 debited Rs 640.00 on 11-Mar for UPI to bigbazaar@ybl. UPI Ref 412398765123. Not you? Call 18001801290",genuine
+"Your a/c no. XXXXXX4472 is credited with INR 22,800 on 01-Apr-26 (Salary). Available balance INR 41,055.20 -Union Bank",genuine
+"INR 1,999.00 spent on HDFC Bank Card XX6612 at FLIPKART on 2026-05-14. Avl Limit INR 48,300. Not you? SMS BLOCK 6612 to 7308080808",genuine
+"Rs.250 debited from A/c XX3381 for UPI txn to SHYAM KIRANA. Ref 601234998812. If not done by you, report to your bank.",genuine
+"NEFT credit of Rs 8,450 to A/c XX7720 from PM KISAN on 22-Feb-2026. -Punjab National Bank",genuine
+"आपके खाते XX2219 में 5,000.00 रुपये IMPS द्वारा जमा हुए, भेजने वाले: अजय वर्मा। -भारतीय स्टेट बैंक",genuine
+"खाता XX8840 से 1,200 रुपये UPI द्वारा डेबिट, प्राप्तकर्ता: राम मेडिकल स्टोर। शेष राशि 9,340 रुपये।",genuine
+"आपके बचत खाते XX6105 में 18,000 रुपये वेतन जमा किया गया है। उपलब्ध शेष 26,770 रुपये। -केनरा बैंक",genuine
+"A/c XX4091 credited by Rs 700.00 via UPI from SUNIL KUMAR. UPI Ref 523409871236. -Axis Bank",genuine
+"Your A/c XX1158 has been debited for Rs 2,100 towards LIC premium by NACH on 05-Jun. Bal Rs 15,644.",genuine
+"Rs 45,000 transferred via NEFT from your A/c XX3307 to beneficiary RAJESH GUPTA. UTR SBIN226012345678.",genuine
+"खाता संख्या XX5590 से एटीएम द्वारा 3,000 रुपये निकाले गए, दिनांक 18-07। यदि आपने नहीं निकाले तो बैंक को सूचित करें।",genuine
+"Aapke account XX7731 me Rs 1,500 UPI se aaye, bhejne wale: POOJA SAHU. Ref 611234567890",genuine
+"A/c XX0662 debited INR 399 for Jio recharge via UPI on 09-Aug. Avl bal INR 6,201.35 -ICICI Bank",genuine
+"Dear customer, INR 13,250 has been credited to A/c XX2844 by IMPS. Sender: R K ENTERPRISES. -Kotak Bank",genuine
+"Rs 85.00 debited from your account XX9917 for SMS charges for the quarter. -Gramin Bank",genuine
+"आपके खाते XX3368 में 2,000 रुपये पीएम किसान सम्मान निधि की किस्त जमा की गई है।",genuine
+"UPI payment of Rs 1,120 to ZOMATO from A/c XX4410 successful. Ref 512398760045. Balance Rs 3,902.",genuine
+"Interest of Rs 312.00 credited to your savings A/c XX8273 on 31-Mar-2026. -Bank of India",genuine
+"Your A/c XX5076 is debited with Rs 6,800 for EMI of loan account XX9921. Thank you. -HDFC Bank",genuine
+"खाता XX1490 में 750 रुपये रिफंड जमा हुआ, संदर्भ: अमेज़न ऑर्डर। उपलब्ध शेष 4,180 रुपये।",genuine
+"NEFT of Rs 30,000 from A/c XX6631 to SHREE BALAJI CONSTRUCTION processed successfully. -Indian Bank",genuine
+"Rs 520 UPI credit in a/c XX2207 from MANOJ PATEL. Agar aapne request nahi ki thi to bhi koi action zaroori nahi.",genuine
+"आपका ऑर्डर पैक हो गया है और कल भेज दिया जाएगा।",genuine
+"आपका सामान बिलासपुर डिपो में पहुंच गया है, कल दोपहर तक घर आ जाएगा।",genuine
+"डिलीवरी एजेंट रमेश आज शाम 4 से 6 बजे के बीच आपका पैकेट लेकर आएंगे।",genuine
+"आपका पार्सल सफलतापूर्वक पहुंचा दिया गया। सेवा का उपयोग करने के लिए धन्यवाद।",genuine
+"खराब मौसम के कारण आपकी डिलीवरी में एक दिन की देरी होगी, असुविधा के लिए खेद है।",genuine
+"आपका स्पीड पोस्ट रायपुर प्रधान डाकघर से रवाना हो गया है।",genuine
+"आपके ऑर्डर की डिलीवरी आज है, कृपया घर पर किसी को उपस्थित रखें।",genuine
+"आपका पैकेट आज नहीं पहुंच सका क्योंकि घर बंद था, कल फिर से प्रयास किया जाएगा।",genuine
+"आपकी दवाइयों का ऑर्डर रास्ते में है और लगभग 30 मिनट में पहुंच जाएगा।",genuine
+"आपका रजिस्टर्ड पत्र दुर्ग डाकघर में आ गया है, कल डाकिया घर पर देगा।",genuine
+"आपके द्वारा लौटाया गया सामान हमें मिल गया है, जांच के बाद सूचना दी जाएगी।",genuine
+"आपका गैस सिलेंडर आज डिलीवरी वैन में चढ़ा दिया गया है।",genuine
+"आपकी किताबों का पार्सल कोरबा पहुंच गया है, आगे भेजा जा रहा है।",genuine
+"आपका ऑर्डर दो हिस्सों में आएगा, पहला पैकेट आज और दूसरा परसों मिलेगा।",genuine
+"डिलीवरी बॉय आपके पते के पास है, कृपया फोन चालू रखें।",genuine
+"आपके फर्नीचर की डिलीवरी शनिवार सुबह 10 बजे तय की गई है, साथ में फिटिंग वाला भी आएगा।",genuine
+"आपका कूरियर पड़ोसी श्री वर्मा जी को सौंप दिया गया है।",genuine
+"आपका पार्सल जगदलपुर के लिए निकल चुका है, दो दिन में पहुंचने की उम्मीद है।",genuine
+"आपके ऑर्डर का पता बदलने का अनुरोध स्वीकार कर लिया गया है।",genuine
+"आपकी साड़ी का ऑर्डर तैयार है, आज शाम दुकान से भेज दिया जाएगा।",genuine
+"त्योहार के कारण डिलीवरी में देरी हो रही है, आपका पैकेट सोमवार तक पहुंचेगा।",genuine
+"आपका मोबाइल फोन का डिब्बा गोदाम से निकल गया है और कल तक आपके शहर पहुंचेगा।",genuine
+"आपकी राखी का लिफाफा डाक से भेज दिया गया है, तीन से चार दिन में मिलेगा।",genuine
+"आपका ऑर्डर रद्द नहीं हुआ है, बस पैकिंग में थोड़ा समय लग रहा है।",genuine
+"डाकिया आज आपके घर आया था, पत्र डाकघर में रखा है, पहचान पत्र लेकर ले जाएं।",genuine
+"Did the parcel from Didi reach you? She sent sweets and a sweater.",genuine
+"Mummy ka phone aaya tha, bol rahi thi paise mil gaye, thank you bhai",genuine
+"Delivery wala aaye to gate pe dabba le lena, main office me hu",genuine
+"Can you pick up my parcel from the post office tomorrow? I'll give you the slip.",genuine
+"Yaar maine naya phone liya, pehle wala bhai ko de diya. Number same hai",genuine
+"I returned the shoes, refund should come in a week. Let's go shopping after that.",genuine
+"Papa ne kaha hai kiraye ke paise kal subah de denge, tension mat lo",genuine
+"Phone ki battery khatam ho rahi hai, ghar pahunch ke call karti hu",genuine
+"Your cake order came early, I kept it in the fridge. Happy anniversary!",genuine
+"Bhai Amazon wala parcel galti se mere ghar aa gaya, shaam ko le jaana",genuine
+"Sorry missed your call, phone was on silent during the meeting.",genuine
+"Maine dukaan wale ko paise de diye, tum dobara mat dena",genuine
+"The courier guy said he'll come after lunch, can you stay home till 3?",genuine
+"Nani ke liye dawai ka parcel bhej diya hai, kal tak pahunch jayega",genuine
+"Lent Rahul 500 for lunch, remind me to ask him on Monday lol",genuine
+"Mera phone repair me hai, do din WhatsApp pe nahi milunga, isi number pe call karna",genuine
+"Got the money for the trip from everyone except Anil. I'll ask him tonight.",genuine
+"Didi tumhara bheja hua kurta mil gaya, size ekdum sahi hai",genuine
+"My phone fell and the screen cracked, going to the service centre after work.",genuine
+"Sabzi wale ko 200 dena hai, mere wallet me change nahi hai, tum de dena",genuine
+"Delivery came, but they sent the blue one instead of black. I'll exchange it.",genuine
+"Bhaiya mera recharge khatam ho gaya, ghar aake baat karta hu",genuine
+"Thanks for sending the money for mom's birthday gift, she loved the saree.",genuine
+"Parcel me kya bheja hai? Mummy bahut khush ho gayi dekh ke",genuine
+"Collected your package from the security desk, it's on your table.",genuine

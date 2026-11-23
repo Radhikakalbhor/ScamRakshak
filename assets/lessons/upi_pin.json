@@ -1,0 +1,26 @@
+{
+  "id": "upi_pin",
+  "title": {"en": "UPI PIN safety", "hi": "UPI PIN की सुरक्षा", "chh": "UPI PIN के सुरक्छा"},
+  "cards": [
+    {"icon": "pin", "text": {
+      "en": "Your UPI PIN is the secret number you type to send money.",
+      "hi": "UPI PIN वह गुप्त नंबर है जिससे आप पैसे भेजते हैं।",
+      "chh": "UPI PIN ओ गुप्त नंबर आय, जेकर ले तैं पइसा भेजथस।"}},
+    {"icon": "call_received", "text": {
+      "en": "You never need a PIN to receive money. The PIN is only for sending.",
+      "hi": "पैसे पाने के लिए कभी PIN नहीं लगता। PIN सिर्फ़ भेजने के लिए है।",
+      "chh": "पइसा पाए बर कभू PIN नइ लागय। PIN सिरिफ भेजे बर आय।"}},
+    {"icon": "warning", "text": {
+      "en": "A stranger sent a 'collect request'? If you type your PIN, your money goes out. Decline it.",
+      "hi": "अनजान से 'collect request' आई? PIN डालते ही पैसे कट जाएँगे। उसे मना करें।",
+      "chh": "अनजान ले 'collect request' आइस? PIN डारते पइसा कट जाही। ओला मना कर दे।"}},
+    {"icon": "voice_over_off", "text": {
+      "en": "Never tell your UPI PIN to anyone, not even bank or app staff.",
+      "hi": "UPI PIN किसी को न बताएँ, बैंक या ऐप वाले को भी नहीं।",
+      "chh": "UPI PIN काकरो ल झन बता, बैंक या ऐप वाले ल घलो नहीं।"}},
+    {"icon": "verified_user", "text": {
+      "en": "Use only the real UPI app. Check the name before you pay.",
+      "hi": "सिर्फ़ असली UPI ऐप चलाएँ। पैसे देने से पहले नाम जाँचें।",
+      "chh": "सिरिफ असली UPI ऐप चला। पइसा दे के पहिली नाम जाँच ले।"}}
+  ]
+}

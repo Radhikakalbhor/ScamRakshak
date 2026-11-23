@@ -1,0 +1,65 @@
+{
+  "topic": "otp",
+  "questions": [
+    {
+      "q": {"en": "A caller says he is from your bank and asks for your OTP. What do you do?",
+            "hi": "फ़ोन करने वाला कहता है कि वह बैंक से है और OTP माँगता है। आप क्या करेंगे?",
+            "chh": "फोन करइया कहिथे ओ बैंक ले हे अउ OTP माँगथे। तैं का करबे?"},
+      "options": {"en": ["Tell him the OTP", "Cut the call, do not share", "Send it by SMS"],
+                  "hi": ["OTP बता देंगे", "फ़ोन काट देंगे, नहीं बताएँगे", "SMS से भेज देंगे"],
+                  "chh": ["OTP बता देहूँ", "फोन काट देहूँ, नइ बतावँव", "SMS ले भेज देहूँ"]},
+      "answer": 1,
+      "explain": {"en": "Banks never ask for an OTP. Anyone who asks is a fraud.",
+                  "hi": "बैंक कभी OTP नहीं माँगता। जो माँगे, वह ठग है।",
+                  "chh": "बैंक कभू OTP नइ माँगय। जऊन माँगथे, ओ ठग आय।"}
+    },
+    {
+      "q": {"en": "You got an OTP you did not ask for. What does it mean?",
+            "hi": "बिना माँगे आपके फ़ोन पर OTP आया। इसका क्या मतलब है?",
+            "chh": "बिना माँगे तोर फोन म OTP आइस। एकर का मतलब आय?"},
+      "options": {"en": ["Someone may be trying to use your account", "The bank is sending a gift", "Nothing, it is normal"],
+                  "hi": ["कोई आपका खाता इस्तेमाल करने की कोशिश कर रहा है", "बैंक तोहफ़ा भेज रहा है", "कुछ नहीं, यह आम बात है"],
+                  "chh": ["कोनो तोर खाता चलाए के कोसिस करत हे", "बैंक इनाम भेजत हे", "कुछु नहीं, ए आम बात आय"]},
+      "answer": 0,
+      "explain": {"en": "An unexpected OTP means someone may be trying to log in or pay from your account.",
+                  "hi": "बिना माँगा OTP मतलब कोई आपके खाते से पैसे निकालने की कोशिश कर रहा है।",
+                  "chh": "बिना माँगे OTP माने कोनो तोर खाता ले पइसा निकाले के कोसिस करत हे।"}
+    },
+    {
+      "q": {"en": "Who can you share your OTP with?",
+            "hi": "आप अपना OTP किसे बता सकते हैं?",
+            "chh": "तैं अपन OTP काकर ल बता सकथस?"},
+      "options": {"en": ["Bank manager", "Delivery boy", "No one"],
+                  "hi": ["बैंक मैनेजर", "डिलीवरी वाला", "किसी को नहीं"],
+                  "chh": ["बैंक मैनेजर", "डिलीवरी वाला", "काकरो ल नहीं"]},
+      "answer": 2,
+      "explain": {"en": "An OTP is only for you. Never share it with anyone.",
+                  "hi": "OTP सिर्फ़ आपके लिए है। इसे किसी को न बताएँ।",
+                  "chh": "OTP सिरिफ तोर बर आय। एला काकरो ल झन बता।"}
+    },
+    {
+      "q": {"en": "A message says: 'Share your OTP to get Rs 5000 cashback'. This is:",
+            "hi": "मैसेज आया: 'OTP बताओ और 5000 रुपये कैशबैक पाओ'। यह क्या है?",
+            "chh": "मैसेज आइस: 'OTP बता अउ 5000 रुपिया कैसबैक पा'। ए का आय?"},
+      "options": {"en": ["A real offer", "A scam", "A bank rule"],
+                  "hi": ["असली ऑफ़र", "ठगी", "बैंक का नियम"],
+                  "chh": ["असली ऑफर", "ठगी", "बैंक के नियम"]},
+      "answer": 1,
+      "explain": {"en": "No one needs your OTP to give you money. It is a trick.",
+                  "hi": "पैसे देने के लिए किसी को OTP नहीं चाहिए। यह धोखा है।",
+                  "chh": "पइसा दे बर काकरो ल OTP नइ लागय। ए धोखा आय।"}
+    },
+    {
+      "q": {"en": "You shared your OTP by mistake. What should you do first?",
+            "hi": "गलती से आपने OTP बता दिया। सबसे पहले क्या करें?",
+            "chh": "गलती ले तैं OTP बता देस। सबले पहिली का करबे?"},
+      "options": {"en": ["Wait and see", "Call your bank and 1930 at once", "Delete the message"],
+                  "hi": ["रुककर देखेंगे", "तुरंत बैंक और 1930 पर फ़ोन करेंगे", "मैसेज मिटा देंगे"],
+                  "chh": ["रुक के देखहूँ", "तुरते बैंक अउ 1930 म फोन करहूँ", "मैसेज मिटा देहूँ"]},
+      "answer": 1,
+      "explain": {"en": "Act fast. Call the bank to block, and 1930 to report.",
+                  "hi": "जल्दी करें। बैंक को फ़ोन करके बंद कराएँ और 1930 पर शिकायत करें।",
+                  "chh": "जल्दी कर। बैंक ल फोन करके बंद करवा अउ 1930 म सिकायत कर।"}
+    }
+  ]
+}

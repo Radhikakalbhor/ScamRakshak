@@ -1,0 +1,65 @@
+{
+  "topic": "qr",
+  "questions": [
+    {
+      "q": {"en": "Someone sends you a QR code and says 'scan it to get money'. This is:",
+            "hi": "कोई QR कोड भेजकर कहता है 'स्कैन करो, पैसे मिलेंगे'। यह क्या है?",
+            "chh": "कोनो QR कोड भेज के कहिथे 'स्कैन कर, पइसा मिलही'। ए का आय?"},
+      "options": {"en": ["A scam", "A new bank service", "Safe"],
+                  "hi": ["ठगी", "बैंक की नई सेवा", "सुरक्षित"],
+                  "chh": ["ठगी", "बैंक के नवा सेवा", "सुरक्छित"]},
+      "answer": 0,
+      "explain": {"en": "Scanning a QR is for paying. You never scan to get money.",
+                  "hi": "QR स्कैन करना पैसे देने के लिए है। पैसे पाने के लिए कभी स्कैन नहीं करते।",
+                  "chh": "QR स्कैन करना पइसा दे बर आय। पइसा पाए बर कभू स्कैन नइ करय।"}
+    },
+    {
+      "q": {"en": "Before paying at a shop with a QR code, what should you check?",
+            "hi": "दुकान पर QR से पैसे देने से पहले क्या देखें?",
+            "chh": "दुकान म QR ले पइसा दे के पहिली का देखबे?"},
+      "options": {"en": ["The name shown on the screen", "The shop's lights", "The phone brand"],
+                  "hi": ["स्क्रीन पर दिखा नाम", "दुकान की लाइट", "फ़ोन की कंपनी"],
+                  "chh": ["स्क्रीन म दिखे नाम", "दुकान के लाइट", "फोन के कंपनी"]},
+      "answer": 0,
+      "explain": {"en": "The name tells you the money is going to the real shop.",
+                  "hi": "नाम से पता चलता है कि पैसे असली दुकान को जा रहे हैं।",
+                  "chh": "नाम ले पता चलथे के पइसा असली दुकान ल जावत हे।"}
+    },
+    {
+      "q": {"en": "You see a new sticker pasted over a shop's QR code. What do you do?",
+            "hi": "दुकान के QR पर नया स्टिकर चिपका दिखे तो क्या करें?",
+            "chh": "दुकान के QR ऊपर नवा स्टिकर चिपके दिखय त का करबे?"},
+      "options": {"en": ["Pay anyway", "Ask the shopkeeper and check the name", "Scan it twice"],
+                  "hi": ["फिर भी पैसे दे देंगे", "दुकानदार से पूछेंगे और नाम जाँचेंगे", "दो बार स्कैन करेंगे"],
+                  "chh": ["तभो ले पइसा दे देहूँ", "दुकानदार ले पूछहूँ अउ नाम जाँचहूँ", "दू घांव स्कैन करहूँ"]},
+      "answer": 1,
+      "explain": {"en": "Thieves paste their own QR code over the shop's code.",
+                  "hi": "ठग दुकान के QR पर अपना QR चिपका देते हैं।",
+                  "chh": "ठगमन दुकान के QR ऊपर अपन QR चिपका देथें।"}
+    },
+    {
+      "q": {"en": "After scanning a QR, the app asks for your UPI PIN to 'receive' Rs 2000. You should:",
+            "hi": "QR स्कैन करने के बाद 2000 रुपये 'पाने' के लिए ऐप PIN माँगता है। आपको क्या करना चाहिए?",
+            "chh": "QR स्कैन करे के बाद 2000 रुपिया 'पाए' बर ऐप PIN माँगथे। तोला का करना चाही?"},
+      "options": {"en": ["Enter the PIN", "Stop and close the app", "Enter the PIN twice"],
+                  "hi": ["PIN डाल देंगे", "रुककर ऐप बंद कर देंगे", "दो बार PIN डालेंगे"],
+                  "chh": ["PIN डार देहूँ", "रुक के ऐप बंद कर देहूँ", "दू घांव PIN डारहूँ"]},
+      "answer": 1,
+      "explain": {"en": "Entering a PIN always takes money OUT of your account.",
+                  "hi": "PIN डालने से हमेशा आपके खाते से पैसे कटते हैं।",
+                  "chh": "PIN डारे ले हमेसा तोर खाता ले पइसा कटथे।"}
+    },
+    {
+      "q": {"en": "You lost money through a fake QR code. Which number do you call?",
+            "hi": "नकली QR से पैसे चले गए। किस नंबर पर फ़ोन करें?",
+            "chh": "नकली QR ले पइसा चल दिस। कोन नंबर म फोन करबे?"},
+      "options": {"en": ["100", "1930", "108"],
+                  "hi": ["100", "1930", "108"],
+                  "chh": ["100", "1930", "108"]},
+      "answer": 1,
+      "explain": {"en": "1930 is the national cyber fraud helpline. Call it quickly.",
+                  "hi": "1930 साइबर ठगी की राष्ट्रीय हेल्पलाइन है। जल्दी फ़ोन करें।",
+                  "chh": "1930 साइबर ठगी के हेल्पलाइन आय। जल्दी फोन कर।"}
+    }
+  ]
+}

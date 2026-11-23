@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/call_detector/call_detector_screen.dart';
+import '../features/message_detector/message_detector_screen.dart';
+import '../features/report/report_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/placeholder_screen.dart';
 
@@ -15,27 +18,16 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/message',
-      builder: (context, state) => const PlaceholderFeatureScreen(
-        titleKey: 'check_message',
-        icon: Icons.mark_chat_unread_rounded,
-        moduleOwner: 'Sayanthan (lib/features/message_detector)',
-      ),
+      builder: (context, state) => const MessageDetectorScreen(),
     ),
     GoRoute(
       path: '/call',
-      builder: (context, state) => const PlaceholderFeatureScreen(
-        titleKey: 'check_call',
-        icon: Icons.phone_in_talk_rounded,
-        moduleOwner: 'Sayanthan (lib/features/call_detector)',
-      ),
+      builder: (context, state) => const CallDetectorScreen(),
     ),
     GoRoute(
       path: '/report',
-      builder: (context, state) => const PlaceholderFeatureScreen(
-        titleKey: 'report_fraud',
-        icon: Icons.report_problem_rounded,
-        moduleOwner: 'Sayanthan (lib/features/report)',
-      ),
+      // Optional extra: report type ('otp'|'fake_qr'|'loan_app'|'call'|'other') to preselect.
+      builder: (context, state) => ReportScreen(initialType: state.extra as String?),
     ),
     GoRoute(
       path: '/lessons',

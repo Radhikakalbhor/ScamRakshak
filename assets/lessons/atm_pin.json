@@ -1,0 +1,26 @@
+{
+  "id": "atm_pin",
+  "title": {"en": "Protect your ATM PIN", "hi": "ATM PIN को सुरक्षित रखें", "chh": "ATM PIN ल बचा के रख"},
+  "cards": [
+    {"icon": "credit_card", "text": {
+      "en": "Your ATM PIN is the 4-digit secret number of your card.",
+      "hi": "ATM PIN आपके कार्ड का 4 अंकों का गुप्त नंबर है।",
+      "chh": "ATM PIN तोर कार्ड के 4 अंक के गुप्त नंबर आय।"}},
+    {"icon": "visibility_off", "text": {
+      "en": "Cover the keypad with your other hand when you type your PIN.",
+      "hi": "PIN डालते समय दूसरे हाथ से कीपैड ढक लें।",
+      "chh": "PIN डारत बखत दूसर हाथ ले कीपैड ल ढाँक ले।"}},
+    {"icon": "person_off", "text": {
+      "en": "Do not take help from strangers at the ATM. Never hand them your card.",
+      "hi": "ATM पर अनजान लोगों से मदद न लें। उन्हें अपना कार्ड न दें।",
+      "chh": "ATM म अनजान मनखे ले मदद झन ले। ओमन ल अपन कार्ड झन दे।"}},
+    {"icon": "edit_off", "text": {
+      "en": "Never write your PIN on the card or keep it in your wallet.",
+      "hi": "PIN को कार्ड पर न लिखें, न ही बटुए में रखें।",
+      "chh": "PIN ल कार्ड म झन लिख, न बटुआ म रख।"}},
+    {"icon": "block", "text": {
+      "en": "Card lost or stuck in the machine? Call your bank at once to block it.",
+      "hi": "कार्ड खो गया या मशीन में फँस गया? तुरंत बैंक को फ़ोन करके बंद कराएँ।",
+      "chh": "कार्ड गँवा गे या मसीन म फँस गे? तुरते बैंक ल फोन करके बंद करवा।"}}
+  ]
+}

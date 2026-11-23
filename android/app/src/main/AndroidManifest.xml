@@ -1,7 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Needed for /transcribe, /reports and /trends (backend). -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="scamrakshak_mobile"
+        android:label="ScamRakshak"
         android:name="${applicationName}"
+        android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

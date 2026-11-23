@@ -7,6 +7,7 @@ plugins {
 android {
     namespace = "com.scamrakshak.scam_rakshak"
     compileSdk = 36
+    // Same NDK as Flutter plugins (jni uses flutter.ndkVersion), so only one NDK is needed.
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

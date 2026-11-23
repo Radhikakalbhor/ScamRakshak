@@ -1,0 +1,65 @@
+{
+  "topic": "upi_pin",
+  "questions": [
+    {
+      "q": {"en": "When do you need to enter your UPI PIN?",
+            "hi": "UPI PIN कब डालना पड़ता है?",
+            "chh": "UPI PIN कब डारे बर परथे?"},
+      "options": {"en": ["To receive money", "To send money", "To read messages"],
+                  "hi": ["पैसे पाने के लिए", "पैसे भेजने के लिए", "मैसेज पढ़ने के लिए"],
+                  "chh": ["पइसा पाए बर", "पइसा भेजे बर", "मैसेज पढ़े बर"]},
+      "answer": 1,
+      "explain": {"en": "The PIN is only for sending money, never for receiving.",
+                  "hi": "PIN सिर्फ़ पैसे भेजने के लिए है, पाने के लिए कभी नहीं।",
+                  "chh": "PIN सिरिफ पइसा भेजे बर आय, पाए बर कभू नहीं।"}
+    },
+    {
+      "q": {"en": "A buyer sends a 'collect request' and says 'enter PIN to get my payment'. What do you do?",
+            "hi": "खरीदार 'collect request' भेजकर कहता है 'PIN डालो, पैसे आ जाएँगे'। आप क्या करेंगे?",
+            "chh": "ग्राहक 'collect request' भेज के कहिथे 'PIN डार, पइसा आ जाही'। तैं का करबे?"},
+      "options": {"en": ["Enter the PIN", "Decline the request", "Tell him the PIN"],
+                  "hi": ["PIN डाल देंगे", "रिक्वेस्ट मना कर देंगे", "उसे PIN बता देंगे"],
+                  "chh": ["PIN डार देहूँ", "रिक्वेस्ट मना कर देहूँ", "ओला PIN बता देहूँ"]},
+      "answer": 1,
+      "explain": {"en": "Entering your PIN on a collect request sends YOUR money to him.",
+                  "hi": "collect request पर PIN डालने से आपके पैसे उसके पास चले जाते हैं।",
+                  "chh": "collect request म PIN डारे ले तोर पइसा ओकर करा चल देथे।"}
+    },
+    {
+      "q": {"en": "A 'customer care' number from the internet asks you to install a screen-sharing app. You should:",
+            "hi": "इंटरनेट से मिला 'कस्टमर केयर' नंबर स्क्रीन शेयर करने वाला ऐप डालने को कहता है। आपको क्या करना चाहिए?",
+            "chh": "इंटरनेट ले मिले 'कस्टमर केयर' नंबर स्क्रीन सेयर वाला ऐप डारे बर कहिथे। तोला का करना चाही?"},
+      "options": {"en": ["Install it", "Refuse, it can steal your PIN", "Share the screen for one minute"],
+                  "hi": ["ऐप डाल देंगे", "मना करेंगे, इससे PIN चोरी हो सकता है", "एक मिनट के लिए स्क्रीन दिखा देंगे"],
+                  "chh": ["ऐप डार देहूँ", "मना करहूँ, एकर ले PIN चोरी हो सकथे", "एक मिनट बर स्क्रीन देखा देहूँ"]},
+      "answer": 1,
+      "explain": {"en": "Screen-sharing apps let thieves see your PIN and OTP.",
+                  "hi": "स्क्रीन शेयर ऐप से ठग आपका PIN और OTP देख लेते हैं।",
+                  "chh": "स्क्रीन सेयर ऐप ले ठग तोर PIN अउ OTP देख लेथे।"}
+    },
+    {
+      "q": {"en": "Before you pay by UPI, what should you check?",
+            "hi": "UPI से पैसे देने से पहले क्या जाँचना चाहिए?",
+            "chh": "UPI ले पइसा दे के पहिली का जाँचना चाही?"},
+      "options": {"en": ["The name of the person getting the money", "The colour of the app", "Nothing"],
+                  "hi": ["पैसे पाने वाले का नाम", "ऐप का रंग", "कुछ नहीं"],
+                  "chh": ["पइसा पवइया के नाम", "ऐप के रंग", "कुछु नहीं"]},
+      "answer": 0,
+      "explain": {"en": "Checking the name makes sure money goes to the right person.",
+                  "hi": "नाम देखने से पैसे सही आदमी के पास जाते हैं।",
+                  "chh": "नाम देखे ले पइसा सही मनखे करा जाथे।"}
+    },
+    {
+      "q": {"en": "Who can ask you for your UPI PIN?",
+            "hi": "आपका UPI PIN कौन माँग सकता है?",
+            "chh": "तोर UPI PIN कोन माँग सकथे?"},
+      "options": {"en": ["Bank staff", "UPI app staff", "No one"],
+                  "hi": ["बैंक कर्मचारी", "UPI ऐप वाले", "कोई नहीं"],
+                  "chh": ["बैंक के करमचारी", "UPI ऐप वाले", "कोनो नहीं"]},
+      "answer": 2,
+      "explain": {"en": "Your UPI PIN is only for you. No real company will ask for it.",
+                  "hi": "UPI PIN सिर्फ़ आपका है। कोई असली कंपनी इसे नहीं माँगती।",
+                  "chh": "UPI PIN सिरिफ तोर आय। कोनो असली कंपनी एला नइ माँगय।"}
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "qr",
+  "title": {"en": "Safe QR payments", "hi": "QR से सुरक्षित भुगतान", "chh": "QR ले सुरक्छित भुगतान"},
+  "cards": [
+    {"icon": "qr_code_2", "text": {
+      "en": "A QR code is for PAYING money, not for getting money.",
+      "hi": "QR कोड पैसे देने के लिए होता है, पाने के लिए नहीं।",
+      "chh": "QR कोड पइसा दे बर होथे, पाए बर नहीं।"}},
+    {"icon": "qr_code_scanner", "text": {
+      "en": "If someone says 'scan this to get money', it is a scam.",
+      "hi": "कोई कहे 'स्कैन करो, पैसे मिलेंगे', तो यह ठगी है।",
+      "chh": "कोनो कहय 'स्कैन कर, पइसा मिलही', त ए ठगी आय।"}},
+    {"icon": "storefront", "text": {
+      "en": "At a shop, check the name on the screen before you pay.",
+      "hi": "दुकान पर पैसे देने से पहले स्क्रीन पर नाम देख लें।",
+      "chh": "दुकान म पइसा दे के पहिली स्क्रीन म नाम देख ले।"}},
+    {"icon": "layers", "text": {
+      "en": "Look for a new sticker pasted over the shop's QR code.",
+      "hi": "देखें कि दुकान के QR पर कोई नया स्टिकर तो नहीं चिपका है।",
+      "chh": "देख, दुकान के QR ऊपर कोनो नवा स्टिकर तो नइ चिपके हे।"}},
+    {"icon": "support_agent", "text": {
+      "en": "Lost money? Quickly call 1930 or complain at cybercrime.gov.in.",
+      "hi": "पैसे गए? जल्दी 1930 पर फ़ोन करें या cybercrime.gov.in पर शिकायत करें।",
+      "chh": "पइसा गिस? जल्दी 1930 म फोन कर या cybercrime.gov.in म सिकायत कर।"}}
+  ]
+}
