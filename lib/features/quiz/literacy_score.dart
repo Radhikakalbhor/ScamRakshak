@@ -5,7 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/strings.dart';
-import '../../core/theme.dart';
+import '../../core/design/components.dart';
+import '../../core/design/tokens.dart';
 import '../lessons/lesson_models.dart';
 import 'quiz_models.dart';
 import 'quiz_strings.dart';
@@ -222,10 +223,10 @@ class _LiteracyScoreCardState extends State<LiteracyScoreCard> {
     if (d == null) return const SizedBox.shrink();
     final score = d.score;
     final color = switch (d.levelKey) {
-      'level_champion' => AppTheme.successGreen,
-      'level_safe' => AppTheme.primaryTeal,
-      'level_aware' => AppTheme.warningOrange,
-      _ => AppTheme.errorRed,
+      'level_champion' => DsColors.safe,
+      'level_safe' => DsColors.brand,
+      'level_aware' => DsColors.caution,
+      _ => DsColors.alert,
     };
     final topic = d.weakestTopic;
     final topicName = topic == null ? '' : pickLang(_titles[topic] ?? const {}, s.locale);
@@ -235,45 +236,39 @@ class _LiteracyScoreCardState extends State<LiteracyScoreCard> {
       _ => s.t('dfl_all_good'),
     };
     final n = kLessonIds.length;
-    return Card(
-      key: const Key('dfl_card'),
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: DsSpace.l),
+      child: SurfacePanel(
+        key: const Key('dfl_card'),
+        padding: const EdgeInsets.all(DsSpace.l),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Row(children: [
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(s.t('quiz_score_title'), style: Theme.of(context).textTheme.titleLarge),
-                Text(s.t('dfl_sub'), style: const TextStyle(color: AppTheme.textSecondary, fontSize: 13)),
+                Text(s.t('quiz_score_title'), style: DsType.section),
+                Text(s.t('dfl_sub'), style: DsType.small),
               ]),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: DsSpace.s),
             Column(children: [
-              Text('$score', key: const Key('dfl_score'),
-                  style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: color)),
-              Text('/100', style: const TextStyle(color: AppTheme.textSecondary)),
+              Text('$score', key: const Key('dfl_score'), style: DsType.number.copyWith(fontSize: 36)),
+              Text('/100', style: DsType.small),
             ]),
           ]),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: LinearProgressIndicator(
-                value: score / 100, minHeight: 10, color: color, backgroundColor: const Color(0xFFE0E0E0)),
-          ),
-          const SizedBox(height: 8),
+          const SizedBox(height: DsSpace.s),
+          ProgressBar(value: score / 100, color: color),
+          const SizedBox(height: DsSpace.s),
           if (!d.hasData)
-            Text(s.t('dfl_empty'), key: const Key('dfl_empty'))
+            Text(s.t('dfl_empty'), key: const Key('dfl_empty'), style: DsType.body)
           else ...[
             Row(children: [
               Container(
                 key: const Key('dfl_level'),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(12)),
-                child: Text(s.t(d.levelKey),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                padding: const EdgeInsets.symmetric(horizontal: DsSpace.m, vertical: DsSpace.xs),
+                decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(DsRadius.pill)),
+                child: Text(s.t(d.levelKey), style: DsType.label.copyWith(color: DsColors.onDark)),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: DsSpace.s),
               Expanded(
                 child: Text(
                   s
@@ -282,26 +277,26 @@ class _LiteracyScoreCardState extends State<LiteracyScoreCard> {
                       .replaceAll('{t}', '${d.topicsTried}')
                       .replaceAll('{l}', '${d.lessonCount}')
                       .replaceAll('{n}', '$n'),
-                  style: const TextStyle(fontSize: 13),
+                  style: DsType.small,
                 ),
               ),
             ]),
           ],
-          const SizedBox(height: 8),
-          Text(rec, key: const Key('dfl_recommendation'), style: const TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 4),
-          Wrap(spacing: 8, children: [
-            OutlinedButton.icon(
+          const SizedBox(height: DsSpace.s),
+          Text(rec, key: const Key('dfl_recommendation'), style: DsType.title),
+          const SizedBox(height: DsSpace.s),
+          Wrap(spacing: DsSpace.s, runSpacing: DsSpace.s, children: [
+            PillChip(
               key: const Key('dfl_learn'),
-              onPressed: () => _go('/lessons'),
-              icon: const Icon(Icons.school_rounded),
-              label: Text(s.t('dfl_learn')),
+              icon: Icons.school_rounded,
+              label: s.t('dfl_learn'),
+              onTap: () => _go('/lessons'),
             ),
-            OutlinedButton.icon(
+            PillChip(
               key: const Key('dfl_quiz'),
-              onPressed: () => _go('/quiz'),
-              icon: const Icon(Icons.psychology_rounded),
-              label: Text(s.t('dfl_quiz')),
+              icon: Icons.psychology_rounded,
+              label: s.t('dfl_quiz'),
+              onTap: () => _go('/quiz'),
             ),
           ]),
         ]),
