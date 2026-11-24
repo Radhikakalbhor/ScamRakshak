@@ -1,7 +1,12 @@
 import 'dart:io';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/auth/screens/otp_screen.dart';
+import '../features/auth/screens/profile_screen.dart';
+import '../features/auth/screens/signin_screen.dart';
 import '../features/call_detector/auto_analyze_screen.dart';
 import '../features/call_detector/call_detector_screen.dart';
 import '../features/call_detector/call_timeline.dart';
@@ -18,11 +23,84 @@ import '../features/report/report_screen.dart';
 import 'screens/home_screen.dart';
 import 'share_intent.dart';
 
+/// Router auth guard managing login redirects and deep-link destination preservation.
+class RouterAuthGuard extends ChangeNotifier {
+  static final RouterAuthGuard instance = RouterAuthGuard._();
+  RouterAuthGuard._();
+
+  bool _isAuthenticated = false;
+  bool? _testAuthenticated;
+  String? savedDestinationPath;
+  Object? savedDestinationExtra;
+
+  bool get isAuthenticated {
+    if (Firebase.apps.isEmpty) {
+      return _testAuthenticated ?? true;
+    }
+    return _isAuthenticated;
+  }
+
+  void updateAuth(bool authenticated) {
+    if (Firebase.apps.isEmpty) {
+      _testAuthenticated = authenticated;
+    } else {
+      _isAuthenticated = authenticated;
+    }
+    notifyListeners();
+  }
+
+  Object? consumeSavedExtra() {
+    final e = savedDestinationExtra;
+    savedDestinationExtra = null;
+    return e;
+  }
+}
+
 /// App router configuration using GoRouter.
 /// Routes correspond to core navigation specified in AGENTS.md and task specs.
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
+  refreshListenable: RouterAuthGuard.instance,
+  redirect: (context, state) {
+    final isAuth = RouterAuthGuard.instance.isAuthenticated;
+    final loc = state.matchedLocation;
+    final isGoingToAuth = loc == '/signin' || loc == '/otp';
+
+    // If not authenticated, preserve destination (and share extra) and force /signin
+    if (!isAuth) {
+      if (!isGoingToAuth) {
+        RouterAuthGuard.instance.savedDestinationPath = loc;
+        RouterAuthGuard.instance.savedDestinationExtra = state.extra;
+        return '/signin';
+      }
+      return null;
+    }
+
+    // If authenticated and on an auth screen, restore saved destination or redirect to '/'
+    if (isGoingToAuth) {
+      final saved = RouterAuthGuard.instance.savedDestinationPath;
+      if (saved != null && saved != '/signin' && saved != '/otp') {
+        RouterAuthGuard.instance.savedDestinationPath = null;
+        return saved;
+      }
+      return '/';
+    }
+
+    return null;
+  },
   routes: [
+    GoRoute(
+      path: '/signin',
+      builder: (context, state) => const SignInScreen(),
+    ),
+    GoRoute(
+      path: '/otp',
+      builder: (context, state) => const OtpScreen(),
+    ),
+    GoRoute(
+      path: '/profile',
+      builder: (context, state) => const ProfileScreen(),
+    ),
     GoRoute(
       path: '/',
       // AutoAnalyzeHost opens results from "auto-analyzed call recording" notifications.
@@ -32,12 +110,22 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/message',
       // Optional extra: shared text, prefilled and checked at once.
-      builder: (context, state) => MessageDetectorScreen(initialText: state.extra is String ? state.extra as String : null),
+      builder: (context, state) {
+        final extra = state.extra ?? RouterAuthGuard.instance.consumeSavedExtra();
+        return MessageDetectorScreen(
+          initialText: extra is String ? extra : null,
+        );
+      },
     ),
     GoRoute(
       path: '/call',
       // Optional extra: a shared recording (File, private cache copy) analysed at once.
-      builder: (context, state) => CallDetectorScreen(initialAudio: state.extra is File ? state.extra as File : null),
+      builder: (context, state) {
+        final extra = state.extra ?? RouterAuthGuard.instance.consumeSavedExtra();
+        return CallDetectorScreen(
+          initialAudio: extra is File ? extra : null,
+        );
+      },
     ),
     GoRoute(
       path: '/call/auto',

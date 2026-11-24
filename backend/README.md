@@ -10,6 +10,9 @@ Python FastAPI backend providing speech transcription using `faster-whisper`, fr
 - **District Trends (`GET /trends`)**: Computes real-time fraud aggregations grouped by district and scam type.
 - **Initial Dataset**: Pre-seeds exactly 300 realistic, anonymized fraud reports across 10 major Chhattisgarh districts on first launch.
 - **Cross-Origin Resource Sharing (CORS)**: Enabled to allow seamless communication with Android emulators, LAN physical devices, and web tools.
+- **Firebase Authentication & User Profiles**: Mandatory phone-number sign-in with immutable phone identity, per-user profiles (`district`, `language`), and data persistence across devices.
+- **Full Offline Sync (`/sync`)**: Two-way synchronization of detection metadata (privacy-first: scores, verdicts, categories, timestamps; NO raw message text), quiz progress, lesson progress, and personal reports.
+- **Account Privacy & Deletion (`DELETE /account`)**: Complete GDPR/privacy-compliant erasure of all personal data across all user tables while preserving anonymous aggregate threat trends.
 
 ---
 
@@ -177,11 +180,14 @@ hostname -I
 }
 ```
 *(Types: `otp`, `fake_qr`, `loan_app`, `call`, `other`)*
+- **Dual Reporting Note**: When called with a valid `Authorization: Bearer <token>`, both the anonymous `reports` row and the authenticated `user_reports` row share the exact same timestamp (`ts`). If the token is expired or invalid, the backend safely falls back to anonymous submission (`reports` row only) and reports `user_report_skipped=true`.
 - **Response**:
 ```json
 {
   "status": "success",
-  "id": 301
+  "id": 301,
+  "user_report": "recorded",
+  "user_report_skipped": false
 }
 ```
 
@@ -206,6 +212,216 @@ hostname -I
     "count": 15
   }
 ]
+```
+
+### 5. Authentication & Session Initialization
+- **Method**: `POST /auth/session`
+- **Header**: `Authorization: Bearer <Firebase_ID_Token>`
+- **Payload**:
+```json
+{
+  "username": "Ramesh Kumar",
+  "locale": "hi"
+}
+```
+- **Rules**:
+  - `uid` and verified `phone` are extracted strictly from the Firebase ID token.
+  - `username` is saved on first registration only; returning logins preserve existing username.
+  - Initial profile sets `district = "unknown"` and `language = <locale>`.
+- **Response**:
+```json
+{
+  "uid": "FIREBASE_UID_123",
+  "phone": "+919876543210",
+  "username": "Ramesh Kumar",
+  "district": "unknown",
+  "language": "hi",
+  "created_at": "2026-11-24T04:00:00Z",
+  "updated_at": "2026-11-24T04:00:00Z",
+  "is_new_user": true
+}
+```
+
+### 6. User Profile (Read & Update)
+- **Method**: `GET /profile`
+- **Header**: `Authorization: Bearer <Firebase_ID_Token>`
+- **Response**: Returns the current user profile object.
+- **Method**: `PUT /profile`
+- **Header**: `Authorization: Bearer <Firebase_ID_Token>`
+- **Payload**:
+```json
+{
+  "district": "Durg",
+  "language": "chh"
+}
+```
+- **Rules**:
+  - Only `district` (must be a valid Chhattisgarh district or `"unknown"`) and `language` (`"en"`, `"hi"`, or `"chh"`) can be updated.
+  - `phone` is strictly **immutable** and cannot be modified.
+
+### 7. User Data Sync
+- **Method**: `GET /sync`
+- **Header**: `Authorization: Bearer <Firebase_ID_Token>`
+- **Response**: Full snapshot of `detection_history`, `quiz_progress`, `lesson_progress`, and `user_reports`.
+- **Method**: `PUT /sync`
+- **Header**: `Authorization: Bearer <Firebase_ID_Token>`
+- **Payload**:
+```json
+{
+  "detection_history": [
+    {
+      "kind": "message",
+      "verdict": "scam",
+      "score": 0.94,
+      "category": "electricity_bill",
+      "ts": "2026-11-24T03:15:00Z"
+    }
+  ],
+  "quiz_progress": [
+    {
+      "topic": "phishing_basics",
+      "attempts": 3,
+      "correct": 5,
+      "total": 5,
+      "updated_at": "2026-11-24T03:20:00Z"
+    }
+  ],
+  "lesson_progress": [
+    {
+      "lesson_id": "qr_safety",
+      "completed_at": "2026-11-24T03:25:00Z"
+    }
+  ],
+  "user_reports": []
+}
+```
+- **Conflict Resolution Rules**:
+  - `detection_history`: Union of records (deduplicated on `kind`, `category`, `ts`). **Privacy rule**: stores metadata only; NEVER stores raw message text or call audio.
+  - `user_reports`: Union of records (deduplicated on `type`, `district`, `ts`).
+  - `quiz_progress`: Latest timestamp (`updated_at`) wins per topic.
+  - `lesson_progress`: Latest timestamp (`completed_at`) wins per lesson ID.
+
+### 8. Account Deletion
+- **Method**: `DELETE /account`
+- **Header**: `Authorization: Bearer <Firebase_ID_Token>`
+- **Rules**: Permanently deletes the user record and cascades to erase `profiles`, `detection_history`, `quiz_progress`, `lesson_progress`, and `user_reports`. Anonymous incident reports in the aggregate `reports` table are retained.
+- **Response**:
+```json
+{
+  "status": "success",
+  "message": "Account and all associated personal data for FIREBASE_UID_123 deleted successfully."
+}
+```
+
+---
+
+## Firebase Configuration & Local Development Mode
+
+### Firebase Service Account Key (Production Mode)
+1. Download your service account JSON key from Firebase Console (`Project Settings -> Service Accounts -> Generate new private key`).
+2. Save it at:
+   ```
+   backend/service-account.json
+   ```
+   *(Or specify the path via the `FIREBASE_SERVICE_ACCOUNT_PATH` environment variable).*
+3. **Note on Connectivity**: Firebase Admin SDK requires outbound HTTPS connectivity to Google's public x509 cert servers to verify JWT signatures.
+4. **Security Notice**: `service-account*.json` is gitignored. **NEVER commit service account keys to source control.**
+
+### AUTH_DEV_MODE (Local Mock Mode)
+For local testing without internet access or without a service account key, enable mock authentication mode:
+
+#### On Windows (PowerShell):
+```powershell
+$env:AUTH_DEV_MODE="1"
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+#### On Linux / macOS:
+```bash
+AUTH_DEV_MODE=1 uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+- When enabled, the backend accepts mock tokens in the format:
+  ```
+  Bearer mock-token:<uid>:<phone>
+  ```
+  *(Example: `Bearer mock-token:test_user_123:+919876543210`)*
+- A loud, visible warning banner is printed in the server logs on startup when `AUTH_DEV_MODE` is active.
+
+---
+
+## Testing
+
+### Run Auth & Sync Test Suite
+```bash
+python test_auth.py
+```
+Verifies 10 comprehensive test scenarios:
+- Missing and invalid token rejection (401)
+- First-time user creation (`district='unknown'`, `language=<locale>`, `is_new_user=True`)
+- Returning login idempotency and username preservation (`is_new_user=False`)
+- Phone immutability and profile update via `PUT /profile`
+- District validation on profile update (rejects non-Chhattisgarh districts with 422)
+- Multi-user data isolation between distinct UIDs
+- Sync conflict resolution (union for history/reports, latest timestamp wins for quiz/lessons)
+- Dual reporting: `POST /reports` with Bearer token writes to anonymous `reports` AND `user_reports`
+- Account deletion (`DELETE /account`) cascading across all 6 user tables
+- Production gate verification: mock tokens rejected when `AUTH_DEV_MODE` is disabled
+
+### Run Full Integration Test Suite
+```bash
+python test_all_endpoints.py
+```
+
+### Run Live Call Guard & Trends Tests
+```bash
+python -m unittest test_trends_alerts -v
+python -m unittest test_live_transcribe -v
+```
+
+---
+
+## Testing with cURL
+
+### Health Check
+```bash
+curl http://127.0.0.1:8000/health
+```
+
+### Mock Auth Session (Requires AUTH_DEV_MODE=1)
+```bash
+curl -X POST http://127.0.0.1:8000/auth/session \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer mock-token:user123:+919876543210" \
+     -d "{\"username\": \"Aman\", \"locale\": \"hi\"}"
+```
+
+### Update Profile
+```bash
+curl -X PUT http://127.0.0.1:8000/profile \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer mock-token:user123:+919876543210" \
+     -d "{\"district\": \"Durg\", \"language\": \"hi\"}"
+```
+
+### Pull Sync Data
+```bash
+curl -H "Authorization: Bearer mock-token:user123:+919876543210" \
+     http://127.0.0.1:8000/sync
+```
+
+### Submit Authenticated Report
+```bash
+curl -X POST http://127.0.0.1:8000/reports \
+     -H "Content-Type: application/json" \
+     -H "Authorization: Bearer mock-token:user123:+919876543210" \
+     -d "{\"type\": \"fake_qr\", \"district\": \"Durg\", \"ts\": \"2026-11-24T03:00:00Z\"}"
+```
+
+### Delete Account
+```bash
+curl -X DELETE http://127.0.0.1:8000/account \
+     -H "Authorization: Bearer mock-token:user123:+919876543210"
 ```
 
 ---

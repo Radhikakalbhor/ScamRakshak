@@ -6,4 +6,7 @@
 # "Attempt to invoke virtual method ... on a null object reference" for both the live camera
 # and analyzeImage. mobile_scanner's consumer rule (-keep class com.google.mlkit.* { *; })
 # only covers the top-level package, not com.google.mlkit.**.
+# Keep ML Kit's reflectively created registrars and Firebase components
 -keep class * implements com.google.firebase.components.ComponentRegistrar { <init>(); }
+-keep class com.google.firebase.auth.** { *; }
+-keep class com.google.android.gms.auth.api.** { *; }

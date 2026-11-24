@@ -37,7 +37,10 @@ class ApiClient {
   final http.Client _httpClient;
   String? _customBaseUrl;
 
-  ApiClient({http.Client? httpClient, String? baseUrl})
+  /// Optional token provider hook for attaching Bearer tokens to authenticated requests.
+  Future<String?> Function()? authTokenProvider;
+
+  ApiClient({http.Client? httpClient, String? baseUrl, this.authTokenProvider})
       : _httpClient = httpClient ?? http.Client(),
         _customBaseUrl = baseUrl;
 
@@ -151,11 +154,21 @@ class ApiClient {
       'ts': ts,
     };
 
+    final headers = <String, String>{'Content-Type': 'application/json'};
+    if (authTokenProvider != null) {
+      try {
+        final token = await authTokenProvider!();
+        if (token != null && token.isNotEmpty) {
+          headers['Authorization'] = 'Bearer $token';
+        }
+      } catch (_) {}
+    }
+
     try {
       final response = await _httpClient
           .post(
             uri,
-            headers: {'Content-Type': 'application/json'},
+            headers: headers,
             body: json.encode(payload),
           )
           .timeout(requestTimeout);

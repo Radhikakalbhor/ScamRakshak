@@ -2,13 +2,19 @@
 // ignore: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import 'core/providers.dart';
 import 'core/router.dart';
 import 'core/strings.dart';
 import 'core/theme.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase before starting the application.
+  await Firebase.initializeApp();
+
   runApp(const ProviderScope(child: ScamRakshakApp()));
 }
 
@@ -20,6 +26,7 @@ class ScamRakshakApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final locale = ref.watch(localeProvider);
+
     return MaterialApp.router(
       title: 'ScamRakshak',
       debugShowCheckedModeBanner: false,

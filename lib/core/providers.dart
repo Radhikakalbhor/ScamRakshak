@@ -6,9 +6,14 @@ import '../engine/scam_classifier.dart';
 import 'api_client.dart';
 import 'strings.dart';
 
+import '../features/auth/auth_provider.dart';
+export '../features/auth/auth_provider.dart';
+
 /// Provider for the API client communicating with backend.
 final apiClientProvider = Provider<ApiClient>((ref) {
-  return ApiClient();
+  return ApiClient(
+    authTokenProvider: () => ref.read(authRepositoryProvider).getIdToken(),
+  );
 });
 
 /// State notifier managing active app locale ('en', 'hi', 'chh')
@@ -16,8 +21,7 @@ final apiClientProvider = Provider<ApiClient>((ref) {
 class LocaleNotifier extends StateNotifier<String> {
   static const String prefKeyLocale = 'scamrakshak_selected_locale';
 
-  LocaleNotifier([String initialLocale = S.defaultLocale])
-      : super(initialLocale) {
+  LocaleNotifier([super.initialLocale = S.defaultLocale]) {
     _loadPersistedLocale();
   }
 

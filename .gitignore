@@ -49,6 +49,9 @@ venv/
 .env
 .env.*
 !.env.example
+service-account*.json
+**/service-account*.json
+*.key
 
 # Local backend files
 backend/data.db

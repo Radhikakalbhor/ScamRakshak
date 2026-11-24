@@ -12,6 +12,7 @@ Provides:
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+import datetime
 import logging
 import os
 from pathlib import Path
@@ -39,32 +40,52 @@ def _safe_av_open(*args: Any, **kwargs: Any) -> Any:
 
 av.open = _safe_av_open  # type: ignore[assignment]
 
-from fastapi import FastAPI, File, HTTPException, Query, UploadFile, status
+from fastapi import Depends, FastAPI, File, Header, HTTPException, Query, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from faster_whisper import WhisperModel
 import uvicorn
 
+from auth import (
+    AUTH_DEV_MODE,
+    AuthUser,
+    get_current_user,
+    get_optional_user,
+    print_auth_mode_banner,
+    verify_firebase_token,
+)
 from database import (
     CHHATTISGARH_DISTRICTS,
     FINGERPRINT_CATEGORIES,
     REPORT_TYPES,
     add_fingerprint,
+    add_user_report,
     canonical_district,
     create_report,
+    delete_user_account,
     get_cluster_alerts,
+    get_or_create_user,
     get_reports_count,
     get_spike_alerts,
     get_trend_summary,
     get_trends,
+    get_user_profile,
+    get_user_sync_data,
     init_db,
+    sync_user_data,
+    update_user_profile,
 )
 from models import (
+    AccountDeleteResponse,
     FingerprintCreate,
     HealthResponse,
+    ProfileUpdate,
     ReportCreate,
     ReportResponse,
+    SessionCreate,
+    SyncPayload,
     TranscribeResponse,
     TrendItem,
+    UserProfileResponse,
 )
 
 # Configure logging
@@ -106,6 +127,7 @@ SUPPORTED_AUDIO_EXTENSIONS = {
 async def lifespan(app: FastAPI):
     """FastAPI lifespan event handler to load model and database once at startup."""
     global whisper_model
+    print_auth_mode_banner()
     logger.info("Initializing ScamRakshak database...")
     init_db()
     logger.info(
@@ -305,11 +327,20 @@ def _is_silence_error(exc: Exception) -> bool:
     tags=["Reports"],
     summary="Submit a fraud report",
 )
-async def post_report(payload: ReportCreate) -> ReportResponse:
+async def post_report(
+    payload: ReportCreate,
+    authorization: Optional[str] = Header(None),
+) -> ReportResponse:
     """Submits a fraud incident report.
 
     Contract:
     POST /reports {"type": "otp|fake_qr|loan_app|call|other", "district": "...", "ts": "..."}
+
+    If authenticated via valid Bearer token, writes to anonymous reports AND user_reports.
+    If Bearer token is invalid or expired, falls back to anonymous reports (skips user_reports)
+    and returns user_report_skipped=True.
+    If anonymous (no token), writes only to anonymous reports.
+    Both anonymous and user report rows share the exact same timestamp.
     """
     clean_type = payload.type.strip().lower()
     clean_district = payload.district.strip()
@@ -334,19 +365,73 @@ async def post_report(payload: ReportCreate) -> ReportResponse:
             detail=f"Invalid report type '{clean_type}'. Allowed types: {', '.join(REPORT_TYPES)}",
         )
 
+    # Validate authentication token if provided, with safe fallback to anonymous
+    auth_user: Optional[AuthUser] = None
+    user_report_skipped = False
+    user_report_status = "anonymous"
+
+    if authorization:
+        parts = authorization.split()
+        if len(parts) == 2 and parts[0].lower() == "bearer":
+            try:
+                auth_user = verify_firebase_token(parts[1])
+            except HTTPException:
+                logger.warning(
+                    "Invalid/expired Bearer token on POST /reports; falling back to anonymous submission."
+                )
+                user_report_skipped = True
+                user_report_status = "skipped"
+            except Exception as exc:
+                logger.warning(
+                    "Token verification error on POST /reports (%s); falling back to anonymous submission.",
+                    exc,
+                )
+                user_report_skipped = True
+                user_report_status = "skipped"
+        else:
+            logger.warning(
+                "Malformed Authorization header on POST /reports; falling back to anonymous submission."
+            )
+            user_report_skipped = True
+            user_report_status = "skipped"
+
+    report_ts = payload.ts
+    if not report_ts:
+        report_ts = datetime.datetime.now(datetime.timezone.utc).isoformat()
+
     try:
+        # Anonymous aggregate report
         report_id = create_report(
             report_type=clean_type,
             district=clean_district,
-            ts=payload.ts,
+            ts=report_ts,
         )
+
+        # Authenticated user report (shares the exact same timestamp)
+        if auth_user is not None:
+            add_user_report(
+                uid=auth_user.uid,
+                report_type=clean_type,
+                district=clean_district,
+                ts=report_ts,
+            )
+            user_report_skipped = False
+            user_report_status = "recorded"
+            logger.info("Report associated with user %s in user_reports", auth_user.uid)
+
         logger.info(
-            "Report created: id=%d, type=%s, district=%s",
+            "Report created: id=%d, type=%s, district=%s, user_report=%s",
             report_id,
             clean_type,
             clean_district,
+            user_report_status,
         )
-        return ReportResponse(status="success", id=report_id)
+        return ReportResponse(
+            status="success",
+            id=report_id,
+            user_report=user_report_status,
+            user_report_skipped=user_report_skipped,
+        )
     except Exception as exc:
         logger.error("Failed to save report: %s", exc, exc_info=True)
         raise HTTPException(
@@ -407,6 +492,186 @@ async def post_fingerprint(payload: FingerprintCreate) -> Dict[str, Any]:
     if payload.category not in FINGERPRINT_CATEGORIES:
         raise HTTPException(status_code=422, detail="Unknown category.")
     return {"status": "success", "id": add_fingerprint(payload.fp, payload.category)}
+
+
+# ============================================================================
+# USER AUTHENTICATION & PROFILE ENDPOINTS
+# ============================================================================
+
+
+@app.post(
+    "/auth/session",
+    response_model=UserProfileResponse,
+    tags=["Auth"],
+    summary="Create or load user session from verified Firebase ID token",
+)
+async def create_auth_session(
+    payload: SessionCreate,
+    auth_user: AuthUser = Depends(get_current_user),
+) -> UserProfileResponse:
+    """Verifies Firebase ID token, creates user/profile on first login, or loads existing profile.
+
+    UID and verified phone number are taken strictly from the token.
+    Username is saved on initial registration only.
+    Initial profile sets district='unknown' and language=<locale>.
+    """
+    try:
+        profile_dict, is_new = get_or_create_user(
+            uid=auth_user.uid,
+            phone=auth_user.phone,
+            username=payload.username,
+            locale=payload.locale,
+        )
+        return UserProfileResponse(**profile_dict)
+    except Exception as exc:
+        logger.error(
+            "Failed to process auth session for uid=%s: %s",
+            auth_user.uid,
+            exc,
+            exc_info=True,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to initialize user session.",
+        ) from exc
+
+
+@app.get(
+    "/profile",
+    response_model=UserProfileResponse,
+    tags=["Profile"],
+    summary="Get user profile",
+)
+async def get_profile(
+    auth_user: AuthUser = Depends(get_current_user),
+) -> UserProfileResponse:
+    """Returns the authenticated user's profile. Phone number is immutable."""
+    profile = get_user_profile(auth_user.uid)
+    if not profile:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User profile not found.",
+        )
+    return UserProfileResponse(**profile)
+
+
+@app.put(
+    "/profile",
+    response_model=UserProfileResponse,
+    tags=["Profile"],
+    summary="Update user profile (district and/or language)",
+)
+async def update_profile(
+    payload: ProfileUpdate,
+    auth_user: AuthUser = Depends(get_current_user),
+) -> UserProfileResponse:
+    """Updates district and/or language for the authenticated user.
+
+    Phone number and UID are immutable and cannot be updated.
+    """
+    clean_district = None
+    if payload.district is not None:
+        canonical = canonical_district(payload.district)
+        if canonical is None:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Unknown district. Use a valid Chhattisgarh district name or 'unknown'.",
+            )
+        clean_district = canonical
+
+    clean_language = payload.language if payload.language is not None else None
+
+    updated = update_user_profile(
+        uid=auth_user.uid,
+        district=clean_district,
+        language=clean_language,
+    )
+    if not updated:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User profile not found.",
+        )
+    return UserProfileResponse(**updated)
+
+
+@app.get(
+    "/sync",
+    response_model=SyncPayload,
+    tags=["Sync"],
+    summary="Pull full user sync data",
+)
+async def pull_sync_data(
+    auth_user: AuthUser = Depends(get_current_user),
+) -> SyncPayload:
+    """Returns detection history (metadata only, no raw text), quiz progress, lesson progress, and user reports."""
+    try:
+        data = get_user_sync_data(auth_user.uid)
+        return SyncPayload(**data)
+    except Exception as exc:
+        logger.error(
+            "Failed to pull sync data for uid=%s: %s",
+            auth_user.uid,
+            exc,
+            exc_info=True,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve sync data.",
+        ) from exc
+
+
+@app.put(
+    "/sync",
+    response_model=SyncPayload,
+    tags=["Sync"],
+    summary="Push and merge user sync data",
+)
+async def push_sync_data(
+    payload: SyncPayload,
+    auth_user: AuthUser = Depends(get_current_user),
+) -> SyncPayload:
+    """Merges client sync data into the database and returns the latest unified state.
+
+    Conflict resolution:
+    - Detection history & user reports: Union of records (deduplicated).
+    - Quiz progress & lesson progress: Latest timestamp wins.
+    """
+    try:
+        merged = sync_user_data(auth_user.uid, payload.model_dump())
+        return SyncPayload(**merged)
+    except Exception as exc:
+        logger.error(
+            "Failed to merge sync data for uid=%s: %s",
+            auth_user.uid,
+            exc,
+            exc_info=True,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to merge sync data.",
+        ) from exc
+
+
+@app.delete(
+    "/account",
+    response_model=AccountDeleteResponse,
+    tags=["Account"],
+    summary="Delete user account and all personal data",
+)
+async def delete_account(
+    auth_user: AuthUser = Depends(get_current_user),
+) -> AccountDeleteResponse:
+    """Permanently deletes user, profile, detection history, quiz progress, lesson progress, and user reports."""
+    deleted = delete_user_account(auth_user.uid)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User account not found or already deleted.",
+        )
+    return AccountDeleteResponse(
+        status="success",
+        message=f"Account and all associated personal data for {auth_user.uid} deleted successfully.",
+    )
 
 
 if __name__ == "__main__":
