@@ -12,6 +12,8 @@ Provides:
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+import threading
+from starlette.concurrency import run_in_threadpool
 import datetime
 import logging
 import os
@@ -245,12 +247,12 @@ async def transcribe_audio(
             return TranscribeResponse(text="", lang=hint or "en")
 
         try:
-            segment_list, info = _run_whisper(temp_path, hint)
+            segment_list, info = await run_in_threadpool(_run_whisper, temp_path, hint)
             detected_language = hint or (info.language if (info and info.language) else "en")
             # Whisper often labels Hindi speech as Urdu and then writes Urdu script, which the
             # app's Devanagari/English rules cannot read: redo such chunks as Hindi.
             if hint is None and detected_language in ("hi", "ur") and segment_list:
-                segment_list, info = _run_whisper(temp_path, "hi")
+                segment_list, info = await run_in_threadpool(_run_whisper, temp_path, "hi")
                 detected_language = "hi"
         except Exception as exc:
             # VAD can leave nothing to decode (silence); that is an empty chunk, not an error.
@@ -290,13 +292,19 @@ async def transcribe_audio(
                 pass
 
 
+_whisper_lock = threading.Lock()
+
+
 def _run_whisper(path: str, language: Optional[str]):
     """Live-chunk settings. Hindi gets a Devanagari prompt, otherwise small models write Urdu/Latin script."""
     kwargs: Dict[str, Any] = dict(beam_size=1, vad_filter=True, condition_on_previous_text=False)
     if language == "hi":
         kwargs["initial_prompt"] = HINDI_PROMPT
-    segments, info = whisper_model.transcribe(path, language=language, **kwargs)
-    return list(segments), info
+    # Runs in a worker thread (see transcribe_audio) so /health and other requests are answered
+    # while a long recording is transcribed; one transcription at a time shares the model.
+    with _whisper_lock:
+        segments, info = whisper_model.transcribe(path, language=language, **kwargs)
+        return list(segments), info
 
 
 def _clean_segments(segments) -> List[str]:
