@@ -65,10 +65,22 @@ def initialize_firebase() -> None:
                 cred = credentials.Certificate(str(default_key_path))
                 firebase_admin.initialize_app(cred)
                 logger.info("Firebase Admin SDK initialized using: %s", default_key_path)
-            else:
-                # Fallback to default application credentials (e.g. GOOGLE_APPLICATION_CREDENTIALS)
+            elif os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"):
+                # Default application credentials
                 firebase_admin.initialize_app()
                 logger.info("Firebase Admin SDK initialized with application default credentials.")
+            else:
+                # No key on this machine: verifying ID tokens only needs the project ID and Google's
+                # public signing keys, so use anonymous credentials (no Admin API calls are made).
+                from google.auth.credentials import AnonymousCredentials
+
+                class _AnonymousCredential(credentials.Base):
+                    def get_credential(self):
+                        return AnonymousCredentials()
+
+                project_id = os.environ.get("FIREBASE_PROJECT_ID", "scamrakshak-4960e")
+                firebase_admin.initialize_app(_AnonymousCredential(), options={"projectId": project_id})
+                logger.info("Firebase Admin SDK initialized for token verification only (project %s).", project_id)
 
         _FIREBASE_INITIALIZED = True
     except Exception as exc:
