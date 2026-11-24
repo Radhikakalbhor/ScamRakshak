@@ -8,12 +8,15 @@ and per-user authentication, profile, sync, and account data storage.
 from __future__ import annotations
 
 import datetime
+import os
 from pathlib import Path
 import random
 import sqlite3
 from typing import Any, Dict, List, Optional
 
-DB_PATH = Path(__file__).resolve().parent / "data.db"
+# SQLite file. On a host with a persistent disk set DB_PATH to a file on that disk
+# (e.g. /var/data/data.db on Render); the default keeps the local backend/data.db.
+DB_PATH = Path(os.environ.get("DB_PATH") or (Path(__file__).resolve().parent / "data.db"))
 
 # 10 Chhattisgarh districts specified in requirements
 CHHATTISGARH_DISTRICTS = [

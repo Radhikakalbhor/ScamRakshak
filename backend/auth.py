@@ -164,7 +164,8 @@ def verify_firebase_token(token: str) -> AuthUser:
     except HTTPException:
         raise
     except Exception as exc:
-        logger.error("Token verification failed: %s", exc)
+        # Log the error type only: some messages quote parts of the token.
+        logger.error("Token verification failed: %s", type(exc).__name__)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Invalid or expired authentication token: {exc}",

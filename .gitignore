@@ -63,3 +63,6 @@ app.*.map.json
 
 # Release APK copies
 dist/
+
+# Downloaded speech models (Render build cache)
+backend/.hf_cache/

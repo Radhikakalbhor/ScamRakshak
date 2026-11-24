@@ -158,11 +158,14 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Enable CORS for all origins (Android emulator 10.0.2.2, phone on LAN, web preview)
+# CORS only matters for browsers (the Android app is not subject to it). CORS_ORIGINS is a
+# comma-separated list of allowed web origins; default "*" for local development. Auth uses a
+# Bearer header, not cookies, so credentials are only allowed for an explicit origin list.
+_cors_origins = [o.strip() for o in os.environ.get("CORS_ORIGINS", "*").split(",") if o.strip()] or ["*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=_cors_origins,
+    allow_credentials=_cors_origins != ["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -693,4 +696,5 @@ async def delete_account(
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)
+    # Hosts such as Render pass the port in $PORT; 8000 locally.
+    uvicorn.run("main:app", host="0.0.0.0", port=int(os.environ.get("PORT", "8000")), reload=False)

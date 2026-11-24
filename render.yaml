@@ -1,0 +1,44 @@
+# Render Blueprint for the ScamRakshak backend (FastAPI + faster-whisper + SQLite).
+# Dashboard: New + > Blueprint > pick this repository. No secrets are stored here.
+services:
+  - type: web
+    name: scamrakshak-backend
+    runtime: python
+    # Free test plan: 512 MB RAM, 0.1 CPU, sleeps after 15 min without requests, no disk.
+    # For real users switch to a paid plan ("standard" fits the better 'small' model) and
+    # uncomment the disk below so the SQLite data survives restarts and deploys.
+    plan: free
+    region: singapore
+    rootDir: backend
+    # Installs the packages and downloads the speech model during the build, so a cold start
+    # does not have to download it again (HF_HOME points inside the project folder).
+    buildCommand: >-
+      pip install -r requirements.txt &&
+      python -c "from faster_whisper import WhisperModel; WhisperModel('$WHISPER_MODEL', device='cpu', compute_type='int8')"
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      # tiny fits in 512 MB (free plan). small needs ~0.9 GB (standard plan) and reads Hindi much better.
+      - key: WHISPER_MODEL
+        value: tiny
+      - key: HF_HOME
+        value: /opt/render/project/src/backend/.hf_cache
+      # Firebase project whose ID tokens the server accepts (public ID, not a secret).
+      - key: FIREBASE_PROJECT_ID
+        value: scamrakshak-4960e
+      # Never enable on Render: it accepts fake tokens.
+      - key: AUTH_DEV_MODE
+        value: "0"
+      # Only browsers use CORS; the Android app does not need an entry here.
+      - key: CORS_ORIGINS
+        value: "*"
+      # SQLite file. With the disk below use /var/data/data.db.
+      - key: DB_PATH
+        value: /opt/render/project/src/backend/data.db
+    # disk:
+    #   name: scamrakshak-data
+    #   mountPath: /var/data
+    #   sizeGB: 1
