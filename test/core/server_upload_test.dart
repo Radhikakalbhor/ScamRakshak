@@ -59,41 +59,52 @@ void _tall(WidgetTester t) {
 
 void main() {
   group('server address resolution', () {
-    test('saved address > build-time API_BASE_URL > 10.0.2.2 (emulator only)', () {
-      expect(ApiClient.resolveBaseUrl(saved: 'http://192.168.1.9:8000', buildTime: 'http://10.1.1.1:8000', emulator: false),
-          'http://192.168.1.9:8000');
-      expect(ApiClient.resolveBaseUrl(saved: null, buildTime: 'http://172.16.201.41:8000', emulator: false),
-          'http://172.16.201.41:8000');
-      expect(ApiClient.resolveBaseUrl(saved: null, buildTime: '', emulator: true), ApiClient.emulatorBaseUrl);
+    const cloud = 'https://scamrakshak-backend.onrender.com';
+    const laptop = 'http://172.16.201.41:8000';
+
+    test('the production (Render) address is the built-in default', () {
+      expect(ApiClient.productionBaseUrl, cloud);
+      expect(ApiClient.resolveBaseUrl(buildTime: cloud, emulator: false), cloud);
+      expect(ApiClient.resolveBaseUrl(buildTime: cloud, emulator: true), cloud);
     });
 
-    test('a real phone never gets 10.0.2.2, even if it was saved by an old build', () {
+    test('an address saved under the same build wins (kept across reinstalls of that build)', () {
+      expect(ApiClient.resolveBaseUrl(saved: 'http://192.168.1.9:8000', savedForBuild: cloud, buildTime: cloud, emulator: false),
+          'http://192.168.1.9:8000');
+    });
+
+    test('a phone that saved the old laptop address moves to the new build server', () {
+      // Saved by the laptop build (the mark = the laptop build address), or by an older app without the mark.
+      expect(ApiClient.resolveBaseUrl(saved: laptop, savedForBuild: laptop, buildTime: cloud, emulator: false), cloud);
+      expect(ApiClient.resolveBaseUrl(saved: laptop, savedForBuild: null, buildTime: cloud, emulator: false), cloud);
+    });
+
+    test('a real phone never gets 10.0.2.2; the emulator alias is used only when nothing else is set', () {
       expect(ApiClient.resolveBaseUrl(saved: null, buildTime: '', emulator: false), '');
-      expect(ApiClient.resolveBaseUrl(saved: 'http://10.0.2.2:8000', buildTime: 'http://172.16.201.41:8000', emulator: false),
-          'http://172.16.201.41:8000');
-      expect(ApiClient.resolveBaseUrl(saved: 'http://10.0.2.2:8000', buildTime: '', emulator: false), '');
+      expect(ApiClient.resolveBaseUrl(saved: 'http://10.0.2.2:8000', savedForBuild: cloud, buildTime: cloud, emulator: false), cloud);
+      expect(ApiClient.resolveBaseUrl(saved: null, buildTime: '', emulator: true), ApiClient.emulatorBaseUrl);
       expect(ApiClient.resolveBaseUrl(saved: 'http://10.0.2.2:8000', emulator: true), 'http://10.0.2.2:8000');
     });
 
     test('USB (adb reverse) 127.0.0.1 is allowed on a real phone; addresses are normalized', () {
-      expect(ApiClient.resolveBaseUrl(saved: '127.0.0.1:8000/', emulator: false), 'http://127.0.0.1:8000');
+      expect(ApiClient.resolveBaseUrl(saved: '127.0.0.1:8000/', savedForBuild: cloud, buildTime: cloud, emulator: false),
+          'http://127.0.0.1:8000');
       expect(ApiClient.normalizeBaseUrl(' 192.168.1.5:8000// '), 'http://192.168.1.5:8000');
       expect(ApiClient.normalizeBaseUrl('http://'), '');
     });
 
-    test('getBaseUrl reads the saved value (kept across app updates) and setBaseUrl persists it', () async {
-      SharedPreferences.setMockInitialValues({ApiClient.prefKeyBaseUrl: 'http://192.168.1.20:8000'});
+    test('getBaseUrl: saved address (marked with this build) persists; an unmarked old one is replaced', () async {
       final old = ApiClient.isEmulator;
       ApiClient.isEmulator = () async => false;
       addTearDown(() => ApiClient.isEmulator = old);
-      expect(await ApiClient().getBaseUrl(), 'http://192.168.1.20:8000');
+      SharedPreferences.setMockInitialValues({ApiClient.prefKeyBaseUrl: laptop});
+      expect(await ApiClient().getBaseUrl(), ApiClient.buildBaseUrl);
       await ApiClient().setBaseUrl('172.16.0.7:8000/');
-      // A fresh client (as after reinstalling over the old app) sees the saved address.
+      // A fresh client (as after reinstalling the same build) sees the saved address.
       expect(await ApiClient().getBaseUrl(), 'http://172.16.0.7:8000');
       SharedPreferences.setMockInitialValues({});
       expect(await ApiClient().getBaseUrl(), ApiClient.buildBaseUrl);
     });
-
     test('isReachable uses GET /health', () async {
       final seen = <Uri>[];
       final ok = ApiClient(
@@ -249,11 +260,12 @@ void main() {
         ),
       ));
       await t.pumpAndSettle();
-      expect(find.text('Server: not set'), findsOneWidget);
+      // Fresh install: the built-in production address (unreachable in tests: no network).
+      expect(find.text('Server: not reachable'), findsOneWidget);
       await t.tap(find.byKey(const Key('server_chip')));
       await t.pumpAndSettle();
       expect(find.text('App version: 1.0.0 (build 2015)'), findsOneWidget);
-      expect(find.text('Active server: Not set'), findsOneWidget);
+      expect(find.text('Active server: ${ApiClient.buildBaseUrl}'), findsOneWidget);
       await t.enterText(find.byKey(const Key('server_field')), '172.16.201.41:8000');
       await t.tap(find.byKey(const Key('server_test')));
       await t.pumpAndSettle();

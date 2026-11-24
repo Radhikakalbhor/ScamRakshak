@@ -33,14 +33,23 @@ class ApiException implements Exception {
 class ApiClient {
   static const String prefKeyBaseUrl = 'scamrakshak_api_base_url';
 
+  /// The build-time address that was active when [prefKeyBaseUrl] was saved. A saved address
+  /// only applies to that build, so an update with a new server (e.g. laptop -> cloud) moves
+  /// phones to the new server instead of keeping an old laptop address.
+  static const String prefKeySavedForBuild = 'scamrakshak_api_base_url_build';
+
+  /// Production backend (Render). Override for local testing:
+  /// `flutter build apk --dart-define=API_BASE_URL=http://<laptop-ip>:8000`.
+  static const String productionBaseUrl = 'https://scamrakshak-backend.onrender.com';
+
   /// Android-emulator alias of the host computer. Only ever used on an emulator.
   static const String emulatorBaseUrl = 'http://10.0.2.2:8000';
 
   /// Kept for older callers; same as [emulatorBaseUrl].
   static const String defaultBaseUrl = emulatorBaseUrl;
 
-  /// Set at build time: `flutter build apk --dart-define=API_BASE_URL=http://192.168.1.5:8000`.
-  static const String buildBaseUrl = String.fromEnvironment('API_BASE_URL');
+  /// Server compiled into this build: --dart-define=API_BASE_URL, else [productionBaseUrl].
+  static const String buildBaseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: productionBaseUrl);
 
   static const Duration requestTimeout = Duration(seconds: 25);
 
@@ -74,15 +83,21 @@ class ApiClient {
   Future<String> getBaseUrl() async {
     if (_customBaseUrl != null && _customBaseUrl!.isNotEmpty) return _customBaseUrl!;
     String? saved;
+    String? savedFor;
     try {
-      saved = (await SharedPreferences.getInstance()).getString(prefKeyBaseUrl);
+      final prefs = await SharedPreferences.getInstance();
+      saved = prefs.getString(prefKeyBaseUrl);
+      savedFor = prefs.getString(prefKeySavedForBuild);
     } catch (_) {}
-    return resolveBaseUrl(saved: saved, buildTime: buildBaseUrl, emulator: await isEmulator());
+    return resolveBaseUrl(saved: saved, savedForBuild: savedFor, buildTime: buildBaseUrl, emulator: await isEmulator());
   }
 
-  /// Pure resolution rule behind [getBaseUrl] (tested).
-  static String resolveBaseUrl({String? saved, String buildTime = '', required bool emulator}) {
-    final s = normalizeBaseUrl(saved ?? '');
+  /// Pure resolution rule behind [getBaseUrl] (tested). A saved address is used only if it was
+  /// saved under the same build-time address ([savedForBuild]); older saves without that mark
+  /// count only when the build has no address of its own.
+  static String resolveBaseUrl({String? saved, String? savedForBuild, String buildTime = '', required bool emulator}) {
+    final sameBuild = normalizeBaseUrl(savedForBuild ?? '') == normalizeBaseUrl(buildTime);
+    final s = sameBuild ? normalizeBaseUrl(saved ?? '') : '';
     if (s.isNotEmpty && (emulator || !isEmulatorOnly(s))) return s;
     final b = normalizeBaseUrl(buildTime);
     if (b.isNotEmpty && (emulator || !isEmulatorOnly(b))) return b;
@@ -112,6 +127,7 @@ class ApiClient {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(prefKeyBaseUrl, _customBaseUrl!);
+      await prefs.setString(prefKeySavedForBuild, buildBaseUrl);
     } catch (_) {}
   }
 
