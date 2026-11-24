@@ -297,7 +297,17 @@ _whisper_lock = threading.Lock()
 
 def _run_whisper(path: str, language: Optional[str]):
     """Live-chunk settings. Hindi gets a Devanagari prompt, otherwise small models write Urdu/Latin script."""
-    kwargs: Dict[str, Any] = dict(beam_size=1, vad_filter=True, condition_on_previous_text=False)
+    # temperature 0 only: the default fallback re-decodes every unclear 30 s window up to 5 more times
+    # (7 min of Hindi: 608 s -> 107 s on this CPU). no_repeat_ngram_size stops the loops ("लिए लिए
+    # लिए ...") that greedy decoding can fall into without that fallback. (repetition_penalty is not
+    # used: it garbled Hindi words, e.g. अरेस्ट -> औरेस्ट.)
+    kwargs: Dict[str, Any] = dict(
+        beam_size=1,
+        vad_filter=True,
+        condition_on_previous_text=False,
+        temperature=0.0,
+        no_repeat_ngram_size=3,
+    )
     if language == "hi":
         kwargs["initial_prompt"] = HINDI_PROMPT
     # Runs in a worker thread (see transcribe_audio) so /health and other requests are answered

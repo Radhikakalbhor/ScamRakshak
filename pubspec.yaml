@@ -2,7 +2,7 @@
 name: scam_rakshak
 description: "ScamRakshak - Offline-first Flutter app for scam detection, prevention, and reporting."
 publish_to: "none"
-version: 1.0.0+2017
+version: 1.0.0+2018
 
 environment:
   sdk: ^3.14.0
