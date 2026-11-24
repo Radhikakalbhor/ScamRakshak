@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/api_client.dart';
 import '../../core/providers.dart';
 import '../../core/strings.dart';
+import '../../core/widgets/server_settings.dart';
 import '../../core/design/components.dart';
 import '../../core/design/tokens.dart';
 import '../../engine/models.dart';
@@ -22,13 +23,39 @@ import 'call_triggers.dart';
 typedef AudioPicker = Future<File?> Function();
 
 /// Call-recording formats the backend accepts (POST /transcribe).
-const kCallAudioExtensions = ['m4a', 'mp3', 'wav', 'amr', 'ogg', 'aac', '3gp'];
+const kCallAudioExtensions = ['m4a', 'mp3', 'wav', 'amr', 'ogg', 'aac', '3gp', 'opus'];
+
+/// Thrown by the picker when a file was chosen but has no readable path.
+class AudioPickException implements Exception {
+  final String message;
+  const AudioPickException(this.message);
+  @override
+  String toString() => message;
+}
+
+/// Extension of [path] in lower case ('' if none).
+String audioExtension(String path) {
+  final name = path.split(RegExp(r'[\\/]')).last;
+  final dot = name.lastIndexOf('.');
+  return dot < 0 ? '' : name.substring(dot + 1).toLowerCase();
+}
+
+/// Null when [file] can be uploaded, else the string key of the problem.
+String? checkPickedAudio(File? file) {
+  if (file == null) return 'call_no_file';
+  if (!kCallAudioExtensions.contains(audioExtension(file.path))) return 'call_ext_unsupported';
+  return null;
+}
 
 Future<File?> _defaultPicker() async {
-  // FileType.audio hides .amr/.3gp on some phones, so list the extensions explicitly.
-  final res = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: kCallAudioExtensions);
-  final path = res?.files.single.path;
-  return path == null ? null : File(path);
+  // FileType.custom maps each extension to a MIME type; on Android .amr/.3gp/.opus often have
+  // none, which hides those files or makes the picker fail. Show every file and check the
+  // extension after picking instead.
+  final res = await FilePicker.platform.pickFiles(type: FileType.any);
+  if (res == null || res.files.isEmpty) return null; // cancelled
+  final path = res.files.single.path;
+  if (path == null) throw const AudioPickException('no file path from the picker');
+  return File(path);
 }
 
 /// Lists bundled sample transcripts (assets/samples/*.txt), sorted by path.
@@ -73,6 +100,9 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
   late final Future<List<String>> _samples;
   bool _busy = false;
   String? _errorKey;
+  String? _errorDetail;
+  UploadStage? _stage;
+  UploadCancel? _cancel;
   String? _transcript;
   CallResult? _result;
 
@@ -94,6 +124,7 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
 
   @override
   void dispose() {
+    _cancel?.cancel();
     final shared = widget.initialAudio;
     if (shared != null) {
       try {
@@ -118,51 +149,87 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
   Future<void> _pickAndTranscribe() async {
     setState(() {
       _errorKey = null;
+      _errorDetail = null;
       _result = null;
       _transcript = null;
     });
     File? file;
     try {
       file = await widget.pickAudio();
-    } catch (_) {
-      file = null;
-    }
-    if (!mounted) return;
-    if (file == null) {
-      setState(() => _errorKey = 'call_no_file');
+    } catch (e) {
+      debugPrint('[call] picker failed: $e');
+      if (mounted) {
+        setState(() {
+          _errorKey = 'call_pick_failed';
+          _errorDetail = '$e';
+        });
+      }
       return;
     }
-    await _transcribe(file);
+    if (!mounted) return;
+    final problem = checkPickedAudio(file);
+    if (problem != null) {
+      debugPrint('[call] picked ${file?.path}: $problem');
+      setState(() {
+        _errorKey = problem;
+        _errorDetail = file == null ? null : file.path.split(RegExp(r'[\\/]')).last;
+      });
+      return;
+    }
+    await _transcribe(file!);
   }
 
+  void _cancelUpload() => _cancel?.cancel();
+
   Future<void> _transcribe(File file) async {
+    final cancel = _cancel = UploadCancel();
     setState(() {
       _busy = true;
+      _stage = UploadStage.checking;
       _errorKey = null;
+      _errorDetail = null;
       _result = null;
       _transcript = null;
     });
     String? errorKey;
+    String? detail;
     String text = '';
     try {
-      final res = await ref.read(apiClientProvider).transcribe(file);
+      final res = await transcribeWithChecks(
+        ref.read(apiClientProvider),
+        file,
+        cancel: cancel,
+        onStage: (st) {
+          if (mounted && identical(_cancel, cancel)) setState(() => _stage = st);
+        },
+      );
       text = (res['text'] ?? '').toString().trim();
       if (text.isEmpty) errorKey = 'call_empty_transcript';
-    } on ApiOfflineException {
-      errorKey = 'call_backend_offline';
+    } on UploadCancelledException {
+      errorKey = 'call_cancelled';
+    } on ApiOfflineException catch (e) {
+      final url = await ref.read(apiClientProvider).getBaseUrl();
+      errorKey = url.isEmpty ? 'call_no_server' : 'call_backend_offline';
+      detail = url.isEmpty ? null : '$url — ${e.message}';
     } on ApiException catch (e) {
       errorKey = switch (e.statusCode) {
         400 || 415 => 'call_format_unsupported',
         503 => 'call_server_busy',
         _ => 'call_transcribe_failed',
       };
-    } catch (_) {
+      detail = 'HTTP ${e.statusCode}';
+    } catch (e) {
       errorKey = 'call_transcribe_failed';
+      detail = '$e';
     }
-    if (!mounted) return;
+    debugPrint('[call] upload ${file.path}: ${errorKey ?? 'ok (${text.length} chars)'} ${detail ?? ''}');
+    if (!mounted || !identical(_cancel, cancel)) return;
     setState(() {
       _busy = false;
+      _stage = null;
+      _cancel = null;
       _errorKey = errorKey;
+      _errorDetail = detail;
     });
     if (errorKey == null) _analyze(text);
   }
@@ -188,6 +255,8 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(DsSpace.xl, DsSpace.s, DsSpace.xl, DsSpace.section),
           children: [
+            const Align(alignment: Alignment.centerLeft, child: ServerStatusChip()),
+            const SizedBox(height: DsSpace.m),
             Text(s.t('call_intro'), style: DsType.body),
             const SizedBox(height: DsSpace.l),
             PrimaryButton(
@@ -208,7 +277,27 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
             if (_busy)
               Padding(
                 padding: const EdgeInsets.only(top: DsSpace.m),
-                child: Text(s.t('call_transcribing'), style: DsType.body),
+                child: Row(children: [
+                  Expanded(
+                    child: Text(
+                      s.t(switch (_stage) {
+                        UploadStage.checking => 'call_stage_checking',
+                        UploadStage.uploading => 'call_stage_uploading',
+                        UploadStage.transcribing => 'call_stage_transcribing',
+                        null => 'call_transcribing',
+                      }),
+                      key: const Key('call_stage'),
+                      style: DsType.body,
+                    ),
+                  ),
+                  if (_cancel != null)
+                    PillChip(
+                      key: const Key('call_cancel'),
+                      icon: Icons.close_rounded,
+                      label: s.t('call_cancel'),
+                      onTap: _cancelUpload,
+                    ),
+                ]),
               ),
             if (rules.isLoading)
               Padding(padding: const EdgeInsets.only(top: DsSpace.s), child: Text(s.t('call_loading_rules'), style: DsType.small)),
@@ -217,7 +306,7 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
                 padding: const EdgeInsets.only(top: DsSpace.s),
                 child: Text(s.t('call_rules_error'), style: DsType.body.copyWith(color: DsColors.alert)),
               ),
-            if (_errorKey != null) _errorBox(s.t(_errorKey!)),
+            if (_errorKey != null) _errorBox(_errorText(s)),
             if (_errorKey != null && !_busy && widget.initialAudio != null && widget.initialAudio!.existsSync())
               Padding(
                 padding: const EdgeInsets.only(top: DsSpace.s),
@@ -277,6 +366,14 @@ class _CallDetectorScreenState extends ConsumerState<CallDetectorScreen> {
         ),
       ),
     );
+  }
+
+  String _errorText(S s) {
+    final msg = s
+        .t(_errorKey!)
+        .replaceAll('{ext}', _errorDetail == null ? '?' : '.${audioExtension(_errorDetail!)}')
+        .replaceAll('{formats}', kCallAudioExtensions.join(', '));
+    return _errorDetail == null ? msg : '$msg\n($_errorDetail)';
   }
 
   Widget _errorBox(String msg) => Padding(

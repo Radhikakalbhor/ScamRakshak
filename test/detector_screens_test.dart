@@ -17,7 +17,7 @@ import 'package:scam_rakshak/features/report/report_screen.dart';
 
 Map<String, dynamic> _json(String path) => jsonDecode(File(path).readAsStringSync()) as Map<String, dynamic>;
 
-class _OfflineApi extends ApiClient {
+class _OfflineApi extends ApiClient with _UploadViaTranscribe {
   @override
   Future<Map> transcribe(File audio) async => throw const ApiOfflineException('offline');
 
@@ -25,19 +25,30 @@ class _OfflineApi extends ApiClient {
   Future<void> postReport(String type, String district) async {}
 }
 
-class _StatusApi extends ApiClient {
+class _StatusApi extends ApiClient with _UploadViaTranscribe {
   final int status;
   _StatusApi(this.status);
   @override
   Future<Map> transcribe(File audio) async => throw ApiException(status, 'x');
 }
 
-class _TranscribeApi extends ApiClient {
+class _TranscribeApi extends ApiClient with _UploadViaTranscribe {
   @override
   Future<Map> transcribe(File audio) async =>
       {'text': 'Main bank se bol raha hu, aapka KYC pending hai, OTP bataiye turant', 'lang': 'hi'};
 }
 
+/// Routes the shared upload routine (transcribeWithChecks) to the fake's transcribe().
+mixin _UploadViaTranscribe on ApiClient {
+  @override
+  Future<bool> isReachable({Duration timeout = const Duration(seconds: 4)}) async => true;
+  @override
+  Future<String> getBaseUrl() async => 'http://test:8000';
+  @override
+  Future<Map> transcribeUpload(File audio,
+          {void Function()? onSent, UploadCancel? cancel, Duration timeout = const Duration(minutes: 5)}) =>
+      transcribe(audio);
+}
 void _tallView(WidgetTester tester) {
   tester.view.physicalSize = const Size(900, 3000);
   tester.view.devicePixelRatio = 1.0;
@@ -161,6 +172,15 @@ void main() {
       expect(find.textContaining('needs the ScamRakshak server'), findsOneWidget);
       expect(find.textContaining('amr'), findsOneWidget);
 
+      await tester.tap(find.byKey(const Key('call_pick')));
+      await tester.pumpAndSettle();
+      // Checked on the phone before any upload.
+      expect(find.textContaining('(.xyz) is not a supported call recording'), findsOneWidget);
+
+      // A supported extension the server still cannot read.
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(app(CallDetectorScreen(pickAudio: () async => File('x.opus')), api: _StatusApi(400)));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('call_pick')));
       await tester.pumpAndSettle();
       expect(find.textContaining('This file type cannot be read'), findsOneWidget);

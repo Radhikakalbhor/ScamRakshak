@@ -60,3 +60,6 @@ backend/sample.wav
 # Symbolication
 app.*.symbols
 app.*.map.json
+
+# Release APK copies
+dist/

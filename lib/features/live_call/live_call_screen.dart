@@ -6,11 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:permission_handler/permission_handler.dart' show openAppSettings;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/api_client.dart';
 import '../../core/providers.dart';
 import '../../core/strings.dart';
+import '../../core/widgets/server_settings.dart';
 import '../../core/design/components.dart';
 import '../../core/design/tokens.dart';
 import '../../engine/live_call_analyzer.dart';
@@ -124,6 +126,11 @@ class _LiveCallScreenState extends ConsumerState<LiveCallScreen> {
     _wakelock = ref.read(wakelockProvider);
     _loadConsent();
     _loadServerUrl();
+    serverSettingsChanged.addListener(_onServerSaved);
+  }
+
+  void _onServerSaved() {
+    if (mounted && !_busy) _testServer();
   }
 
   Future<void> _loadConsent() async {
@@ -148,6 +155,7 @@ class _LiveCallScreenState extends ConsumerState<LiveCallScreen> {
 
   @override
   void dispose() {
+    serverSettingsChanged.removeListener(_onServerSaved);
     _session++;
     _stopRequested = true;
     if (!(_stopSignal?.isCompleted ?? true)) _stopSignal!.complete();
@@ -303,14 +311,16 @@ class _LiveCallScreenState extends ConsumerState<LiveCallScreen> {
     final reachable = await api.isReachable();
     if (!_alive(session)) return;
     setState(() => _serverOk = reachable);
+    debugPrint('[live] server ${_serverUrl.isEmpty ? '(not set)' : _serverUrl}: ${reachable ? 'reachable' : 'NOT reachable'}');
     if (!reachable) {
-      _setError('live_offline', _serverUrl);
+      _setError('live_offline', _serverUrl.isEmpty ? 'No server address set' : _serverUrl);
       return;
     }
     final rec = ref.read(chunkRecorderProvider);
     Directory dir;
     try {
       if (!await rec.hasPermission()) {
+        debugPrint('[live] microphone permission denied');
         if (_alive(session)) _setError('live_mic_denied');
         return;
       }
@@ -361,6 +371,7 @@ class _LiveCallScreenState extends ConsumerState<LiveCallScreen> {
         _delete(file);
         return;
       }
+      debugPrint('[live] chunk $n recorded: peak ${peak.toStringAsFixed(1)} dB${peak < silenceDb ? ' (silent, not sent)' : ', uploading'}');
       if (peak < silenceDb) {
         _delete(file); // nothing to transcribe
         setState(() => _silentRun++);
@@ -388,13 +399,16 @@ class _LiveCallScreenState extends ConsumerState<LiveCallScreen> {
       if (!_alive(session)) return;
       _uploadFailures = 0;
       final text = (r['text'] ?? '').toString().trim();
+      debugPrint('[live] chunk transcribed: ${text.length} chars');
       if (text.isNotEmpty) _onText(text);
     } on ApiOfflineException catch (e) {
+      debugPrint('[live] chunk upload failed: ${e.message}');
       if (_alive(session)) {
         setState(() => _serverOk = false);
         _setError('live_offline', '$_serverUrl\n${e.message}');
       }
     } on ApiException catch (e) {
+      debugPrint('[live] chunk upload failed: HTTP ${e.statusCode}');
       if (_alive(session)) {
         _uploadFailures++;
         if (_uploadFailures >= maxUploadFailures) {
@@ -537,47 +551,9 @@ class _LiveCallScreenState extends ConsumerState<LiveCallScreen> {
   }
 
   Future<void> _editServer() async {
-    final s = S.of(context);
-    final ctrl = TextEditingController(text: _serverUrl);
-    final url = await showDsDialog<String>(
-      context,
-      title: s.t('live_server_title'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(s.t('live_server_help'), style: DsType.body),
-          const SizedBox(height: DsSpace.m),
-          AppTextField(
-            key: const Key('live_server_field'),
-            controller: ctrl,
-            keyboardType: TextInputType.url,
-            autocorrect: false,
-            hint: 'http://192.168.1.5:8000',
-          ),
-        ],
-      ),
-      actions: (ctx) => [
-        PrimaryButton(
-          key: const Key('live_server_save'),
-          label: s.t('live_server_save'),
-          onPressed: () => Navigator.of(ctx).pop(ctrl.text),
-        ),
-        PrimaryButton(label: s.t('btn_cancel'), filled: false, onPressed: () => Navigator.of(ctx).pop()),
-      ],
-    );
-    if (url == null || !mounted) return;
-    var clean = url.trim();
-    if (clean.isEmpty) return;
-    if (!clean.startsWith('http://') && !clean.startsWith('https://')) clean = 'http://$clean';
-    while (clean.endsWith('/')) {
-      clean = clean.substring(0, clean.length - 1);
-    }
-    if (Uri.tryParse(clean)?.host.isEmpty ?? true) return;
-    await ref.read(apiClientProvider).setBaseUrl(clean);
-    await _testServer();
+    await showServerSettings(context);
+    if (mounted) await _testServer();
   }
-
   // ---- UI -----------------------------------------------------------------------------
 
   @override
@@ -686,8 +662,7 @@ class _LiveCallScreenState extends ConsumerState<LiveCallScreen> {
   );
 
   Widget _serverCard(S s) {
-    final emulatorOnly =
-        _serverUrl.contains('10.0.2.2') || _serverUrl.contains('localhost') || _serverUrl.contains('127.0.0.1');
+    final emulatorOnly = ApiClient.isEmulatorOnly(_serverUrl);
     final (icon, color, text) = _serverChecking
         ? (Icons.sync_rounded, DsColors.muted, s.t('live_server_checking'))
         : switch (_serverOk) {
@@ -711,7 +686,12 @@ class _LiveCallScreenState extends ConsumerState<LiveCallScreen> {
             ],
           ),
           const SizedBox(height: DsSpace.xs),
-          Text(_serverUrl, key: const Key('live_server_url'), style: DsType.body),
+          Text(_serverUrl.isEmpty ? '—' : _serverUrl, key: const Key('live_server_url'), style: DsType.body),
+          if (!widget.showDemo) ...[
+            // The demo card (when shown) already carries this note.
+            const SizedBox(height: DsSpace.s),
+            Text(s.t('live_mic_sub'), key: const Key('live_mic_note'), style: DsType.small),
+          ],
           if (emulatorOnly) ...[
             const SizedBox(height: DsSpace.s),
             Text(s.t('live_server_emulator_hint'), style: DsType.body.copyWith(color: DsColors.caution)),
@@ -855,6 +835,26 @@ class _LiveCallScreenState extends ConsumerState<LiveCallScreen> {
             if (_errorDetail != null) ...[
               const SizedBox(height: DsSpace.s),
               Text(_errorDetail!, style: DsType.caption),
+            ],
+            if (_errorKey == 'live_mic_denied') ...[
+              const SizedBox(height: DsSpace.m),
+              PrimaryButton(
+                key: const Key('live_open_settings'),
+                label: s.t('live_open_settings'),
+                icon: Icons.settings_outlined,
+                filled: false,
+                onPressed: () => openAppSettings(),
+              ),
+            ],
+            if (_errorKey == 'live_offline') ...[
+              const SizedBox(height: DsSpace.m),
+              PrimaryButton(
+                key: const Key('live_offline_settings'),
+                label: s.t('live_server_change'),
+                icon: Icons.dns_outlined,
+                filled: false,
+                onPressed: _editServer,
+              ),
             ],
             if (offerDemo) ...[
               const SizedBox(height: DsSpace.m),

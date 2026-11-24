@@ -172,7 +172,7 @@ void main() {
   });
 }
 
-class _TranscriptApi extends ApiClient {
+class _TranscriptApi extends ApiClient with _UploadViaTranscribe {
   final String text;
   _TranscriptApi(this.text);
 
@@ -184,4 +184,16 @@ class _TranscriptApi extends ApiClient {
 
   @override
   Future<String> getBaseUrl() async => 'http://test:8000';
+}
+
+/// Routes the shared upload routine (transcribeWithChecks) to the fake's transcribe().
+mixin _UploadViaTranscribe on ApiClient {
+  @override
+  Future<bool> isReachable({Duration timeout = const Duration(seconds: 4)}) async => true;
+  @override
+  Future<String> getBaseUrl() async => 'http://test:8000';
+  @override
+  Future<Map> transcribeUpload(File audio,
+          {void Function()? onSent, UploadCancel? cancel, Duration timeout = const Duration(minutes: 5)}) =>
+      transcribe(audio);
 }

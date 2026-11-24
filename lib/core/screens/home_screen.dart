@@ -9,6 +9,7 @@ import '../design/components.dart';
 import '../design/tokens.dart';
 import '../strings.dart';
 import '../widgets/language_switcher.dart';
+import '../widgets/server_settings.dart';
 
 /// ScamRakshak home (design/SPEC.md, styled by design/DESIGN_SYSTEM.md):
 /// 1 header (logo + ScamRakshak, 3 bell) -> 2 Language / भाषा -> 4 Report Fraud (1930)
@@ -61,7 +62,9 @@ class HomeScreen extends StatelessWidget {
               ],
               title: s.t('home_title'),
             ),
-            const SizedBox(height: DsSpace.xl),
+            const SizedBox(height: DsSpace.m),
+            const Align(alignment: Alignment.centerLeft, child: ServerStatusChip()),
+            const SizedBox(height: DsSpace.l),
 
             // 4: Report Fraud (the one alert-colored card)
             _ReportFraudCard(

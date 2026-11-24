@@ -28,7 +28,7 @@ class _FakeSource implements ShareSource {
   void listen(void Function(SharedItem item) cb) => onItem = cb;
 }
 
-class _Api extends ApiClient {
+class _Api extends ApiClient with _UploadViaTranscribe {
   final uploads = <String>[];
   bool offline = false;
   @override
@@ -193,4 +193,16 @@ void main() {
     expect(activity, contains('onShare'));
     expect(File('pubspec.yaml').readAsStringSync(), contains('mobile_scanner: 7.0.1'));
   });
+}
+
+/// Routes the shared upload routine (transcribeWithChecks) to the fake's transcribe().
+mixin _UploadViaTranscribe on ApiClient {
+  @override
+  Future<bool> isReachable({Duration timeout = const Duration(seconds: 4)}) async => true;
+  @override
+  Future<String> getBaseUrl() async => 'http://test:8000';
+  @override
+  Future<Map> transcribeUpload(File audio,
+          {void Function()? onSent, UploadCancel? cancel, Duration timeout = const Duration(minutes: 5)}) =>
+      transcribe(audio);
 }

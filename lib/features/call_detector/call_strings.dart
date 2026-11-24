@@ -22,6 +22,14 @@ class CallStrings {
           'Could not reach the ScamRakshak server, so the recording was not converted. Check your internet, or try a sample call below.',
       'call_transcribe_failed': 'The recording could not be converted. Please try another file or a sample call.',
       'call_no_file': 'No file was chosen.',
+      'call_pick_failed': 'The file could not be opened from the picker. Try choosing it again from "Audio" or "Recordings", or share it to ScamRakshak from your Files app.',
+      'call_ext_unsupported': 'This file type ({ext}) is not a supported call recording. Supported: {formats}.',
+      'call_stage_checking': 'Checking the server…',
+      'call_stage_uploading': 'Uploading the recording…',
+      'call_stage_transcribing': 'Turning the call into text… (long calls can take a few minutes)',
+      'call_cancel': 'Cancel',
+      'call_cancelled': 'Cancelled.',
+      'call_no_server': 'No server address is set. Tap the Server chip above and enter the laptop address.',
       'call_needs_server':
           'Formats: {formats}. Turning a recording into text needs the ScamRakshak server (internet or the same Wi-Fi). Sample calls work offline.',
       'call_format_unsupported':
@@ -67,6 +75,14 @@ class CallStrings {
           'ScamRakshak सर्वर से जुड़ नहीं पाए, इसलिए रिकॉर्डिंग नहीं बदली। इंटरनेट जांचें या नीचे नमूना कॉल आज़माएँ।',
       'call_transcribe_failed': 'रिकॉर्डिंग नहीं बदल पाई। दूसरी फ़ाइल या नमूना कॉल आज़माएँ।',
       'call_no_file': 'कोई फ़ाइल नहीं चुनी गई।',
+      'call_pick_failed': 'चुनी गई फ़ाइल खुल नहीं पाई। "Audio" या "Recordings" से फिर चुनें, या Files ऐप से ScamRakshak में शेयर करें।',
+      'call_ext_unsupported': 'यह फ़ाइल ({ext}) कॉल रिकॉर्डिंग के रूप में नहीं चलती। चलने वाले प्रकार: {formats}।',
+      'call_stage_checking': 'सर्वर जाँच रहे हैं…',
+      'call_stage_uploading': 'रिकॉर्डिंग भेज रहे हैं…',
+      'call_stage_transcribing': 'कॉल को शब्दों में बदल रहे हैं… (लंबी कॉल में कुछ मिनट लग सकते हैं)',
+      'call_cancel': 'रद्द करें',
+      'call_cancelled': 'रद्द कर दिया।',
+      'call_no_server': 'सर्वर का पता नहीं डाला गया है। ऊपर सर्वर बटन दबाकर लैपटॉप का पता डालें।',
       'call_needs_server':
           'फ़ॉर्मेट: {formats}। रिकॉर्डिंग को शब्दों में बदलने के लिए ScamRakshak सर्वर (इंटरनेट या वही Wi-Fi) चाहिए। नमूना कॉल बिना इंटरनेट चलते हैं।',
       'call_format_unsupported':
@@ -112,6 +128,14 @@ class CallStrings {
           'ScamRakshak सर्वर ले नइ जुड़ पाइस, तेकर सेती रिकॉर्डिंग नइ बदलिस। इंटरनेट देख या तरी नमूना कॉल देख।',
       'call_transcribe_failed': 'रिकॉर्डिंग नइ बदलिस। दूसर फाइल या नमूना कॉल देख।',
       'call_no_file': 'कोनो फाइल नइ चुने गिस।',
+      'call_pick_failed': 'चुने फाइल नइ खुलिस। "Audio" या "Recordings" ले फेर चुनव, या Files ऐप ले ScamRakshak म शेयर करव।',
+      'call_ext_unsupported': 'ए फाइल ({ext}) कॉल रिकॉर्डिंग के रूप म नइ चलय। चलइया प्रकार: {formats}।',
+      'call_stage_checking': 'सर्वर जाँचत हन…',
+      'call_stage_uploading': 'रिकॉर्डिंग भेजत हन…',
+      'call_stage_transcribing': 'कॉल ल सब्द म बदलत हन… (लंबा कॉल म कुछ मिनट लग सकथे)',
+      'call_cancel': 'रद्द करव',
+      'call_cancelled': 'रद्द कर दे गिस।',
+      'call_no_server': 'सर्वर के पता नइ डारे गे हे। ऊपर सर्वर बटन दबा के लैपटॉप के पता डारव।',
       'call_needs_server':
           'फॉर्मेट: {formats}। रिकॉर्डिंग ल सब्द म बदले बर ScamRakshak सर्वर (इंटरनेट या उही Wi-Fi) चाही। नमूना कॉल बिना इंटरनेट चलथे।',
       'call_format_unsupported':

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../../engine/call_analyzer.dart';
+import '../../engine/call_floor.dart';
 import '../../engine/live_call_analyzer.dart';
 import '../../engine/models.dart';
 import 'call_highlight.dart';
@@ -34,7 +35,7 @@ class CallTimelineResult {
   /// 'high' | 'medium' | 'low'.
   final String risk;
 
-  /// 0..1 scam score, consistent with [risk] (high >= 0.8, medium 0.5-0.79, low < 0.5).
+  /// 0..1 scam score, consistent with [risk] (high >= 0.85, medium 0.55-0.84, low < 0.5).
   final double score;
   final CallResult result;
   final List<TimelinePoint> points;
@@ -109,9 +110,10 @@ class CallTimeline {
 
     final whole = rules.analyze(text);
     final risk = _rank[whole.risk]! >= _rank[state.risk]! ? whole.risk : state.risk;
+    // Level and percentage agree: HIGH >= 85 %, MEDIUM 55-84 %, LOW < 50 % (CallFloor.highMin/mediumMin).
     final score = switch (risk) {
-      'high' => state.score.clamp(0.8, 1.0),
-      'medium' => state.score.clamp(0.5, 0.79),
+      'high' => state.score.clamp(CallFloor.highMin, 1.0),
+      'medium' => state.score.clamp(CallFloor.mediumMin, CallFloor.highMin - 0.01),
       _ => state.score.clamp(0.0, 0.49),
     }.toDouble();
     // Keep every phrase either analyzer found (rules first, in transcript order).

@@ -565,8 +565,8 @@ void main() {
     a.reachable = true;
     await t.tap(find.byKey(const Key('live_server_edit')));
     await settle(t, steps: 3);
-    await t.enterText(find.byKey(const Key('live_server_field')), ' 172.16.203.18:8000/ ');
-    await t.tap(find.byKey(const Key('live_server_save')));
+    await t.enterText(find.byKey(const Key('server_field')), ' 172.16.203.18:8000/ ');
+    await t.tap(find.byKey(const Key('server_save')));
     await settle(t);
     expect(await a.getBaseUrl(), 'http://172.16.203.18:8000');
     expect(find.text('http://172.16.203.18:8000'), findsOneWidget);

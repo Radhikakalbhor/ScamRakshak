@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/services.dart' show rootBundle;
 
+import 'call_floor.dart';
 import 'call_intent.dart';
 import 'models.dart';
 
@@ -18,7 +19,10 @@ class CallScore {
   /// Sum of [byType]; compared against the risk levels.
   final int total;
 
-  const CallScore(this.result, this.byType, this.total);
+  /// The request floor that raised the risk ([CallFloor]), if any.
+  final FloorHit? floor;
+
+  const CallScore(this.result, this.byType, this.total, [this.floor]);
 }
 
 /// A normalized transcript plus, for every normalized character, its index in the original text.
@@ -169,14 +173,24 @@ class CallAnalyzer {
         found.add((start: h.start, match: h.match, weight: h.weight));
       }
     }
-    found.sort((a, b) => a.start.compareTo(b.start));
-
     final total = byType.values.fold(0, (a, b) => a + b);
-    final risk = total >= highLevel ? 'high' : (total >= mediumLevel ? 'medium' : 'low');
-    debugPrint('[detect] CallAnalyzer risk=$risk total=$total byType=$byType '
+    final weighted = total >= highLevel ? 'high' : (total >= mediumLevel ? 'medium' : 'low');
+    // Deterministic floor after the weighted score: secret/KYC request (+ pretext) => medium/high.
+    final floor = CallFloor.evaluate(transcript);
+    final risk = CallFloor.raise(weighted, floor);
+    if (floor != null) {
+      final lower = transcript.toLowerCase();
+      for (final m in floor.matches) {
+        if (CallFloor.overlapsAny(m, [for (final f in found) f.match]) || found.any((f) => duplicateMatch(f.match, m))) continue;
+        found.add((start: math.max(0, lower.indexOf(m.phrase)), match: m, weight: 0));
+      }
+    }
+    found.sort((a, b) => a.start.compareTo(b.start));
+    debugPrint('[detect] CallAnalyzer risk=$risk (weighted=$weighted floor=${floor?.level ?? '-'}${floor == null ? '' : ': ${floor.reason}'}) '
+        'total=$total byType=$byType '
         '(medium>=$mediumLevel high>=$highLevel; byType=max(capped phrases, intent); classifier not used) '
         'matches=${[for (final f in found) '${f.match.phrase}/${f.match.scriptType}/${f.weight}']}');
-    return CallScore(CallResult(risk, [for (final f in found) f.match]), byType, total);
+    return CallScore(CallResult(risk, [for (final f in found) f.match]), byType, total, floor);
   }
 
   bool _negated(String text, int start) {

@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/services.dart' show rootBundle;
 
+import 'call_floor.dart';
 import 'call_intent.dart';
 import 'models.dart';
 
@@ -253,15 +254,26 @@ class LiveCallAnalyzer {
       matches.add((start: h.start, match: h.match));
       if (_intentSeen.add('${h.type}|${h.phrase}')) fresh.add(h.match);
     }
-    matches.sort((a, b) => a.start.compareTo(b.start));
     final total = byType.values.fold(0, (a, b) => a + b);
     final strongTypes = byType.entries.where((e) => e.key != 'pressure' && e.value >= 2).length;
-    final risk = (total >= highLevel || strongTypes >= 2)
+    final weighted = (total >= highLevel || strongTypes >= 2)
         ? 'high'
         : (total >= mediumLevel || strongest >= 3 ? 'medium' : 'low');
-    final score = risk == 'high' ? 1.0 : math.min(0.95, total / highLevel);
+    // Same deterministic floor as CallAnalyzer.score, over the whole call so far.
+    final floor = CallFloor.evaluate(text);
+    final risk = CallFloor.raise(weighted, floor);
+    if (floor != null) {
+      final lower = text.toLowerCase();
+      for (final m in floor.matches) {
+        if (CallFloor.overlapsAny(m, [for (final x in matches) x.match]) || matches.any((x) => duplicateMatch(x.match, m))) continue;
+        matches.add((start: math.max(0, lower.indexOf(m.phrase)), match: m));
+        if (_intentSeen.add('floor|${m.phrase}')) fresh.add(m);
+      }
+    }
+    matches.sort((a, b) => a.start.compareTo(b.start));
+    final score = risk == 'high' ? 1.0 : CallFloor.scoreFor(risk, math.min(0.95, total / highLevel));
     if (fresh.isNotEmpty) {
-      debugPrint('[detect] Live risk=$risk score=${score.toStringAsFixed(2)} total=$total byType=$byType '
+      debugPrint('[detect] Live risk=$risk (weighted=$weighted floor=${floor?.level ?? '-'}) score=${score.toStringAsFixed(2)} total=$total byType=$byType '
           'strongest=$strongest strongTypes=$strongTypes (medium>=$mediumLevel high>=$highLevel) '
           'new=${[for (final m in fresh) '${m.phrase}/${m.scriptType}']}');
     }

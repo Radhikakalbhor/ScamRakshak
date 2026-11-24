@@ -28,6 +28,18 @@ class MainActivity : FlutterActivity() {
     private val waiting = mutableListOf<MethodChannel.Result>()
     private val main = Handler(Looper.getMainLooper())
 
+    /** Version, build number and whether this is an emulator (10.0.2.2 works only there). */
+    private fun appInfo(): Map<String, Any> {
+        val p = packageManager.getPackageInfo(packageName, 0)
+        @Suppress("DEPRECATION")
+        val build = if (Build.VERSION.SDK_INT >= 28) p.longVersionCode else p.versionCode.toLong()
+        val emulator = Build.FINGERPRINT.startsWith("generic") || Build.FINGERPRINT.contains("emulator") ||
+            Build.HARDWARE.contains("goldfish") || Build.HARDWARE.contains("ranchu") ||
+            Build.MODEL.contains("Emulator") || Build.MODEL.contains("Android SDK built for") ||
+            Build.PRODUCT.startsWith("sdk") || Build.PRODUCT.contains("emulator")
+        return mapOf("version" to (p.versionName ?: "?"), "build" to build.toString(), "emulator" to emulator)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         showOverLockIfWarning(intent) // before the first frame, so a full-screen warning is visible when locked
         super.onCreate(savedInstanceState)
@@ -46,6 +58,7 @@ class MainActivity : FlutterActivity() {
                     setOverLock(call.arguments == true)
                     result.success(null)
                 }
+                "appInfo" -> result.success(appInfo())
                 else -> result.notImplemented()
             }
         }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -31,8 +32,31 @@ class ApiException implements Exception {
 /// Meets locked contracts defined in AGENTS.md.
 class ApiClient {
   static const String prefKeyBaseUrl = 'scamrakshak_api_base_url';
-  static const String defaultBaseUrl = 'http://10.0.2.2:8000';
+
+  /// Android-emulator alias of the host computer. Only ever used on an emulator.
+  static const String emulatorBaseUrl = 'http://10.0.2.2:8000';
+
+  /// Kept for older callers; same as [emulatorBaseUrl].
+  static const String defaultBaseUrl = emulatorBaseUrl;
+
+  /// Set at build time: `flutter build apk --dart-define=API_BASE_URL=http://192.168.1.5:8000`.
+  static const String buildBaseUrl = String.fromEnvironment('API_BASE_URL');
+
   static const Duration requestTimeout = Duration(seconds: 25);
+
+  /// Whether the app runs on an Android emulator (injectable for tests). Unknown -> false.
+  static Future<bool> Function() isEmulator = _nativeIsEmulator;
+
+  static bool? _emulatorCache;
+  static Future<bool> _nativeIsEmulator() async {
+    if (_emulatorCache != null) return _emulatorCache!;
+    try {
+      final info = await AppInfo.load();
+      return _emulatorCache = info.isEmulator;
+    } catch (_) {
+      return false;
+    }
+  }
 
   final http.Client _httpClient;
   String? _customBaseUrl;
@@ -44,26 +68,57 @@ class ApiClient {
       : _httpClient = httpClient ?? http.Client(),
         _customBaseUrl = baseUrl;
 
-  /// Gets the active base URL from memory or SharedPreferences.
+  /// Active server address. Order: address given in code / just saved -> the address saved in
+  /// settings (kept across app updates; an emulator-only 10.0.2.2 is ignored on a real phone) ->
+  /// the build-time API_BASE_URL -> 10.0.2.2 on an emulator only. '' = not set.
   Future<String> getBaseUrl() async {
-    if (_customBaseUrl != null && _customBaseUrl!.isNotEmpty) {
-      return _customBaseUrl!;
-    }
+    if (_customBaseUrl != null && _customBaseUrl!.isNotEmpty) return _customBaseUrl!;
+    String? saved;
     try {
-      final prefs = await SharedPreferences.getInstance();
-      return prefs.getString(prefKeyBaseUrl) ?? defaultBaseUrl;
-    } catch (_) {
-      return defaultBaseUrl;
-    }
+      saved = (await SharedPreferences.getInstance()).getString(prefKeyBaseUrl);
+    } catch (_) {}
+    return resolveBaseUrl(saved: saved, buildTime: buildBaseUrl, emulator: await isEmulator());
   }
 
-  /// Sets and persists a custom base URL.
+  /// Pure resolution rule behind [getBaseUrl] (tested).
+  static String resolveBaseUrl({String? saved, String buildTime = '', required bool emulator}) {
+    final s = normalizeBaseUrl(saved ?? '');
+    if (s.isNotEmpty && (emulator || !isEmulatorOnly(s))) return s;
+    final b = normalizeBaseUrl(buildTime);
+    if (b.isNotEmpty && (emulator || !isEmulatorOnly(b))) return b;
+    return emulator ? emulatorBaseUrl : '';
+  }
+
+  /// 10.0.2.2 reaches the computer only from the Android emulator. (127.0.0.1 is fine on a real
+  /// phone with `adb reverse tcp:8000 tcp:8000`.)
+  static bool isEmulatorOnly(String url) => Uri.tryParse(url)?.host == '10.0.2.2';
+
+  /// Adds http:// and drops trailing slashes; '' when it is not a usable address.
+  static String normalizeBaseUrl(String raw) {
+    var u = raw.trim();
+    if (u.isEmpty) return '';
+    if (!u.startsWith('http://') && !u.startsWith('https://')) u = 'http://$u';
+    while (u.endsWith('/')) {
+      u = u.substring(0, u.length - 1);
+    }
+    final uri = Uri.tryParse(u);
+    return (uri == null || uri.host.isEmpty) ? '' : u;
+  }
+
+  /// Sets and persists a custom base URL (normalized).
   Future<void> setBaseUrl(String newUrl) async {
-    _customBaseUrl = newUrl.trim();
+    final clean = normalizeBaseUrl(newUrl);
+    _customBaseUrl = clean.isEmpty ? newUrl.trim() : clean;
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(prefKeyBaseUrl, _customBaseUrl!);
     } catch (_) {}
+  }
+
+  Future<String> _requireBase() async {
+    final base = await getBaseUrl();
+    if (base.isEmpty) throw const ApiOfflineException('No server address set. Open Server settings.');
+    return base;
   }
 
   /// Uploads audio for transcription using multipart/form-data.
@@ -78,26 +133,54 @@ class ApiClient {
   Future<Map> transcribeRecording(File audio, {Duration timeout = const Duration(minutes: 5)}) =>
       _transcribe(audio, null, timeout);
 
-  Future<Map> _transcribe(File audio, String? lang, Duration requestTimeout) async {
-    final base = await getBaseUrl();
+  /// [transcribeRecording] with progress and cancel: [onSent] fires once the whole file has been
+  /// sent (the server is then transcribing); [cancel] aborts the connection. Used by
+  /// [transcribeWithChecks], the shared upload routine.
+  Future<Map> transcribeUpload(
+    File audio, {
+    void Function()? onSent,
+    UploadCancel? cancel,
+    Duration timeout = const Duration(minutes: 5),
+  }) =>
+      _transcribe(audio, null, timeout, onSent: onSent, cancel: cancel);
+
+  Future<Map> _transcribe(File audio, String? lang, Duration requestTimeout,
+      {void Function()? onSent, UploadCancel? cancel}) async {
+    final base = await _requireBase();
     final uri = Uri.parse('$base/transcribe').replace(queryParameters: lang == null ? null : {'lang': lang});
 
+    http.Client? own;
     try {
       final request = http.MultipartRequest('POST', uri);
-      final fileStream = http.ByteStream(audio.openRead());
       final fileLength = await audio.length();
+      var sent = 0;
+      var told = false;
+      final counted = audio.openRead().map((chunk) {
+        sent += chunk.length;
+        if (!told && sent >= fileLength) {
+          told = true;
+          onSent?.call();
+        }
+        return chunk;
+      });
 
       final multipartFile = http.MultipartFile(
         'file',
-        fileStream,
+        http.ByteStream(counted),
         fileLength,
         filename: audio.path.split(Platform.pathSeparator).last,
       );
 
       request.files.add(multipartFile);
 
-      final streamedResponse =
-          await request.send().timeout(requestTimeout);
+      final http.StreamedResponse streamedResponse;
+      if (cancel != null) {
+        own = http.Client();
+        cancel.onCancel(own.close);
+        streamedResponse = await own.send(request).timeout(requestTimeout);
+      } else {
+        streamedResponse = await request.send().timeout(requestTimeout);
+      }
       final response =
           await http.Response.fromStream(streamedResponse).timeout(requestTimeout);
 
@@ -123,6 +206,8 @@ class ApiClient {
       rethrow;
     } catch (e) {
       throw ApiOfflineException('Unexpected communication failure: $e', e);
+    } finally {
+      own?.close();
     }
   }
 
@@ -145,7 +230,7 @@ class ApiClient {
   /// Same as [postReport] with the time the report was made (used by the offline report queue,
   /// which may send it later).
   Future<void> postReportAt(String type, String district, String ts) async {
-    final base = await getBaseUrl();
+    final base = await _requireBase();
     final uri = Uri.parse('$base/reports');
 
     final payload = {
@@ -194,7 +279,7 @@ class ApiClient {
 
   /// GET [path] -> decoded JSON. Same error mapping as the other calls.
   Future<Object?> _getJson(String path) async {
-    final base = await getBaseUrl();
+    final base = await _requireBase();
     try {
       final r = await _httpClient.get(Uri.parse('$base$path')).timeout(requestTimeout);
       if (r.statusCode < 200 || r.statusCode >= 300) {
@@ -233,7 +318,7 @@ class ApiClient {
 
   /// POST /fingerprints: opt-in anonymous 64-bit SimHash (16 hex digits) of a scam message.
   Future<void> postFingerprint(String fp, String category) async {
-    final base = await getBaseUrl();
+    final base = await _requireBase();
     try {
       final r = await _httpClient
           .post(Uri.parse('$base/fingerprints'),
@@ -252,7 +337,7 @@ class ApiClient {
   /// Fetches district fraud trends from backend.
   /// Contract: GET /trends -> [{"district": "...", "type": "...", "count": 12}]
   Future<List<Map>> getTrends() async {
-    final base = await getBaseUrl();
+    final base = await _requireBase();
     final uri = Uri.parse('$base/trends');
 
     try {
@@ -281,5 +366,110 @@ class ApiClient {
     } catch (e) {
       throw ApiOfflineException('Unexpected error loading trends: $e', e);
     }
+  }
+}
+
+/// Cancels a running [transcribeWithChecks] / [ApiClient.transcribeUpload].
+class UploadCancel {
+  final _done = Completer<void>();
+  final _hooks = <void Function()>[];
+
+  bool get isCancelled => _done.isCompleted;
+  Future<void> get whenCancelled => _done.future;
+
+  void cancel() {
+    if (_done.isCompleted) return;
+    _done.complete();
+    for (final h in _hooks) {
+      try {
+        h();
+      } catch (_) {}
+    }
+    _hooks.clear();
+  }
+
+  /// Runs [hook] on cancel (at once if already cancelled).
+  void onCancel(void Function() hook) => isCancelled ? hook() : _hooks.add(hook);
+}
+
+/// Thrown by [transcribeWithChecks] when the user pressed Cancel.
+class UploadCancelledException implements Exception {
+  const UploadCancelledException();
+  @override
+  String toString() => 'UploadCancelledException';
+}
+
+/// Steps of [transcribeWithChecks], for the progress text.
+enum UploadStage { checking, uploading, transcribing }
+
+/// The one upload routine for a whole recording (Check Call, shared audio): a quick /health check
+/// (4 s), then the upload and transcription with a timeout. Throws [ApiOfflineException] (not
+/// reachable / timed out), [ApiException] (server answered with an error) or
+/// [UploadCancelledException]. Never hangs past [reachTimeout] + [timeout].
+Future<Map> transcribeWithChecks(
+  ApiClient api,
+  File file, {
+  UploadCancel? cancel,
+  void Function(UploadStage stage)? onStage,
+  Duration reachTimeout = const Duration(seconds: 4),
+  Duration timeout = const Duration(minutes: 5),
+}) async {
+  Future<T> guard<T>(Future<T> f) {
+    if (cancel == null) return f;
+    return Future.any<T>([
+      f,
+      cancel.whenCancelled.then<T>((_) => throw const UploadCancelledException()),
+    ]);
+  }
+
+  void stage(UploadStage s) {
+    if (!(cancel?.isCancelled ?? false)) onStage?.call(s);
+  }
+
+  stage(UploadStage.checking);
+  final base = await guard(api.getBaseUrl());
+  if (base.isEmpty) throw const ApiOfflineException('No server address set. Open Server settings.');
+  final ok = await guard(api.isReachable(timeout: reachTimeout));
+  if (cancel?.isCancelled ?? false) throw const UploadCancelledException();
+  if (!ok) throw ApiOfflineException('Server not reachable at $base');
+  stage(UploadStage.uploading);
+  try {
+    return await guard(api.transcribeUpload(
+      file,
+      onSent: () => stage(UploadStage.transcribing),
+      cancel: cancel,
+      timeout: timeout,
+    ));
+  } on ApiOfflineException {
+    if (cancel?.isCancelled ?? false) throw const UploadCancelledException();
+    rethrow;
+  }
+}
+
+/// App version, build number and emulator flag from Android (MainActivity "appInfo").
+class AppInfo {
+  final String version;
+  final String build;
+  final bool isEmulator;
+  const AppInfo(this.version, this.build, this.isEmulator);
+
+  static const _channel = MethodChannel('scamrakshak/alert');
+  static AppInfo? _cached;
+
+  /// Injectable for tests.
+  static Future<AppInfo> Function() loader = _loadNative;
+
+  static Future<AppInfo> load() => loader();
+
+  static Future<AppInfo> _loadNative() async {
+    if (_cached != null) return _cached!;
+    // Only MainActivity answers this; elsewhere (tests, desktop) there is no emulator alias either.
+    if (!Platform.isAndroid) return const AppInfo('dev', '0', false);
+    final m = await _channel.invokeMapMethod<String, Object?>('appInfo');
+    return _cached = AppInfo(
+      '${m?['version'] ?? '?'}',
+      '${m?['build'] ?? '?'}',
+      m?['emulator'] == true,
+    );
   }
 }
